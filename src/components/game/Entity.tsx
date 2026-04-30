@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from 'next/image';
@@ -17,8 +16,18 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
   const { x, y } = axialToPixel(entity.q, entity.r);
   const placeholder = PlaceHolderImages[entity.type];
 
+  // Defensive check to prevent crashes if the placeholder is missing for a type
   if (!placeholder) {
-    return null;
+    return (
+      <div
+        className="absolute w-[60px] h-[60px] rounded-full bg-muted animate-pulse"
+        style={{
+          left: `${x}px`,
+          top: `${y}px`,
+          transform: `translate(-50%, -50%)`,
+        }}
+      />
+    );
   }
 
   return (

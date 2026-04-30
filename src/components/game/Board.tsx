@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useGameState } from '@/hooks/useGameState';
@@ -7,7 +6,7 @@ import { areAdjacent, HEX_WIDTH, GRID_SIZE } from '@/lib/game-utils';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Zap, Atom, Orbit } from 'lucide-react';
+import { Sparkles, Zap, Atom, Orbit, Shield } from 'lucide-react';
 
 export function Board() {
   const { 
@@ -92,9 +91,9 @@ export function Board() {
       </div>
 
       {/* Center - Hex Grid */}
-      <div className="lg:w-1/2 flex items-center justify-center relative bg-black/20 rounded-3xl overflow-hidden border border-white/5 shadow-inner hex-grid-container p-12">
+      <div className="lg:w-1/2 flex flex-col items-center justify-center relative bg-black/20 rounded-3xl overflow-hidden border border-white/5 shadow-inner hex-grid-container p-12">
         <div 
-          className="relative transition-transform duration-500" 
+          className="relative transition-transform duration-500 mb-8" 
           style={{ 
             width: `${GRID_SIZE * HEX_WIDTH * 1.5}px`, 
             height: `${GRID_SIZE * HEX_WIDTH * 1.5}px`,
@@ -110,6 +109,20 @@ export function Board() {
               disabled={isProcessing}
             />
           ))}
+        </div>
+
+        {/* Starting Point Wall / Foundation */}
+        <div className="w-full h-12 bg-gradient-to-t from-primary/20 to-transparent border-t border-primary/30 relative flex items-center justify-center gap-8 px-12 mt-4 rounded-b-2xl">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(187,112,255,0.1)_0%,transparent_70%)]" />
+          <div className="flex items-center gap-2 text-primary font-headline text-[10px] uppercase tracking-[0.4em] font-bold opacity-60">
+            <Shield className="w-3 h-3" />
+            Vanguard Wall Active
+          </div>
+          <div className="flex gap-2">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />
+            ))}
+          </div>
         </div>
       </div>
 
