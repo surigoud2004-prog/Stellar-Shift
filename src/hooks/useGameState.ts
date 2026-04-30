@@ -34,13 +34,22 @@ export function useGameState() {
 
   const initBoard = useCallback(() => {
     const variety = getColorVariety(level);
-    const initial: CelestialEntity[] = [];
-    for (let row = 0; row < GRID_SIZE; row++) {
-      for (let col = 0; col < GRID_SIZE; col++) {
-        const { q, r } = offsetToAxial(col, row);
-        initial.push(generateRandomEntity(q, r, variety));
+    let initial: CelestialEntity[] = [];
+    
+    // Generate until no immediate matches exist
+    let hasMatches = true;
+    while (hasMatches) {
+      initial = [];
+      for (let row = 0; row < GRID_SIZE; row++) {
+        for (let col = 0; col < GRID_SIZE; col++) {
+          const { q, r } = offsetToAxial(col, row);
+          initial.push(generateRandomEntity(q, r, variety));
+        }
       }
+      const { matches } = findMatches(initial);
+      if (matches.length === 0) hasMatches = false;
     }
+
     setEntities(initial);
     setIsGameOver(false);
     setIsWin(false);
@@ -56,7 +65,6 @@ export function useGameState() {
     initBoard();
   }, [initBoard]);
 
-  // Core GameLoop: Timer and Win/Loss
   useEffect(() => {
     if (isGameOver || isWin) return;
 
@@ -70,7 +78,6 @@ export function useGameState() {
         return prev - 1;
       });
 
-      // Hell Mode Inactivity Lock
       if (gameMode === 'hell' && Date.now() - lastMoveTime.current > 5000) {
         setIsLocked(true);
       }
@@ -79,7 +86,6 @@ export function useGameState() {
     return () => clearInterval(timerRef.current!);
   }, [isGameOver, isWin, score, targetScore, gameMode]);
 
-  // Check Win Condition every score update
   useEffect(() => {
     if (score >= targetScore && !isWin) {
       setIsWin(true);
@@ -121,7 +127,6 @@ export function useGameState() {
 
       setScore(prev => prev + points);
 
-      // Filter matches
       let matchedSet = new Set(matches);
       
       // Meteor Strike logic: smash 5 randoms
@@ -165,8 +170,7 @@ export function useGameState() {
       }
 
       setEntities(finalEntities);
-      // Speed scales with level
-      const dropSpeed = Math.max(100, 600 - (level * 5));
+      const dropSpeed = Math.max(150, 600 - (level * 5));
       setTimeout(() => handleMatch(finalEntities), dropSpeed);
     } else {
       setIsProcessing(false);
@@ -195,7 +199,7 @@ export function useGameState() {
     const { matches } = findMatches(newEntities);
     
     if (matches.length === 0) {
-      setLore("Alignment rejected. No resonance found.");
+      setLore("Alignment rejected: Swapping these shards creates no resonance.");
       return;
     }
     

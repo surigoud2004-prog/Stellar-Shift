@@ -73,15 +73,15 @@ export function findMatches(entities: CelestialEntity[]): {
   entities.forEach(entity => {
     directions.forEach(dir => {
       const line = [entity.id];
-      let current = entity;
+      let checkQ = entity.q + dir.dq;
+      let checkR = entity.r + dir.dr;
       
       while (true) {
-        const nextQ = current.q + dir.dq;
-        const nextR = current.r + dir.dr;
-        const next = gridMap.get(`${nextQ},${nextR}`);
+        const next = gridMap.get(`${checkQ},${checkR}`);
         if (next && next.type === entity.type) {
           line.push(next.id);
-          current = next;
+          checkQ += dir.dq;
+          checkR += dir.dr;
         } else {
           break;
         }
@@ -90,29 +90,27 @@ export function findMatches(entities: CelestialEntity[]): {
       if (line.length >= 3) {
         line.forEach(id => matchedIds.add(id));
         if (line.length === 5) timeWarp = true;
+        if (line.length >= 4) meteorStrike = true;
       }
     });
 
-    // Square Check (2x2) for Pulse Wave
+    // Square Check (Simplified for axial hex grid)
+    // In hex, we check 3 neighbors that form a tight cluster
     const q = entity.q;
     const r = entity.r;
-    const others = [
+    const cluster = [
       gridMap.get(`${q+1},${r}`),
       gridMap.get(`${q},${r+1}`),
-      gridMap.get(`${q+1},${r-1}`) // Note: In axial, squares are slightly different, but we check 4 localized pieces
+      gridMap.get(`${q+1},${r-1}`)
     ];
-    if (others.every(o => o && o.type === entity.type)) {
+    if (cluster.every(o => o && o.type === entity.type)) {
       pulseWave = true;
-      [entity, ...others].forEach(o => o && matchedIds.add(o.id));
+      [entity, ...cluster].forEach(o => o && matchedIds.add(o.id));
     }
   });
 
-  // T-Shape Check for Meteor Strike
-  // A simple T-shape detection: intersecting lines of 3
-  // (In this MVP we check if a piece belongs to two different axis matches)
-  const idToMatchCount = new Map<string, number>();
-  // Simplified T-check logic omitted for brevity, but we flag if high intersection
-  if (matchedIds.size > 12) meteorStrike = true; 
+  // Loose check for complex matches
+  if (matchedIds.size > 8) meteorStrike = true; 
 
   return { 
     matches: Array.from(matchedIds), 
