@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from 'next/image';
@@ -26,9 +25,10 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
     <div
       onClick={() => !disabled && onSelect(entity.id)}
       className={cn(
-        "absolute cursor-pointer transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) gravity-distort",
-        isSelected && "z-30 scale-125 brightness-150 drop-shadow-[0_0_20px_rgba(187,112,255,0.8)]",
+        "absolute cursor-pointer transition-all gravity-distort",
+        isSelected && "z-30 scale-punch brightness-150 drop-shadow-[0_0_20px_rgba(187,112,255,0.8)]",
         disabled && "cursor-not-allowed",
+        entity.isMatched && "white-hole-spark",
         "group"
       )}
       style={{
@@ -38,7 +38,7 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
         height: `${HEX_WIDTH - 6}px`,
       }}
     >
-      <div className="relative w-full h-full group perspective-1000">
+      <div className="relative w-full h-full group">
         {/* Selection Aura */}
         {isSelected && (
           <div className="absolute inset-[-6px] border border-primary/50 rounded-2xl animate-pulse z-10" />

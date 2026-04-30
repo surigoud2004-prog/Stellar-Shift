@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -144,6 +143,12 @@ export function useGameState() {
       setIsProcessing(true);
       lastMatchTime.current = Date.now();
       
+      // Visual feedback: mark matched entities
+      setEntities(prev => prev.map(e => matches.includes(e.id) ? { ...e, isMatched: true } : e));
+      
+      // Wait for collapse animation (400ms)
+      await new Promise(resolve => setTimeout(resolve, 400));
+
       let matchedSet = new Set(matches);
       let updated = currentEntities.filter(e => !matchedSet.has(e.id));
 
@@ -177,7 +182,9 @@ export function useGameState() {
       }
 
       setEntities(newGrid);
-      setTimeout(() => handleMatch(newGrid), 400);
+      // Wait for drop animation
+      await new Promise(resolve => setTimeout(resolve, 300));
+      handleMatch(newGrid);
     } else {
       setIsProcessing(false);
     }
@@ -187,8 +194,9 @@ export function useGameState() {
     if (isProcessing || isGameOver || isWin || isLocked) return;
     lastMoveTime.current = Date.now();
     setIsLocked(false);
+    setIsProcessing(true);
 
-    const newEntities = entities.map(e => ({ ...e }));
+    const newEntities = [...entities];
     const idx1 = newEntities.findIndex(e => e.id === id1);
     const idx2 = newEntities.findIndex(e => e.id === id2);
 
@@ -203,20 +211,32 @@ export function useGameState() {
       return;
     }
 
+    // Perform the visual swap
     const q1 = newEntities[idx1].q;
     const r1 = newEntities[idx1].r;
-    newEntities[idx1].q = newEntities[idx2].q;
-    newEntities[idx1].r = newEntities[idx2].r;
-    newEntities[idx2].q = q1;
-    newEntities[idx2].r = r1;
+    newEntities[idx1] = { ...newEntities[idx1], q: newEntities[idx2].q, r: newEntities[idx2].r };
+    newEntities[idx2] = { ...newEntities[idx2], q: q1, r: r1 };
+    setEntities(newEntities);
+
+    // Wait for swap animation (300ms)
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     const { matches } = findMatches(newEntities);
     if (matches.length === 0) {
-      setLore("Low Resonance: Alignment rejected.");
+      setLore("ALIGNMENT REJECTED: Resonant frequency mismatch.");
+      
+      // Revert Animation
+      const reverted = [...newEntities];
+      reverted[idx1] = { ...reverted[idx1], q: q1, r: r1 };
+      reverted[idx2] = { ...reverted[idx2], q: newEntities[idx1].q, r: newEntities[idx1].r };
+      setEntities(reverted);
+      
+      // Wait for revert animation
+      await new Promise(resolve => setTimeout(resolve, 300));
+      setIsProcessing(false);
       return;
     }
     
-    setEntities(newEntities);
     handleMatch(newEntities, id1);
   }, [entities, handleMatch, isProcessing, isGameOver, isWin, isLocked]);
 
