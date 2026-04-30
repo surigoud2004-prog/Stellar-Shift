@@ -14,13 +14,16 @@ interface EntityProps {
 
 export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) {
   const { x, y } = axialToPixel(entity.q, entity.r);
-  const placeholder = PlaceHolderImages[entity.type];
+  
+  // Robust fallback for image data
+  const placeholder = (entity.type >= 0 && entity.type < PlaceHolderImages.length) 
+    ? PlaceHolderImages[entity.type] 
+    : PlaceHolderImages[0];
 
-  // Defensive check to prevent crashes if the placeholder is missing for a type
-  if (!placeholder) {
+  if (!placeholder || !placeholder.imageUrl) {
     return (
       <div
-        className="absolute w-[60px] h-[60px] rounded-full bg-muted animate-pulse"
+        className="absolute w-[60px] h-[60px] rounded-full bg-muted animate-pulse border border-white/10"
         style={{
           left: `${x}px`,
           top: `${y}px`,
@@ -47,6 +50,7 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
       }}
     >
       <div className="relative w-full h-full group">
+        {/* Glow Effect */}
         <div className={cn(
           "absolute inset-0 rounded-full blur-md opacity-0 group-hover:opacity-40 transition-opacity",
           entity.type === 0 && "bg-purple-500",
@@ -57,20 +61,20 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
           entity.type === 5 && "bg-white",
         )} />
         
+        {/* Selection Ring */}
         {isSelected && (
           <div className="absolute inset-[-4px] border-2 border-primary rounded-full animate-pulse shadow-[0_0_15px_rgba(187,112,255,0.8)]" />
         )}
 
-        {placeholder?.imageUrl && (
-          <Image
-            src={placeholder.imageUrl}
-            alt={placeholder.description || "Celestial Body"}
-            width={60}
-            height={60}
-            className="rounded-full shadow-lg pointer-events-none select-none"
-            data-ai-hint={placeholder.imageHint}
-          />
-        )}
+        {/* The Planet/Star Image */}
+        <Image
+          src={placeholder.imageUrl}
+          alt={placeholder.description || "Celestial Body"}
+          width={60}
+          height={60}
+          className="rounded-full shadow-lg pointer-events-none select-none transition-transform duration-300 group-active:scale-90"
+          data-ai-hint={placeholder.imageHint}
+        />
       </div>
     </div>
   );
