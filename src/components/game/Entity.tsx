@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from 'next/image';
@@ -58,6 +59,7 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
               alt={placeholder.description || "Space Shard"}
               width={64}
               height={64}
+              data-ai-hint={placeholder.imageHint}
               className={cn(
                 "object-cover w-full h-full opacity-80 group-hover:opacity-100 transition-all duration-500",
                 entity.special && "brightness-125 scale-110 saturate-150"

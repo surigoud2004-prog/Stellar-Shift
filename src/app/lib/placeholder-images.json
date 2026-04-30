@@ -1,52 +1,53 @@
+
 {
   "placeholderImages": [
     {
       "id": "space-1",
-      "description": "A vibrant violet pulsar radiating intense energy",
-      "imageUrl": "https://picsum.photos/seed/space1/200/200",
-      "imageHint": "pulsar star"
+      "description": "Deep Field Galaxy Cluster with gravitational lensing",
+      "imageUrl": "https://picsum.photos/seed/galaxy1/200/200",
+      "imageHint": "galaxy cluster"
     },
     {
       "id": "space-2",
-      "description": "A swirling deep blue nebula cloud in deep space",
-      "imageUrl": "https://picsum.photos/seed/space2/200/200",
+      "description": "Vibrant blue and cyan nebula cloud",
+      "imageUrl": "https://picsum.photos/seed/nebula2/200/200",
       "imageHint": "blue nebula"
     },
     {
       "id": "space-3",
-      "description": "A dark event horizon of a black hole with a gravitational lens",
-      "imageUrl": "https://picsum.photos/seed/space3/200/200",
-      "imageHint": "black hole"
+      "description": "Golden spiral galaxy seen from a tilted angle",
+      "imageUrl": "https://picsum.photos/seed/galaxy3/200/200",
+      "imageHint": "spiral galaxy"
     },
     {
       "id": "space-4",
-      "description": "A brilliant white supernova explosion from a dying sun",
-      "imageUrl": "https://picsum.photos/seed/space4/200/200",
-      "imageHint": "supernova star"
+      "description": "Intense red supergiant star with solar flares",
+      "imageUrl": "https://picsum.photos/seed/star4/200/200",
+      "imageHint": "red star"
     },
     {
       "id": "space-5",
-      "description": "A detailed grey asteroid surface drifting through the void",
-      "imageUrl": "https://picsum.photos/seed/space5/200/200",
-      "imageHint": "asteroid rock"
+      "description": "Pillars of Creation style gas and dust columns",
+      "imageUrl": "https://picsum.photos/seed/pillars5/200/200",
+      "imageHint": "cosmic dust"
     },
     {
       "id": "space-6",
-      "description": "A fiery orange solar flare erupting from a stellar surface",
-      "imageUrl": "https://picsum.photos/seed/space6/200/200",
-      "imageHint": "solar flare"
+      "description": "Supernova remnant with expanding gas shells",
+      "imageUrl": "https://picsum.photos/seed/supernova6/200/200",
+      "imageHint": "supernova remnant"
     },
     {
       "id": "space-7",
-      "description": "A glowing green cosmic cloud of ionized gas",
-      "imageUrl": "https://picsum.photos/seed/space7/200/200",
-      "imageHint": "green nebula"
+      "description": "Protostellar disk glowing in deep orange",
+      "imageUrl": "https://picsum.photos/seed/disk7/200/200",
+      "imageHint": "protostar disk"
     },
     {
       "id": "space-8",
-      "description": "An electric cyan magnetar with swirling field lines",
-      "imageUrl": "https://picsum.photos/seed/space8/200/200",
-      "imageHint": "cyan magnetar"
+      "description": "Electric violet magnetar with field lines",
+      "imageUrl": "https://picsum.photos/seed/pulsar8/200/200",
+      "imageHint": "violet pulsar"
     }
   ]
 }
