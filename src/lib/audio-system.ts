@@ -169,3 +169,43 @@ export function playSpecialActivationSound() {
     console.warn('Special activation audio failed', e);
   }
 }
+
+/**
+ * Plays a soft, low-pass filtered 'zip' sound for rejected alignments.
+ * Gentle, airy, and muted cosmic 'hush'. 0.3 seconds.
+ */
+export function playRejectSound() {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const audioCtx = new AudioContextClass();
+    const duration = 0.3;
+    const startTime = audioCtx.currentTime;
+
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(400, startTime);
+    oscillator.frequency.exponentialRampToValueAtTime(200, startTime + duration);
+
+    gainNode.gain.setValueAtTime(0, startTime);
+    gainNode.gain.linearRampToValueAtTime(0.05, startTime + 0.05);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(600, startTime);
+    filter.Q.setValueAtTime(1, startTime);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(filter);
+    filter.connect(audioCtx.destination);
+
+    oscillator.start();
+    oscillator.stop(startTime + duration);
+  } catch (e) {
+    console.warn('Reject audio failed', e);
+  }
+}

@@ -13,7 +13,12 @@ import { generateDynamicLore } from '@/ai/flows/dynamic-lore-generation';
 import { collection, addDoc } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 import { initializeFirebase } from '@/firebase';
-import { playSwapSound, playMatchSound, playSpecialActivationSound } from '@/lib/audio-system';
+import { 
+  playSwapSound, 
+  playMatchSound, 
+  playSpecialActivationSound, 
+  playRejectSound 
+} from '@/lib/audio-system';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
 
@@ -229,6 +234,7 @@ export function useGameState() {
     const { matches } = findMatches(newEntities);
     if (matches.length === 0) {
       setLore("ALIGNMENT REJECTED: Resonant frequency mismatch.");
+      playRejectSound();
       
       const reverted = [...newEntities];
       reverted[idx1] = { ...reverted[idx1], q: q1, r: r1 };
