@@ -109,7 +109,6 @@ export function playMatchSound() {
 
 /**
  * Plays an energetic cosmic burst sound for special items.
- * A blend of a deep synth 'om' and bright sparkling glitter. 1.5 seconds.
  */
 export function playSpecialActivationSound() {
   if (typeof window === 'undefined') return;
@@ -120,7 +119,6 @@ export function playSpecialActivationSound() {
     const startTime = audioCtx.currentTime;
     const duration = 1.5;
 
-    // 1. Deep 'Om' Synth Layer
     const omOsc = audioCtx.createOscillator();
     const omGain = audioCtx.createGain();
     omOsc.type = 'sawtooth';
@@ -140,7 +138,6 @@ export function playSpecialActivationSound() {
     omGain.connect(omFilter);
     omFilter.connect(audioCtx.destination);
 
-    // 2. Sparkling Glitter Layer (Multiple high-pitched pings)
     for (let i = 0; i < 8; i++) {
       const pingOsc = audioCtx.createOscillator();
       const pingGain = audioCtx.createGain();
@@ -172,7 +169,6 @@ export function playSpecialActivationSound() {
 
 /**
  * Plays a soft, low-pass filtered 'zip' sound for rejected alignments.
- * Gentle, airy, and muted cosmic 'hush'. 0.3 seconds.
  */
 export function playRejectSound() {
   if (typeof window === 'undefined') return;
@@ -207,5 +203,55 @@ export function playRejectSound() {
     oscillator.stop(startTime + duration);
   } catch (e) {
     console.warn('Reject audio failed', e);
+  }
+}
+
+/**
+ * Plays a rapid-fire succession of shimmering bell sounds, 
+ * each one slightly higher in pitch than the last based on comboLevel.
+ */
+export function playComboSound(comboLevel: number) {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const audioCtx = new AudioContextClass();
+    const startTime = audioCtx.currentTime;
+
+    const notes = [0, 2, 4, 7, 9, 12]; // Pentatonic scale steps
+    const noteIdx = comboLevel % notes.length;
+    const octave = Math.floor(comboLevel / notes.length);
+    const baseFreq = 523.25 * Math.pow(2, octave) * Math.pow(1.05946, notes[noteIdx]); // Starting from C5
+
+    const playShimmerBell = (freq: number, start: number) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      const filter = audioCtx.createBiquadFilter();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, start);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.01, start + 0.4);
+
+      filter.type = 'highpass';
+      filter.frequency.setValueAtTime(1000, start);
+
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.1, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.5);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start(start);
+      osc.stop(start + 0.5);
+    };
+
+    // Rapid fire succession for this combo level
+    for (let i = 0; i < 4; i++) {
+      playShimmerBell(baseFreq * (1 + i * 0.05), startTime + i * 0.08);
+    }
+  } catch (e) {
+    console.warn('Combo audio failed', e);
   }
 }

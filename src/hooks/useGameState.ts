@@ -17,7 +17,8 @@ import {
   playSwapSound, 
   playMatchSound, 
   playSpecialActivationSound, 
-  playRejectSound 
+  playRejectSound,
+  playComboSound
 } from '@/lib/audio-system';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
@@ -148,11 +149,17 @@ export function useGameState() {
     }
   }, [score, targetScore, isWin]);
 
-  const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMoveId?: string) => {
+  const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMoveId?: string, comboLevel: number = 0) => {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMoveId);
     
     if (matches.length > 0) {
-      playMatchSound();
+      // Use combo sound if it's a chain reaction
+      if (comboLevel === 0) {
+        playMatchSound();
+      } else {
+        playComboSound(comboLevel);
+      }
+      
       setIsProcessing(true);
       lastMatchTime.current = Date.now();
       
@@ -176,7 +183,7 @@ export function useGameState() {
         setLore(loreRes.loreSnippet);
       }
 
-      setScore(s => s + matches.length * 20);
+      setScore(s => s + matches.length * 20 * (comboLevel + 1));
 
       const variety = getColorVariety(level);
       const newGrid: CelestialEntity[] = [];
@@ -194,7 +201,8 @@ export function useGameState() {
 
       setEntities(newGrid);
       await new Promise(resolve => setTimeout(resolve, 300));
-      handleMatch(newGrid);
+      // Recurse with incremented combo level
+      handleMatch(newGrid, undefined, comboLevel + 1);
     } else {
       setIsProcessing(false);
     }
@@ -219,7 +227,7 @@ export function useGameState() {
       setScore(s => s + 500);
       const filtered = entities.filter(e => !cleared.includes(e.id) && e.id !== comet.id);
       setEntities(filtered);
-      setTimeout(() => handleMatch(filtered), 200);
+      setTimeout(() => handleMatch(filtered, undefined, 0), 200);
       return;
     }
 
@@ -246,7 +254,8 @@ export function useGameState() {
       return;
     }
     
-    handleMatch(newEntities, id1);
+    // Start match sequence with combo level 0
+    handleMatch(newEntities, id1, 0);
   }, [entities, handleMatch, isProcessing, isGameOver, isWin, isLocked, isPaused]);
 
   return {
