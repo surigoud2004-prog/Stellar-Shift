@@ -1,0 +1,27 @@
+
+{
+  "entities": {
+    "HighScore": {
+      "title": "High Score",
+      "description": "A global leaderboard entry for a player.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "score": { "type": "number" },
+        "level": { "type": "number" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["uid", "displayName", "score", "level", "timestamp"]
+    }
+  },
+  "auth": {
+    "providers": ["anonymous"]
+  },
+  "firestore": {
+    "/leaderboard/{scoreId}": {
+      "schema": "#/entities/HighScore",
+      "description": "Collection of global high scores."
+    }
+  }
+}
