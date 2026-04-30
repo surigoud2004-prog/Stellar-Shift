@@ -31,12 +31,13 @@ export function Board() {
     entities, score, targetScore, timeLeft, level, gameMode, setGameMode,
     isGameOver, isWin, isLocked, isPaused, setIsPaused, lore, selectedId, setSelectedId, 
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
-    gameStarted, startGame
+    gameStarted, startGame, resetToMainMenu
   } = useGameState();
 
   const logEndRef = useRef<HTMLDivElement>(null);
   const [logHistory, setLogHistory] = useState<string[]>([]);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [isFading, setIsFading] = useState(false);
 
   useEffect(() => {
     if (lore) {
@@ -83,7 +84,15 @@ export function Board() {
   const confirmAbort = () => {
     playUIClickSound();
     setShowExitConfirm(false);
-    initBoard(); 
+    OnAbortGame();
+  };
+
+  const OnAbortGame = async () => {
+    setIsFading(true);
+    // 0.5s fade-to-black before loading Main Menu
+    await new Promise(resolve => setTimeout(resolve, 500));
+    resetToMainMenu();
+    setIsFading(false);
   };
 
   const toggleHallOfFame = () => {
@@ -104,7 +113,12 @@ export function Board() {
   const progress = Math.min(100, (score / targetScore) * 100);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 w-full max-w-7xl mx-auto p-4 lg:p-8 min-h-[90vh]">
+    <div className="flex flex-col lg:flex-row gap-8 w-full max-w-7xl mx-auto p-4 lg:p-8 min-h-[90vh] relative">
+      {/* Global Fade Overlay */}
+      {isFading && (
+        <div className="fixed inset-0 bg-black z-[100] animate-in fade-in duration-500" />
+      )}
+
       {/* Left Panel */}
       <div className="lg:w-1/4 space-y-6">
         <Card className="glass-morphism p-6 border-primary/20 relative overflow-hidden group">
@@ -198,7 +212,7 @@ export function Board() {
              
              <button 
               onClick={startGame}
-              className="btn-cosmic-start group"
+              className="btn-cosmic-start group animate-pulse-slow"
              >
                <span className="relative z-10 flex items-center gap-3">
                  <Play className="w-8 h-8 fill-white" />

@@ -64,6 +64,15 @@
   @apply absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent pointer-events-none;
 }
 
+.animate-pulse-slow {
+  animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.02); }
+}
+
 /* Candy Crush Style 3D Button */
 .btn-glossy-red {
   @apply relative overflow-hidden transition-all duration-75 select-none;

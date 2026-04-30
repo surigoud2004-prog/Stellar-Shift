@@ -264,10 +264,22 @@ export function useGameState() {
     setGameStarted(true);
   };
 
+  const resetToMainMenu = () => {
+    setEntities([]);
+    setScore(0);
+    setIsGameOver(false);
+    setIsWin(false);
+    setIsPaused(false);
+    setIsProcessing(false);
+    setIsLocked(false);
+    setGameStarted(false);
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+
   return {
     entities, score, targetScore, timeLeft, level, gameMode, setGameMode,
     isGameOver, isWin, isLocked, isPaused, setIsPaused, lore, selectedId, setSelectedId,
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
-    gameStarted, startGame
+    gameStarted, startGame, resetToMainMenu
   };
 }
