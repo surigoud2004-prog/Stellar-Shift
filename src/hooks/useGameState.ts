@@ -7,7 +7,7 @@ import {
   generateRandomEntity, 
   findMatches, 
   GRID_SIZE, 
-  EntityType 
+  offsetToAxial
 } from '@/lib/game-utils';
 import { generateDynamicLore } from '@/ai/flows/dynamic-lore-generation';
 
@@ -19,13 +19,12 @@ export function useGameState() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Initialize Board
+  // Initialize Board as a Rectangle
   useEffect(() => {
     const initial: CelestialEntity[] = [];
-    for (let q = 0; q < GRID_SIZE; q++) {
-      for (let r = 0; r < GRID_SIZE; r++) {
-        // Hex grid boundaries often need offset adjustment for 'rectangular' layout
-        // We'll use a simple axial grid but keep it within bounds
+    for (let row = 0; row < GRID_SIZE; row++) {
+      for (let col = 0; col < GRID_SIZE; col++) {
+        const { q, r } = offsetToAxial(col, row);
         initial.push(generateRandomEntity(q, r));
       }
     }
@@ -47,11 +46,9 @@ export function useGameState() {
     if (matches.length > 0) {
       setIsProcessing(true);
       
-      // Update score and goals
       const points = matches.length * 10;
       setScore(prev => prev + points);
       
-      // Detect special events
       if (blackholes.length > 0) {
         triggerLore("Black Hole Triggered", "A massive cosmic collapse has occurred.");
       } else if (supernovas.length > 0) {
@@ -63,36 +60,37 @@ export function useGameState() {
       // Filter out matched entities
       let updated = currentEntities.filter(e => !matches.includes(e.id));
       
-      // Simulate gravity (simplified for axial)
-      // Entities with empty space below them (higher R at same Q) should fall
-      // This is a naive implementation for the POC
-      const finalEntities = Array.from(updated);
+      // Hexagonal Gravity Refill
+      const finalEntities = [...updated];
       const gridMap = new Map<string, CelestialEntity>();
       finalEntities.forEach(e => gridMap.set(`${e.q},${e.r}`, e));
 
-      for (let q = 0; q < GRID_SIZE; q++) {
+      for (let col = 0; col < GRID_SIZE; col++) {
         let holes = 0;
-        for (let r = GRID_SIZE - 1; r >= 0; r--) {
+        for (let row = GRID_SIZE - 1; row >= 0; row--) {
+          const { q, r } = offsetToAxial(col, row);
           const key = `${q},${r}`;
+          
           if (!gridMap.has(key)) {
             holes++;
           } else if (holes > 0) {
             const e = gridMap.get(key)!;
             gridMap.delete(key);
-            e.r += holes;
-            gridMap.set(`${q},${e.r}`, e);
+            const targetAxial = offsetToAxial(col, row + holes);
+            e.q = targetAxial.q;
+            e.r = targetAxial.r;
+            gridMap.set(`${e.q},${e.r}`, e);
           }
         }
         // Fill top
         for (let h = 0; h < holes; h++) {
-          const newE = generateRandomEntity(q, h);
+          const { q, r } = offsetToAxial(col, h);
+          const newE = generateRandomEntity(q, r);
           finalEntities.push(newE);
         }
       }
 
-      setEntities(Array.from(finalEntities));
-      
-      // Recursively check for new matches after gravity
+      setEntities(finalEntities);
       setTimeout(() => handleMatch(finalEntities), 600);
     } else {
       setIsProcessing(false);
@@ -102,32 +100,31 @@ export function useGameState() {
   const swapEntities = useCallback(async (id1: string, id2: string) => {
     if (isProcessing) return;
 
-    setEntities(prev => {
-      const newEntities = [...prev];
-      const idx1 = newEntities.findIndex(e => e.id === id1);
-      const idx2 = newEntities.findIndex(e => e.id === id2);
-      
-      if (idx1 === -1 || idx2 === -1) return prev;
+    const newEntities = entities.map(e => ({ ...e }));
+    const idx1 = newEntities.findIndex(e => e.id === id1);
+    const idx2 = newEntities.findIndex(e => e.id === id2);
+    
+    if (idx1 === -1 || idx2 === -1) return;
 
-      // Swap coordinates
-      const tempQ = newEntities[idx1].q;
-      const tempR = newEntities[idx1].r;
-      newEntities[idx1].q = newEntities[idx2].q;
-      newEntities[idx1].r = newEntities[idx2].r;
-      newEntities[idx2].q = tempQ;
-      newEntities[idx2].r = tempR;
+    // Swap axial coordinates
+    const q1 = newEntities[idx1].q;
+    const r1 = newEntities[idx1].r;
+    newEntities[idx1].q = newEntities[idx2].q;
+    newEntities[idx1].r = newEntities[idx2].r;
+    newEntities[idx2].q = q1;
+    newEntities[idx2].r = r1;
 
-      // Check if this swap creates a match
-      const { matches } = findMatches(newEntities);
-      if (matches.length === 0) {
-        // Revert swap (visualize this if possible)
-        return prev;
-      }
-      
-      setTimeout(() => handleMatch(newEntities), 300);
-      return newEntities;
-    });
-  }, [handleMatch, isProcessing]);
+    const { matches } = findMatches(newEntities);
+    
+    if (matches.length === 0) {
+      setLore("The stars refuse to shift. No resonance found in this alignment.");
+      return; // Revert
+    }
+    
+    setIsProcessing(true);
+    setEntities(newEntities);
+    setTimeout(() => handleMatch(newEntities), 200);
+  }, [entities, handleMatch, isProcessing]);
 
   return {
     entities,

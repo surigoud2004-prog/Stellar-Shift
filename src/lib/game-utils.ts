@@ -12,12 +12,20 @@ export interface CelestialEntity {
 
 export const GRID_SIZE = 8;
 export const HEX_WIDTH = 64;
-export const HEX_HEIGHT = Math.sqrt(3)/2 * HEX_WIDTH;
 
+// Pointy Top Hex Math
 export function axialToPixel(q: number, r: number) {
-  const x = HEX_WIDTH * (3/2 * q);
-  const y = HEX_WIDTH * (Math.sqrt(3)/2 * q + Math.sqrt(3) * r);
+  const size = HEX_WIDTH / 1.7; // Adjusting size for better fit
+  const x = size * Math.sqrt(3) * (q + r / 2);
+  const y = size * (3 / 2) * r;
   return { x, y };
+}
+
+// Convert column/row to axial for a rectangular layout
+export function offsetToAxial(col: number, row: number) {
+  const q = col - Math.floor(row / 2);
+  const r = row;
+  return { q, r };
 }
 
 export function generateRandomEntity(q: number, r: number): CelestialEntity {
@@ -34,17 +42,10 @@ export function areAdjacent(a: CelestialEntity, b: CelestialEntity): boolean {
   const dq = Math.abs(a.q - b.q);
   const dr = Math.abs(a.r - b.r);
   const ds = Math.abs((a.q + a.r) - (b.q + b.r));
+  // In axial, neighbors are exactly 1 unit away in distance
   return dq <= 1 && dr <= 1 && ds <= 1 && (dq + dr + ds) !== 0;
 }
 
-export function getNeighbors(q: number, r: number) {
-  return [
-    { q: q + 1, r: r }, { q: q + 1, r: r - 1 }, { q: q, r: r - 1 },
-    { q: q - 1, r: r }, { q: q - 1, r: r + 1 }, { q: q, r: r + 1 }
-  ];
-}
-
-// Check for matches of 3+ in rows
 export function findMatches(entities: CelestialEntity[]): { matches: string[], supernovas: string[], blackholes: string[] } {
   const gridMap = new Map<string, CelestialEntity>();
   entities.forEach(e => gridMap.set(`${e.q},${e.r}`, e));
@@ -53,11 +54,11 @@ export function findMatches(entities: CelestialEntity[]): { matches: string[], s
   const supernovas: string[] = [];
   const blackholes: string[] = [];
 
-  // Directions for hexagonal matching: horizontal, top-left diagonal, top-right diagonal
+  // Directions for pointy top matching: horizontal, and two diagonals
   const directions = [
-    { dq: 1, dr: 0 },   // horizontal
-    { dq: 0, dr: 1 },   // top-right diagonal
-    { dq: 1, dr: -1 },  // top-left diagonal
+    { dq: 1, dr: 0 },   // East
+    { dq: 0, dr: 1 },   // South-East
+    { dq: -1, dr: 1 },  // South-West
   ];
 
   entities.forEach(entity => {

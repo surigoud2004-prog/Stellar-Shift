@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useGameState } from '@/hooks/useGameState';
@@ -12,7 +13,6 @@ export function Board() {
   const { 
     entities, 
     score, 
-    goals, 
     lore, 
     selectedId, 
     setSelectedId, 
@@ -91,14 +91,15 @@ export function Board() {
       </div>
 
       {/* Center - Hex Grid & Wall */}
-      <div className="lg:w-1/2 flex flex-col relative bg-black/40 rounded-3xl overflow-hidden border border-white/5 shadow-2xl hex-grid-container min-h-[600px]">
-        {/* Grid Viewport */}
-        <div className="flex-1 relative p-12 overflow-hidden">
+      <div className="lg:w-1/2 flex flex-col relative bg-black/40 rounded-3xl overflow-hidden border border-white/5 shadow-2xl hex-grid-container min-h-[650px]">
+        <div className="flex-1 relative p-12 overflow-hidden flex items-center justify-center">
           <div 
-            className="relative transition-transform duration-500 mx-auto" 
+            className="relative transition-transform duration-500" 
             style={{ 
-              width: `${GRID_SIZE * HEX_WIDTH * 1.5}px`, 
-              height: `${GRID_SIZE * HEX_WIDTH * 1.5}px`
+              width: `${GRID_SIZE * HEX_WIDTH}px`, 
+              height: `${GRID_SIZE * HEX_WIDTH}px`,
+              // Offset to center the pointy grid which tends to lean
+              marginLeft: `-${HEX_WIDTH/2}px` 
             }}
           >
             {entities.map(entity => (
@@ -113,7 +114,7 @@ export function Board() {
           </div>
         </div>
 
-        {/* Foundation Wall - The "Starting Point" at the bottom */}
+        {/* Foundation Wall */}
         <div className="w-full h-24 bg-gradient-to-t from-primary/30 via-primary/5 to-transparent border-t-2 border-primary/50 relative flex items-center justify-center gap-12 px-12 z-30">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(187,112,255,0.1)_0%,transparent_70%)]" />
           
