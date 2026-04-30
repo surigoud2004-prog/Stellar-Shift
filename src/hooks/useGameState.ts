@@ -33,6 +33,7 @@ export function useGameState() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [isWin, setIsWin] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [lore, setLore] = useState<string>("Align the shards to stabilize the sector.");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -46,6 +47,10 @@ export function useGameState() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const targetScore = Math.floor(1000 * calculateDifficulty(level) * (gameMode === 'hard' ? 1.5 : gameMode === 'hell' ? 2 : 1));
+
+  // Determine if the game should be frozen (both timer and input)
+  const isInputFrozen = isProcessing || isGameOver || isWin || isLocked || isPaused || isSettingsOpen;
+  const isTimerFrozen = !gameStarted || isGameOver || isWin || isPaused || isSettingsOpen;
 
   useEffect(() => {
     const savedBest = localStorage.getItem('stellar_best_score');
@@ -93,6 +98,7 @@ export function useGameState() {
     setIsGameOver(false);
     setIsWin(false);
     setIsPaused(false);
+    setIsSettingsOpen(false);
     setScore(0);
     lastMatchTime.current = Date.now();
     lastMoveTime.current = Date.now();
@@ -107,7 +113,7 @@ export function useGameState() {
   }, [initBoard, gameStarted]);
 
   useEffect(() => {
-    if (!gameStarted || isGameOver || isWin || isPaused) {
+    if (isTimerFrozen) {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
@@ -125,10 +131,10 @@ export function useGameState() {
       }
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [isGameOver, isWin, isPaused, score, targetScore, gameMode, gameStarted]);
+  }, [isTimerFrozen, score, targetScore, gameMode]);
 
   useEffect(() => {
-    if (!gameStarted || isGameOver || isWin || isProcessing || isPaused) return;
+    if (isInputFrozen) return;
     const interval = setInterval(() => {
       if (Date.now() - lastMatchTime.current > 15000) {
         setEntities(prev => {
@@ -143,7 +149,7 @@ export function useGameState() {
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [isGameOver, isWin, isProcessing, isPaused, gameStarted]);
+  }, [isInputFrozen]);
 
   useEffect(() => {
     if (gameStarted && score >= targetScore && !isWin) {
@@ -211,7 +217,7 @@ export function useGameState() {
   }, [level]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
-    if (!gameStarted || isProcessing || isGameOver || isWin || isLocked || isPaused) return;
+    if (isInputFrozen) return;
     
     playSwapSound();
     lastMoveTime.current = Date.now();
@@ -257,7 +263,7 @@ export function useGameState() {
     }
     
     handleMatch(newEntities, id1, 0);
-  }, [entities, handleMatch, isProcessing, isGameOver, isWin, isLocked, isPaused, gameStarted]);
+  }, [entities, handleMatch, isInputFrozen]);
 
   const startGame = () => {
     playUIClickSound();
@@ -272,6 +278,7 @@ export function useGameState() {
     setIsPaused(false);
     setIsProcessing(false);
     setIsLocked(false);
+    setIsSettingsOpen(false);
     setGameStarted(false);
     if (timerRef.current) clearInterval(timerRef.current);
   };
@@ -280,6 +287,7 @@ export function useGameState() {
     entities, score, targetScore, timeLeft, level, gameMode, setGameMode,
     isGameOver, isWin, isLocked, isPaused, setIsPaused, lore, selectedId, setSelectedId,
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
-    gameStarted, startGame, resetToMainMenu
+    gameStarted, startGame, resetToMainMenu,
+    isSettingsOpen, setIsSettingsOpen, isInputFrozen
   };
 }

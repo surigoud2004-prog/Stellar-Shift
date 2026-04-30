@@ -26,13 +26,14 @@ import { cn } from '@/lib/utils';
 import { HallOfFame } from './HallOfFame';
 import { playUIClickSound } from '@/lib/audio-system';
 import { ParallaxBackground } from './ParallaxBackground';
+import { SettingsDrawer } from './SettingsDrawer';
 
 export function Board() {
   const { 
     entities, score, targetScore, timeLeft, level, gameMode, setGameMode,
     isGameOver, isWin, isLocked, isPaused, setIsPaused, lore, selectedId, setSelectedId, 
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
-    gameStarted, startGame, resetToMainMenu
+    gameStarted, startGame, resetToMainMenu, isSettingsOpen, setIsSettingsOpen, isInputFrozen
   } = useGameState();
 
   const logEndRef = useRef<HTMLDivElement>(null);
@@ -64,7 +65,7 @@ export function Board() {
   }, [logHistory]);
 
   const handleSelect = (id: string) => {
-    if (isProcessing || isGameOver || isWin || isLocked || isPaused) return;
+    if (isInputFrozen) return;
     if (selectedId === null) {
       setSelectedId(id);
     } else {
@@ -129,6 +130,13 @@ export function Board() {
     <div className="flex flex-col lg:flex-row gap-8 w-full max-w-7xl mx-auto p-4 lg:p-8 min-h-[90vh] relative">
       <ParallaxBackground isWarping={isWarping} />
       
+      <SettingsDrawer 
+        isOpen={isSettingsOpen} 
+        onToggle={setIsSettingsOpen} 
+        onHome={handleAbortMission}
+        disabled={!gameStarted || isGameOver || isWin}
+      />
+
       {isFading && (
         <div className="fixed inset-0 bg-black z-[100] animate-in fade-in duration-500" />
       )}
@@ -185,7 +193,7 @@ export function Board() {
                 size="sm"
                 className="w-full uppercase text-[10px] font-bold tracking-widest"
                 onClick={() => changeMode(mode)}
-                disabled={isPaused}
+                disabled={isPaused || isSettingsOpen}
               >
                 {mode}
               </Button>
@@ -205,7 +213,7 @@ export function Board() {
                 size="sm" 
                 className="w-full uppercase text-[10px] font-bold tracking-widest hover:border-primary/50"
                 onClick={toggleHallOfFame}
-                disabled={isPaused}
+                disabled={isPaused || isSettingsOpen}
               >
                 <Globe className="w-4 h-4 mr-2" /> {showHallOfFame ? "Close Fame" : "Hall of Fame"}
               </Button>
@@ -280,22 +288,22 @@ export function Board() {
                 <h2 className="text-5xl font-headline font-black text-white mb-2 tracking-tighter">VICTORY</h2>
               </div>
             )}
-            {(isLocked || isPaused) && (
+            {(isInputFrozen && !isProcessing) && (
               <div className="absolute inset-4 z-40 bg-black/40 backdrop-blur-[2px] border-2 border-primary/20 rounded-2xl flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300">
-                {isPaused ? (
+                {isPaused || isSettingsOpen ? (
                   <Pause className="w-12 h-12 text-primary animate-pulse mb-2" />
                 ) : (
                   <Lock className="w-12 h-12 text-destructive animate-pulse mb-2" />
                 )}
                 <span className="text-primary font-black text-xs uppercase tracking-[0.5em]">
-                  {isPaused ? "Sector Frozen" : "Systems Frozen"}
+                  {isPaused || isSettingsOpen ? "Sector Frozen" : "Systems Frozen"}
                 </span>
               </div>
             )}
 
             <div className="flex-1 relative p-12 overflow-hidden flex items-center justify-center">
               <div 
-                className={cn("relative transition-all duration-700", (isLocked || isPaused) && "opacity-50 grayscale contrast-125")} 
+                className={cn("relative transition-all duration-700", isInputFrozen && "opacity-50 grayscale contrast-125")} 
                 style={{ width: `${GRID_SIZE * HEX_WIDTH}px`, height: `${(GRID_SIZE - 1) * HEX_WIDTH}px`, marginLeft: `-${HEX_WIDTH/2}px` }}
               >
                 {entities.map(entity => (
@@ -304,7 +312,7 @@ export function Board() {
                     entity={entity} 
                     isSelected={selectedId === entity.id}
                     onSelect={handleSelect}
-                    disabled={isProcessing || isGameOver || isWin || isLocked || isPaused}
+                    disabled={isInputFrozen}
                   />
                 ))}
               </div>
