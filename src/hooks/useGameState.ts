@@ -48,7 +48,7 @@ export function useGameState() {
 
   const targetScore = Math.floor(1000 * calculateDifficulty(level) * (gameMode === 'hard' ? 1.5 : gameMode === 'hell' ? 2 : 1));
 
-  // Determine if the game should be frozen (both timer and input)
+  // Sector States: pause timers and block inputs during settings or deliberate pause
   const isInputFrozen = isProcessing || isGameOver || isWin || isLocked || isPaused || isSettingsOpen;
   const isTimerFrozen = !gameStarted || isGameOver || isWin || isPaused || isSettingsOpen;
 
@@ -76,7 +76,7 @@ export function useGameState() {
       }
       localStorage.setItem('stellar_level', level.toString());
     } catch (e) {
-      console.error("Sync failed", e);
+      console.error("Telemetry sync failed", e);
     }
   };
 
@@ -147,7 +147,7 @@ export function useGameState() {
         setLore("CELESTIAL ANOMALY: A comet shard has appeared.");
         playSpecialActivationSound();
       }
-    }, 1000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [isInputFrozen]);
 
@@ -163,11 +163,8 @@ export function useGameState() {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMoveId);
     
     if (matches.length > 0) {
-      if (comboLevel === 0) {
-        playMatchSound();
-      } else {
-        playComboSound(comboLevel);
-      }
+      if (comboLevel === 0) playMatchSound();
+      else playComboSound(comboLevel);
       
       setIsProcessing(true);
       lastMatchTime.current = Date.now();
@@ -209,7 +206,7 @@ export function useGameState() {
       }
 
       setEntities(newGrid);
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 400));
       handleMatch(newGrid, undefined, comboLevel + 1);
     } else {
       setIsProcessing(false);
@@ -245,7 +242,7 @@ export function useGameState() {
     newEntities[idx2] = { ...newEntities[idx2], q: q1, r: r1 };
     setEntities(newEntities);
 
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 400));
 
     const { matches } = findMatches(newEntities);
     if (matches.length === 0) {
@@ -257,7 +254,7 @@ export function useGameState() {
       reverted[idx2] = { ...reverted[idx2], q: newEntities[idx1].q, r: newEntities[idx1].r };
       setEntities(reverted);
       
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 400));
       setIsProcessing(false);
       return;
     }

@@ -35,26 +35,26 @@ export function SettingsDrawer({ isOpen, onToggle, onHome, disabled }: SettingsD
   ];
 
   return (
-    <div className="fixed top-8 right-8 z-[60] flex items-start justify-end gap-4 pointer-events-none">
-      {/* Settings Gear - Metallic 3D Styling */}
+    <div className="fixed top-8 right-8 z-[60] flex items-start justify-end gap-6 pointer-events-none">
+      {/* Settings Gear - 3D Metallic Sprocket Design */}
       <button
         onClick={toggleSettings}
         disabled={disabled}
         className={cn(
-          "pointer-events-auto relative w-14 h-14 rounded-full bg-gradient-to-br from-slate-200 to-slate-400 border-2 border-slate-500/50 shadow-2xl transition-all duration-500 overflow-hidden flex items-center justify-center group",
+          "settings-gear-btn group",
           isOpen && "rotate-90",
           disabled && "opacity-50 grayscale"
         )}
       >
-        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent -translate-x-full group-hover:translate-x-full duration-1000 transition-transform" />
-        <Settings className="w-8 h-8 text-slate-800 drop-shadow-sm relative z-10" />
-        <div className="absolute inset-0 rounded-full ring-4 ring-primary/20 animate-pulse-slow opacity-0 group-hover:opacity-100" />
+        <div className="gear-core" />
+        <Settings className="w-10 h-10 text-slate-900 relative z-10 drop-shadow-md" />
+        <div className="gear-aura" />
       </button>
 
-      {/* Drawer Panel - Glassmorphism */}
+      {/* Drawer Panel - Glassmorphism Side Panel */}
       <div className={cn(
-        "pointer-events-auto glass-morphism border-primary/20 rounded-3xl p-4 transition-all duration-500 ease-out flex flex-col gap-3",
-        isOpen ? "translate-x-0 opacity-100 w-20" : "translate-x-full opacity-0 w-0 p-0 overflow-hidden"
+        "pointer-events-auto glass-morphism border-primary/20 rounded-[2rem] p-5 transition-all duration-700 ease-out flex flex-col gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]",
+        isOpen ? "translate-x-0 opacity-100 w-24" : "translate-x-[200%] opacity-0 w-0 p-0 overflow-hidden"
       )}>
         {buttons.map((btn, idx) => (
           <button
@@ -62,15 +62,15 @@ export function SettingsDrawer({ isOpen, onToggle, onHome, disabled }: SettingsD
             onClick={() => handleAction(btn.onClick)}
             style={{ transitionDelay: `${isOpen ? (idx + 1) * 100 : 0}ms` }}
             className={cn(
-              "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300",
-              "hover:bg-primary/20 hover:scale-110 active:scale-95",
-              btn.active === false ? "bg-black/20 text-muted-foreground" : "bg-white/5 text-white",
+              "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500",
+              "hover:bg-primary/30 hover:scale-110 active:scale-95 shadow-lg",
+              btn.active === false ? "bg-black/40 text-muted-foreground" : "bg-white/10 text-white",
               btn.color,
-              isOpen ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+              isOpen ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
             )}
             title={btn.label}
           >
-            <btn.icon className="w-6 h-6" />
+            <btn.icon className="w-7 h-7" />
           </button>
         ))}
       </div>
