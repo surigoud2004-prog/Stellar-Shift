@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from 'next/image';
@@ -15,7 +16,6 @@ interface EntityProps {
 export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) {
   const { x, y } = axialToPixel(entity.q, entity.r);
   
-  // Robust fallback for image data
   const placeholder = (entity.type >= 0 && entity.type < PlaceHolderImages.length) 
     ? PlaceHolderImages[entity.type] 
     : PlaceHolderImages[0];
@@ -23,7 +23,7 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
   if (!placeholder || !placeholder.imageUrl) {
     return (
       <div
-        className="absolute w-[60px] h-[60px] rounded-full bg-muted animate-pulse border border-white/10"
+        className="absolute w-[54px] h-[54px] rounded-lg bg-muted animate-pulse border border-white/10"
         style={{
           left: `${x}px`,
           top: `${y}px`,
@@ -44,15 +44,15 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
       style={{
         left: `${x}px`,
         top: `${y}px`,
-        width: '60px',
-        height: '60px',
+        width: '54px',
+        height: '54px',
         transform: `translate(-50%, -50%)`,
       }}
     >
-      <div className="relative w-full h-full group">
-        {/* Glow Effect */}
+      <div className="relative w-full h-full group perspective-500">
+        {/* Cube Shadow/Glow Effect */}
         <div className={cn(
-          "absolute inset-0 rounded-full blur-md opacity-0 group-hover:opacity-40 transition-opacity",
+          "absolute inset-0 rounded-xl blur-lg opacity-0 group-hover:opacity-40 transition-opacity",
           entity.type === 0 && "bg-purple-500",
           entity.type === 1 && "bg-blue-500",
           entity.type === 2 && "bg-zinc-400",
@@ -61,20 +61,24 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
           entity.type === 5 && "bg-white",
         )} />
         
-        {/* Selection Ring */}
+        {/* Selection Frame (Square) */}
         {isSelected && (
-          <div className="absolute inset-[-4px] border-2 border-primary rounded-full animate-pulse shadow-[0_0_15px_rgba(187,112,255,0.8)]" />
+          <div className="absolute inset-[-4px] border-2 border-primary rounded-xl animate-pulse shadow-[0_0_15px_rgba(187,112,255,0.8)] z-10" />
         )}
 
-        {/* The Planet/Star Image */}
-        <Image
-          src={placeholder.imageUrl}
-          alt={placeholder.description || "Celestial Body"}
-          width={60}
-          height={60}
-          className="rounded-full shadow-lg pointer-events-none select-none transition-transform duration-300 group-active:scale-90"
-          data-ai-hint={placeholder.imageHint}
-        />
+        {/* The Space Shard (Cube) */}
+        <div className="relative w-full h-full bg-white/5 rounded-xl overflow-hidden border border-white/20 shadow-2xl backdrop-blur-sm group-active:scale-95 transition-transform duration-200">
+           <Image
+            src={placeholder.imageUrl}
+            alt={placeholder.description || "Celestial Shard"}
+            width={60}
+            height={60}
+            className="object-cover w-full h-full opacity-90 group-hover:opacity-100 transition-opacity"
+            data-ai-hint={placeholder.imageHint}
+          />
+          {/* Shine effect for cube feel */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-white/20 pointer-events-none" />
+        </div>
       </div>
     </div>
   );

@@ -2,40 +2,40 @@
 {
   "placeholderImages": [
     {
-      "id": "planet-1",
-      "description": "A vibrant purple gas giant planet with glowing rings",
-      "imageUrl": "https://picsum.photos/seed/planet1/200/200",
-      "imageHint": "purple planet"
+      "id": "shard-1",
+      "description": "A glowing purple pulsar crystal",
+      "imageUrl": "https://picsum.photos/seed/shard1/200/200",
+      "imageHint": "purple crystal"
     },
     {
-      "id": "planet-2",
-      "description": "An electric blue crystal star radiating energy",
-      "imageUrl": "https://picsum.photos/seed/planet2/200/200",
-      "imageHint": "blue star"
+      "id": "shard-2",
+      "description": "An electric blue energy cube",
+      "imageUrl": "https://picsum.photos/seed/shard2/200/200",
+      "imageHint": "blue cube"
     },
     {
-      "id": "planet-3",
-      "description": "A glowing crescent moon with a silver sheen",
-      "imageUrl": "https://picsum.photos/seed/planet3/200/200",
-      "imageHint": "crescent moon"
+      "id": "shard-3",
+      "description": "A translucent silver void shard",
+      "imageUrl": "https://picsum.photos/seed/shard3/200/200",
+      "imageHint": "silver shard"
     },
     {
-      "id": "planet-4",
-      "description": "A swirling green nebula contained in an orb",
-      "imageUrl": "https://picsum.photos/seed/planet4/200/200",
-      "imageHint": "green nebula"
+      "id": "shard-4",
+      "description": "A vibrant green nebula block",
+      "imageUrl": "https://picsum.photos/seed/shard4/200/200",
+      "imageHint": "green crystal"
     },
     {
-      "id": "planet-5",
-      "description": "A fiery orange celestial sun-like body",
-      "imageUrl": "https://picsum.photos/seed/planet5/200/200",
-      "imageHint": "orange sun"
+      "id": "shard-5",
+      "description": "A fiery orange solar fragment",
+      "imageUrl": "https://picsum.photos/seed/shard5/200/200",
+      "imageHint": "orange gem"
     },
     {
-      "id": "planet-6",
-      "description": "A mysterious dark matter void with white sparks",
-      "imageUrl": "https://picsum.photos/seed/planet6/200/200",
-      "imageHint": "dark void"
+      "id": "shard-6",
+      "description": "A dark matter obsidian block with sparks",
+      "imageUrl": "https://picsum.photos/seed/shard6/200/200",
+      "imageHint": "black crystal"
     }
   ]
 }
