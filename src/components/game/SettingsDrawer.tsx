@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Settings, Volume2, Music, Home, Languages, X } from 'lucide-react';
+import { Settings, Volume2, Music, Home, Languages } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { playUIClickSound } from '@/lib/audio-system';
 
@@ -35,26 +35,26 @@ export function SettingsDrawer({ isOpen, onToggle, onHome, disabled }: SettingsD
   ];
 
   return (
-    <div className="fixed top-8 right-8 z-[60] flex items-start justify-end gap-6 pointer-events-none">
-      {/* Settings Gear - 3D Metallic Sprocket Design */}
+    <div className="fixed top-8 right-8 z-[60] flex flex-row-reverse items-start gap-6 pointer-events-none">
+      {/* Settings Gear - Fixed Positioned relative to container right edge */}
       <button
         onClick={toggleSettings}
         disabled={disabled}
         className={cn(
-          "settings-gear-btn group",
+          "settings-gear-btn group flex-shrink-0",
           isOpen && "rotate-90",
           disabled && "opacity-50 grayscale"
         )}
       >
         <div className="gear-core" />
         <Settings className="w-10 h-10 text-slate-900 relative z-10 drop-shadow-md" />
-        <div className="gear-aura" />
+        <div className={cn("gear-aura", !disabled && "group-hover:opacity-100")} />
       </button>
 
-      {/* Drawer Panel - Glassmorphism Side Panel */}
+      {/* Drawer Panel - Slides out to the left of the fixed gear */}
       <div className={cn(
         "pointer-events-auto glass-morphism border-primary/20 rounded-[2rem] p-5 transition-all duration-700 ease-out flex flex-col gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]",
-        isOpen ? "translate-x-0 opacity-100 w-24" : "translate-x-[200%] opacity-0 w-0 p-0 overflow-hidden"
+        isOpen ? "translate-x-0 opacity-100 w-24" : "translate-x-12 opacity-0 w-0 p-0 overflow-hidden"
       )}>
         {buttons.map((btn, idx) => (
           <button
