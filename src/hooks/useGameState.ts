@@ -13,7 +13,7 @@ import { generateDynamicLore } from '@/ai/flows/dynamic-lore-generation';
 import { collection, addDoc } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 import { initializeFirebase } from '@/firebase';
-import { playSwapSound, playMatchSound } from '@/lib/audio-system';
+import { playSwapSound, playMatchSound, playSpecialActivationSound } from '@/lib/audio-system';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
 
@@ -117,7 +117,6 @@ export function useGameState() {
     return () => clearInterval(timerRef.current!);
   }, [isGameOver, isWin, isPaused, score, targetScore, gameMode]);
 
-  // Pity Timer (Comet spawn after 15s)
   useEffect(() => {
     if (isGameOver || isWin || isProcessing || isPaused) return;
     const interval = setInterval(() => {
@@ -130,6 +129,7 @@ export function useGameState() {
         });
         lastMatchTime.current = Date.now();
         setLore("CELESTIAL ANOMALY: A comet shard has appeared.");
+        playSpecialActivationSound();
       }
     }, 1000);
     return () => clearInterval(interval);
@@ -159,6 +159,7 @@ export function useGameState() {
       let updated = currentEntities.filter(e => !matchedSet.has(e.id));
 
       if (specialToSpawn) {
+        playSpecialActivationSound();
         updated.push({
           id: Math.random().toString(36).substring(7),
           type: specialToSpawn.entityType,
@@ -207,6 +208,7 @@ export function useGameState() {
     const idx2 = newEntities.findIndex(e => e.id === id2);
 
     if (newEntities[idx1].special === 'comet' || newEntities[idx2].special === 'comet') {
+      playSpecialActivationSound();
       const comet = newEntities[idx1].special === 'comet' ? newEntities[idx1] : newEntities[idx2];
       const cleared = entities.filter(e => e.id !== comet.id).slice(0, 5).map(e => e.id);
       setScore(s => s + 500);
