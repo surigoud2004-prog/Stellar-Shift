@@ -25,6 +25,7 @@ import {
 import { cn } from '@/lib/utils';
 import { HallOfFame } from './HallOfFame';
 import { playUIClickSound } from '@/lib/audio-system';
+import { ParallaxBackground } from './ParallaxBackground';
 
 export function Board() {
   const { 
@@ -39,14 +40,19 @@ export function Board() {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [isFading, setIsFading] = useState(false);
   const [flashColor, setFlashColor] = useState<'cyan' | 'gold' | null>(null);
+  const [isWarping, setIsWarping] = useState(false);
 
   useEffect(() => {
     if (lore) {
       setLogHistory(prev => [...prev.slice(-100), `[${new Date().toLocaleTimeString()}] ${lore}`]);
       
-      // Trigger border flash on special events
+      // Trigger border flash and warp effect on special events or matches
       if (lore.includes('ANOMALY')) setFlashColor('cyan');
-      else if (lore.includes('Supernova') || lore.includes('Black Hole')) setFlashColor('gold');
+      else if (lore.includes('Supernova') || lore.includes('Black Hole') || lore.includes('Aligned')) {
+        setFlashColor('gold');
+        setIsWarping(true);
+        setTimeout(() => setIsWarping(false), 500);
+      }
       
       const timer = setTimeout(() => setFlashColor(null), 600);
       return () => clearTimeout(timer);
@@ -121,12 +127,14 @@ export function Board() {
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 w-full max-w-7xl mx-auto p-4 lg:p-8 min-h-[90vh] relative">
+      <ParallaxBackground isWarping={isWarping} />
+      
       {isFading && (
         <div className="fixed inset-0 bg-black z-[100] animate-in fade-in duration-500" />
       )}
 
       {/* Left Panel */}
-      <div className="lg:w-1/4 space-y-6">
+      <div className="lg:w-1/4 space-y-6 z-10">
         <Card className="glass-morphism p-6 border-primary/20 relative overflow-hidden group">
           <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
           <div className="flex justify-between items-center mb-4">
@@ -208,7 +216,7 @@ export function Board() {
 
       {/* Center - Hex Grid or Hall of Fame with STELLAR FRAME */}
       <div className={cn(
-        "lg:w-1/2 flex flex-col relative stellar-frame breathing-glow min-h-[650px]",
+        "lg:w-1/2 flex flex-col relative stellar-frame breathing-glow min-h-[650px] z-10",
         flashColor === 'cyan' && "match-flash-cyan",
         flashColor === 'gold' && "match-flash-gold"
       )}>
@@ -326,7 +334,7 @@ export function Board() {
       </div>
 
       {/* Right Panel - Archive Logs CLI */}
-      <div className="lg:w-1/4 space-y-6">
+      <div className="lg:w-1/4 space-y-6 z-10">
         <Card className="glass-morphism p-0 h-full flex flex-col border-white/10 overflow-hidden group">
           <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5">
             <h2 className="font-headline text-sm font-bold text-primary flex items-center gap-2 uppercase tracking-widest">

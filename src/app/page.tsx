@@ -3,13 +3,6 @@ import { Board } from '@/components/game/Board';
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-[#0a0512]">
-      {/* Background Ambience */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1]">
-        <div className="starfield starfield-parallax" />
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-secondary/20 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
-      </div>
-
       <header className="w-full max-w-7xl mx-auto p-8 flex justify-between items-center z-10">
         <div className="group cursor-default">
           <h1 className="font-headline text-5xl font-black tracking-tighter text-white uppercase italic transition-all group-hover:tracking-normal group-hover:text-primary">
