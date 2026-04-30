@@ -17,6 +17,10 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
   const { x, y } = axialToPixel(entity.q, entity.r);
   const placeholder = PlaceHolderImages[entity.type];
 
+  if (!placeholder) {
+    return null;
+  }
+
   return (
     <div
       onClick={() => !disabled && onSelect(entity.id)}
