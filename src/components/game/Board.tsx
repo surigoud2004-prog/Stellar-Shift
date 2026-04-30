@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HallOfFame } from './HallOfFame';
+import { playUIClickSound } from '@/lib/audio-system';
 
 export function Board() {
   const { 
@@ -67,18 +68,36 @@ export function Board() {
   };
 
   const handleAbortMission = () => {
+    playUIClickSound();
     setIsPaused(true);
     setShowExitConfirm(true);
   };
 
   const cancelAbort = () => {
+    playUIClickSound();
     setShowExitConfirm(false);
     setIsPaused(false);
   };
 
   const confirmAbort = () => {
+    playUIClickSound();
     setShowExitConfirm(false);
-    initBoard(); // Reset or go to menu logic
+    initBoard(); 
+  };
+
+  const toggleHallOfFame = () => {
+    playUIClickSound();
+    setShowHallOfFame(!showHallOfFame);
+  };
+
+  const changeMode = (mode: GameMode) => {
+    playUIClickSound();
+    setGameMode(mode);
+  };
+
+  const handleReboot = () => {
+    playUIClickSound();
+    initBoard();
   };
 
   const progress = Math.min(100, (score / targetScore) * 100);
@@ -136,7 +155,7 @@ export function Board() {
                 variant={gameMode === mode ? "default" : "outline"} 
                 size="sm"
                 className="w-full uppercase text-[10px] font-bold tracking-widest"
-                onClick={() => setGameMode(mode)}
+                onClick={() => changeMode(mode)}
                 disabled={isPaused}
               >
                 {mode}
@@ -144,7 +163,6 @@ export function Board() {
             ))}
             
             <div className="mt-6 flex flex-col gap-4">
-              {/* Glossy Red Abort Button */}
               <button 
                 onClick={handleAbortMission}
                 className="btn-glossy-red w-full h-14 flex items-center justify-center gap-3 text-white font-black uppercase tracking-[0.2em] text-xs"
@@ -157,7 +175,7 @@ export function Board() {
                 variant="outline" 
                 size="sm" 
                 className="w-full uppercase text-[10px] font-bold tracking-widest hover:border-primary/50"
-                onClick={() => setShowHallOfFame(!showHallOfFame)}
+                onClick={toggleHallOfFame}
                 disabled={isPaused}
               >
                 <Globe className="w-4 h-4 mr-2" /> {showHallOfFame ? "Close Fame" : "Hall of Fame"}
@@ -177,7 +195,7 @@ export function Board() {
               <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
                 <Skull className="w-20 h-20 text-destructive mb-6 animate-bounce" />
                 <h2 className="text-5xl font-headline font-black text-white mb-2 tracking-tighter">MISSION TERMINATED</h2>
-                <Button onClick={initBoard} size="lg" className="bg-destructive hover:bg-destructive/80 px-12 h-14 font-black uppercase tracking-[0.2em]">REBOOT SYSTEM</Button>
+                <Button onClick={handleReboot} size="lg" className="bg-destructive hover:bg-destructive/80 px-12 h-14 font-black uppercase tracking-[0.2em]">REBOOT SYSTEM</Button>
               </div>
             )}
             {isWin && (

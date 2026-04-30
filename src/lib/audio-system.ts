@@ -255,3 +255,52 @@ export function playComboSound(comboLevel: number) {
     console.warn('Combo audio failed', e);
   }
 }
+
+/**
+ * Plays a clean mechanical click with a soft digital hum.
+ */
+export function playUIClickSound() {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const audioCtx = new AudioContextClass();
+    const startTime = audioCtx.currentTime;
+
+    // The "Click" part (High frequency transient)
+    const clickOsc = audioCtx.createOscillator();
+    const clickGain = audioCtx.createGain();
+    clickOsc.type = 'square';
+    clickOsc.frequency.setValueAtTime(1200, startTime);
+    clickGain.gain.setValueAtTime(0, startTime);
+    clickGain.gain.linearRampToValueAtTime(0.04, startTime + 0.002);
+    clickGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.03);
+
+    const clickFilter = audioCtx.createBiquadFilter();
+    clickFilter.type = 'lowpass';
+    clickFilter.frequency.setValueAtTime(2500, startTime);
+
+    // The "Hum" part (Low frequency body)
+    const humOsc = audioCtx.createOscillator();
+    const humGain = audioCtx.createGain();
+    humOsc.type = 'sine';
+    humOsc.frequency.setValueAtTime(220, startTime);
+    humGain.gain.setValueAtTime(0, startTime);
+    humGain.gain.linearRampToValueAtTime(0.02, startTime + 0.02);
+    humGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.15);
+
+    clickOsc.connect(clickGain);
+    clickGain.connect(clickFilter);
+    clickFilter.connect(audioCtx.destination);
+
+    humOsc.connect(humGain);
+    humGain.connect(audioCtx.destination);
+
+    clickOsc.start(startTime);
+    clickOsc.stop(startTime + 0.05);
+    humOsc.start(startTime);
+    humOsc.stop(startTime + 0.15);
+  } catch (e) {
+    console.warn('UI Click audio failed', e);
+  }
+}
