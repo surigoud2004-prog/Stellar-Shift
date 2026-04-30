@@ -52,14 +52,16 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
           <div className="absolute inset-[-4px] border-2 border-primary rounded-full animate-pulse shadow-[0_0_15px_rgba(187,112,255,0.8)]" />
         )}
 
-        <Image
-          src={placeholder.imageUrl}
-          alt={placeholder.description}
-          width={60}
-          height={60}
-          className="rounded-full shadow-lg pointer-events-none select-none"
-          data-ai-hint={placeholder.imageHint}
-        />
+        {placeholder?.imageUrl && (
+          <Image
+            src={placeholder.imageUrl}
+            alt={placeholder.description || "Celestial Body"}
+            width={60}
+            height={60}
+            className="rounded-full shadow-lg pointer-events-none select-none"
+            data-ai-hint={placeholder.imageHint}
+          />
+        )}
       </div>
     </div>
   );
