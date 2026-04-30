@@ -7,14 +7,12 @@ import {
   generateRandomEntity, 
   findMatches, 
   GRID_SIZE, 
-  offsetToAxial,
   calculateDifficulty,
-  getColorVariety,
-  SpecialType
+  getColorVariety
 } from '@/lib/game-utils';
 import { generateDynamicLore } from '@/ai/flows/dynamic-lore-generation';
-import { collection, addDoc, query, orderBy, limit, getDocs, Firestore, serverTimestamp } from 'firebase/firestore';
-import { getFirestore, getAuth, signInAnonymously } from 'firebase/auth';
+import { collection, addDoc } from 'firebase/firestore';
+import { signInAnonymously } from 'firebase/auth';
 import { initializeFirebase } from '@/firebase';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
@@ -37,11 +35,9 @@ export function useGameState() {
   const lastMoveTime = useRef(Date.now());
   const lastMatchTime = useRef(Date.now());
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const pityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const targetScore = Math.floor(1000 * calculateDifficulty(level) * (gameMode === 'hard' ? 1.5 : gameMode === 'hell' ? 2 : 1));
 
-  // Persistence
   useEffect(() => {
     const savedBest = localStorage.getItem('stellar_best_score');
     const savedLevel = localStorage.getItem('stellar_level');
@@ -49,10 +45,26 @@ export function useGameState() {
     if (savedLevel) setLevel(parseInt(savedLevel));
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('stellar_best_score', bestScore.toString());
-    localStorage.setItem('stellar_level', level.toString());
-  }, [bestScore, level]);
+  const syncHighScore = async () => {
+    try {
+      const { db, auth } = initializeFirebase();
+      if (!auth.currentUser) await signInAnonymously(auth);
+      addDoc(collection(db, 'leaderboard'), {
+        uid: auth.currentUser?.uid || 'anon',
+        displayName: 'Stellar Pilot',
+        score,
+        level,
+        timestamp: Date.now()
+      });
+      if (score > bestScore) {
+        setBestScore(score);
+        localStorage.setItem('stellar_best_score', score.toString());
+      }
+      localStorage.setItem('stellar_level', level.toString());
+    } catch (e) {
+      console.error("Sync failed", e);
+    }
+  };
 
   const initBoard = useCallback(() => {
     const variety = getColorVariety(level);
@@ -60,9 +72,8 @@ export function useGameState() {
     let hasMatches = true;
     while (hasMatches) {
       initial = [];
-      for (let row = 0; row < GRID_SIZE; row++) {
-        for (let col = 0; col < GRID_SIZE; col++) {
-          const { q, r } = offsetToAxial(col, row);
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let q = 0; q < GRID_SIZE; q++) {
           initial.push(generateRandomEntity(q, r, variety));
         }
       }
@@ -76,15 +87,13 @@ export function useGameState() {
     lastMatchTime.current = Date.now();
     lastMoveTime.current = Date.now();
     setIsLocked(false);
-    const times = { easy: 180, hard: 90, hell: 45 };
-    setTimeLeft(times[gameMode]);
+    setTimeLeft(gameMode === 'easy' ? 180 : gameMode === 'hard' ? 90 : 45);
   }, [level, gameMode]);
 
   useEffect(() => {
     initBoard();
   }, [initBoard]);
 
-  // Main Timer & Hell Mode Lock
   useEffect(() => {
     if (isGameOver || isWin) return;
     timerRef.current = setInterval(() => {
@@ -105,7 +114,7 @@ export function useGameState() {
   // Pity Timer (Comet spawn after 15s)
   useEffect(() => {
     if (isGameOver || isWin || isProcessing) return;
-    pityTimerRef.current = setInterval(() => {
+    const interval = setInterval(() => {
       if (Date.now() - lastMatchTime.current > 15000) {
         setEntities(prev => {
           const next = [...prev];
@@ -114,48 +123,19 @@ export function useGameState() {
           return next;
         });
         lastMatchTime.current = Date.now();
-        setLore("CELESTIAL ANOMALY: A comet has entered the sector.");
+        setLore("CELESTIAL ANOMALY: A comet shard has appeared.");
       }
     }, 1000);
-    return () => clearInterval(pityTimerRef.current!);
+    return () => clearInterval(interval);
   }, [isGameOver, isWin, isProcessing]);
-
-  const syncHighScore = async () => {
-    try {
-      const { db, auth } = initializeFirebase();
-      if (!auth.currentUser) await signInAnonymously(auth);
-      await addDoc(collection(db, 'leaderboard'), {
-        uid: auth.currentUser?.uid || 'anon',
-        displayName: 'Stellar Pilot',
-        score,
-        level,
-        timestamp: Date.now()
-      });
-    } catch (e) {
-      console.error("Sync failed", e);
-    }
-  };
 
   useEffect(() => {
     if (score >= targetScore && !isWin) {
       setIsWin(true);
-      if (score > bestScore) setBestScore(score);
-      setLore("STABILITY ACHIEVED: Syncing coordinates to Galactic Network.");
       syncHighScore();
       setTimeout(() => setLevel(l => l + 1), 3000);
     }
   }, [score, targetScore, isWin]);
-
-  useEffect(() => {
-    if (isGameOver) syncHighScore();
-  }, [isGameOver]);
-
-  const triggerLore = useCallback(async (event: string, context?: string) => {
-    try {
-      const result = await generateDynamicLore({ gameEventDescription: event, gameContext: context });
-      setLore(result.loreSnippet);
-    } catch (e) {}
-  }, []);
 
   const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMoveId?: string) => {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMoveId);
@@ -164,13 +144,9 @@ export function useGameState() {
       setIsProcessing(true);
       lastMatchTime.current = Date.now();
       
-      let points = matches.length * 20;
-      setScore(prev => prev + points);
-
       let matchedSet = new Set(matches);
       let updated = currentEntities.filter(e => !matchedSet.has(e.id));
 
-      // Handle Special Spawns
       if (specialToSpawn) {
         updated.push({
           id: Math.random().toString(36).substring(7),
@@ -179,43 +155,33 @@ export function useGameState() {
           r: specialToSpawn.r,
           special: specialToSpawn.type
         });
-        triggerLore(`${specialToSpawn.type} Synthesized`, "High resonance event detected.");
+        const loreRes = await generateDynamicLore({ gameEventDescription: `Created a ${specialToSpawn.type}` });
+        setLore(loreRes.loreSnippet);
       }
 
-      // Gravity refill
-      const finalEntities = [...updated];
-      const gridMap = new Map<string, CelestialEntity>();
-      finalEntities.forEach(e => gridMap.set(`${e.q},${e.r}`, e));
-      const variety = getColorVariety(level);
+      setScore(s => s + matches.length * 20);
 
-      for (let col = 0; col < GRID_SIZE; col++) {
-        let holes = 0;
-        for (let row = GRID_SIZE - 1; row >= 0; row--) {
-          const { q, r } = offsetToAxial(col, row);
-          const key = `${q},${r}`;
-          if (!gridMap.has(key)) {
-            holes++;
-          } else if (holes > 0) {
-            const e = gridMap.get(key)!;
-            gridMap.delete(key);
-            const targetAxial = offsetToAxial(col, row + holes);
-            e.q = targetAxial.q;
-            e.r = targetAxial.r;
-            gridMap.set(`${e.q},${e.r}`, e);
+      // Gravity Physics
+      const variety = getColorVariety(level);
+      const newGrid: CelestialEntity[] = [];
+      for (let q = 0; q < GRID_SIZE; q++) {
+        const column = updated.filter(e => e.q === q).sort((a, b) => b.r - a.r);
+        for (let r = GRID_SIZE - 1; r >= 0; r--) {
+          const existing = column.shift();
+          if (existing) {
+            newGrid.push({ ...existing, r });
+          } else {
+            newGrid.push(generateRandomEntity(q, r, variety));
           }
         }
-        for (let h = 0; h < holes; h++) {
-          const { q, r } = offsetToAxial(col, h);
-          finalEntities.push(generateRandomEntity(q, r, variety));
-        }
       }
 
-      setEntities(finalEntities);
-      setTimeout(() => handleMatch(finalEntities), 400);
+      setEntities(newGrid);
+      setTimeout(() => handleMatch(newGrid), 400);
     } else {
       setIsProcessing(false);
     }
-  }, [triggerLore, level]);
+  }, [level]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
     if (isProcessing || isGameOver || isWin || isLocked) return;
@@ -225,15 +191,15 @@ export function useGameState() {
     const newEntities = entities.map(e => ({ ...e }));
     const idx1 = newEntities.findIndex(e => e.id === id1);
     const idx2 = newEntities.findIndex(e => e.id === id2);
-    if (idx1 === -1 || idx2 === -1) return;
 
-    // Check for Comet trigger
+    // Special: Comet tap
     if (newEntities[idx1].special === 'comet' || newEntities[idx2].special === 'comet') {
-      const cometId = newEntities[idx1].special === 'comet' ? id1 : id2;
-      const targetIds = entities.slice(0, 5).map(e => e.id);
+      const comet = newEntities[idx1].special === 'comet' ? newEntities[idx1] : newEntities[idx2];
+      const cleared = entities.filter(e => e.id !== comet.id).slice(0, 5).map(e => e.id);
       setScore(s => s + 500);
-      setEntities(prev => prev.filter(e => !targetIds.includes(e.id) && e.id !== cometId));
-      setTimeout(() => handleMatch(entities.filter(e => !targetIds.includes(e.id) && e.id !== cometId)), 200);
+      const filtered = entities.filter(e => !cleared.includes(e.id) && e.id !== comet.id);
+      setEntities(filtered);
+      setTimeout(() => handleMatch(filtered), 200);
       return;
     }
 
@@ -246,13 +212,12 @@ export function useGameState() {
 
     const { matches } = findMatches(newEntities);
     if (matches.length === 0) {
-      setLore("Alignment rejected: Low resonance path.");
+      setLore("Low Resonance: Alignment rejected.");
       return;
     }
     
-    setIsProcessing(true);
     setEntities(newEntities);
-    setTimeout(() => handleMatch(newEntities, id1), 200);
+    handleMatch(newEntities, id1);
   }, [entities, handleMatch, isProcessing, isGameOver, isWin, isLocked]);
 
   return {

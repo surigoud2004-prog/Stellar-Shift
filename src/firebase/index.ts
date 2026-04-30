@@ -9,7 +9,7 @@ export function initializeFirebase() {
   const firestore = getFirestore(firebaseApp);
   const auth = getAuth(firebaseApp);
 
-  return { firebaseApp, firestore, auth };
+  return { firebaseApp, firestore, auth, db: firestore };
 }
 
 export * from './provider';
