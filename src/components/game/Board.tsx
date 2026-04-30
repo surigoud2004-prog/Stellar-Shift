@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { 
   Sparkles, Zap, Atom, Orbit, Shield, Cpu, Timer, Trophy, 
-  Skull, Lock, Globe, Terminal, X, Pause, Play 
+  Skull, Lock, Globe, Terminal, X, Pause, Play, Hexagon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HallOfFame } from './HallOfFame';
@@ -38,10 +38,18 @@ export function Board() {
   const [logHistory, setLogHistory] = useState<string[]>([]);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [isFading, setIsFading] = useState(false);
+  const [flashColor, setFlashColor] = useState<'cyan' | 'gold' | null>(null);
 
   useEffect(() => {
     if (lore) {
       setLogHistory(prev => [...prev.slice(-100), `[${new Date().toLocaleTimeString()}] ${lore}`]);
+      
+      // Trigger border flash on special events
+      if (lore.includes('ANOMALY')) setFlashColor('cyan');
+      else if (lore.includes('Supernova') || lore.includes('Black Hole')) setFlashColor('gold');
+      
+      const timer = setTimeout(() => setFlashColor(null), 600);
+      return () => clearTimeout(timer);
     }
   }, [lore]);
 
@@ -89,7 +97,6 @@ export function Board() {
 
   const OnAbortGame = async () => {
     setIsFading(true);
-    // 0.5s fade-to-black before loading Main Menu
     await new Promise(resolve => setTimeout(resolve, 500));
     resetToMainMenu();
     setIsFading(false);
@@ -114,7 +121,6 @@ export function Board() {
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 w-full max-w-7xl mx-auto p-4 lg:p-8 min-h-[90vh] relative">
-      {/* Global Fade Overlay */}
       {isFading && (
         <div className="fixed inset-0 bg-black z-[100] animate-in fade-in duration-500" />
       )}
@@ -200,8 +206,26 @@ export function Board() {
         </Card>
       </div>
 
-      {/* Center - Hex Grid or Hall of Fame */}
-      <div className="lg:w-1/2 flex flex-col relative bg-black/60 rounded-3xl overflow-hidden border border-white/5 shadow-2xl min-h-[650px]">
+      {/* Center - Hex Grid or Hall of Fame with STELLAR FRAME */}
+      <div className={cn(
+        "lg:w-1/2 flex flex-col relative stellar-frame breathing-glow min-h-[650px]",
+        flashColor === 'cyan' && "match-flash-cyan",
+        flashColor === 'gold' && "match-flash-gold"
+      )}>
+        {/* Scrolling Nebula Background Layer */}
+        <div className="nebula-scroll" />
+        
+        {/* Floating Crystal Shards (Moving Parts) */}
+        <div className="floating-shard top-10 left-10" style={{ animationDelay: '0s' }} />
+        <div className="floating-shard bottom-20 right-10" style={{ animationDelay: '2s' }} />
+        <div className="floating-shard top-40 right-20" style={{ animationDelay: '5s' }} />
+        
+        {/* Corner Accents (Metallic Gold) */}
+        <div className="corner-accent top-0 left-0 border-t-amber-400 border-l-amber-400 rounded-tl-3xl" />
+        <div className="corner-accent top-0 right-0 border-t-amber-400 border-r-amber-400 rounded-tr-3xl" />
+        <div className="corner-accent bottom-0 left-0 border-b-amber-400 border-l-amber-400 rounded-bl-3xl" />
+        <div className="corner-accent bottom-0 right-0 border-b-amber-400 border-r-amber-400 rounded-br-3xl" />
+
         {!gameStarted ? (
           <div className="absolute inset-0 z-50 flex flex-col items-center justify-center p-8 text-center bg-black/80 backdrop-blur-xl animate-in fade-in duration-700">
              <div className="mb-12 relative">
@@ -234,7 +258,7 @@ export function Board() {
         ) : showHallOfFame ? (
           <HallOfFame />
         ) : (
-          <>
+          <div className="relative z-10 flex flex-col h-full">
             {isGameOver && (
               <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
                 <Skull className="w-20 h-20 text-destructive mb-6 animate-bounce" />
@@ -278,6 +302,10 @@ export function Board() {
               </div>
             </div>
 
+            {/* Glowing Neon Strips (UI Accents) */}
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-32 bg-cyan-400 blur-[2px] opacity-40 animate-pulse" />
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[2px] h-32 bg-violet-400 blur-[2px] opacity-40 animate-pulse" />
+
             <div className="w-full h-24 bg-gradient-to-t from-primary/20 via-primary/5 to-transparent border-t border-primary/20 flex items-center justify-center gap-12 px-12 z-40 mt-auto backdrop-blur-sm">
               <div className="flex flex-col items-center">
                 <div className="flex items-center gap-2 text-primary font-headline text-[10px] uppercase tracking-[0.5em] font-black">
@@ -293,7 +321,7 @@ export function Board() {
                 <Cpu className="w-4 h-4 animate-spin-slow" /> Core Stable
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
 
