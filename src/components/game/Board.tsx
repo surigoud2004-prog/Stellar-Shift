@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { 
   Sparkles, Zap, Atom, Orbit, Shield, Cpu, Timer, Trophy, 
-  Skull, Lock, Globe, Terminal, X, Pause 
+  Skull, Lock, Globe, Terminal, X, Pause, Play 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HallOfFame } from './HallOfFame';
@@ -30,7 +30,8 @@ export function Board() {
   const { 
     entities, score, targetScore, timeLeft, level, gameMode, setGameMode,
     isGameOver, isWin, isLocked, isPaused, setIsPaused, lore, selectedId, setSelectedId, 
-    swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame
+    swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
+    gameStarted, startGame
   } = useGameState();
 
   const logEndRef = useRef<HTMLDivElement>(null);
@@ -187,7 +188,36 @@ export function Board() {
 
       {/* Center - Hex Grid or Hall of Fame */}
       <div className="lg:w-1/2 flex flex-col relative bg-black/60 rounded-3xl overflow-hidden border border-white/5 shadow-2xl min-h-[650px]">
-        {showHallOfFame ? (
+        {!gameStarted ? (
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center p-8 text-center bg-black/80 backdrop-blur-xl animate-in fade-in duration-700">
+             <div className="mb-12 relative">
+                <div className="absolute inset-0 bg-primary/20 blur-[60px] animate-pulse" />
+                <h1 className="text-6xl font-headline font-black italic text-white tracking-tighter uppercase mb-2">STELLAR SHIFT</h1>
+                <p className="text-[10px] tracking-[0.6em] text-primary font-bold uppercase">Alignment Protocol Engaged</p>
+             </div>
+             
+             <button 
+              onClick={startGame}
+              className="btn-cosmic-start group"
+             >
+               <span className="relative z-10 flex items-center gap-3">
+                 <Play className="w-8 h-8 fill-white" />
+                 START
+               </span>
+             </button>
+
+             <div className="mt-12 grid grid-cols-2 gap-8 max-w-sm">
+                <div className="text-center">
+                  <div className="text-primary text-xl font-bold font-headline">{bestScore.toLocaleString()}</div>
+                  <div className="text-[8px] uppercase tracking-widest text-muted-foreground font-bold">Personal Best</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-secondary text-xl font-bold font-headline">{level}</div>
+                  <div className="text-[8px] uppercase tracking-widest text-muted-foreground font-bold">Highest Sector</div>
+                </div>
+             </div>
+          </div>
+        ) : showHallOfFame ? (
           <HallOfFame />
         ) : (
           <>

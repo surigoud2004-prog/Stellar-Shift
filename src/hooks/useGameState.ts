@@ -18,7 +18,8 @@ import {
   playMatchSound, 
   playSpecialActivationSound, 
   playRejectSound,
-  playComboSound
+  playComboSound,
+  playUIClickSound
 } from '@/lib/audio-system';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
@@ -38,6 +39,7 @@ export function useGameState() {
   const [isLocked, setIsLocked] = useState(false);
   const [bestScore, setBestScore] = useState(0);
   const [showHallOfFame, setShowHallOfFame] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
   
   const lastMoveTime = useRef(Date.now());
   const lastMatchTime = useRef(Date.now());
@@ -99,11 +101,13 @@ export function useGameState() {
   }, [level, gameMode]);
 
   useEffect(() => {
-    initBoard();
-  }, [initBoard]);
+    if (gameStarted) {
+      initBoard();
+    }
+  }, [initBoard, gameStarted]);
 
   useEffect(() => {
-    if (isGameOver || isWin || isPaused) {
+    if (!gameStarted || isGameOver || isWin || isPaused) {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
@@ -121,10 +125,10 @@ export function useGameState() {
       }
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [isGameOver, isWin, isPaused, score, targetScore, gameMode]);
+  }, [isGameOver, isWin, isPaused, score, targetScore, gameMode, gameStarted]);
 
   useEffect(() => {
-    if (isGameOver || isWin || isProcessing || isPaused) return;
+    if (!gameStarted || isGameOver || isWin || isProcessing || isPaused) return;
     const interval = setInterval(() => {
       if (Date.now() - lastMatchTime.current > 15000) {
         setEntities(prev => {
@@ -139,21 +143,20 @@ export function useGameState() {
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [isGameOver, isWin, isProcessing, isPaused]);
+  }, [isGameOver, isWin, isProcessing, isPaused, gameStarted]);
 
   useEffect(() => {
-    if (score >= targetScore && !isWin) {
+    if (gameStarted && score >= targetScore && !isWin) {
       setIsWin(true);
       syncHighScore();
       setTimeout(() => setLevel(l => l + 1), 3000);
     }
-  }, [score, targetScore, isWin]);
+  }, [score, targetScore, isWin, gameStarted]);
 
   const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMoveId?: string, comboLevel: number = 0) => {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMoveId);
     
     if (matches.length > 0) {
-      // Use combo sound if it's a chain reaction
       if (comboLevel === 0) {
         playMatchSound();
       } else {
@@ -201,7 +204,6 @@ export function useGameState() {
 
       setEntities(newGrid);
       await new Promise(resolve => setTimeout(resolve, 300));
-      // Recurse with incremented combo level
       handleMatch(newGrid, undefined, comboLevel + 1);
     } else {
       setIsProcessing(false);
@@ -209,7 +211,7 @@ export function useGameState() {
   }, [level]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
-    if (isProcessing || isGameOver || isWin || isLocked || isPaused) return;
+    if (!gameStarted || isProcessing || isGameOver || isWin || isLocked || isPaused) return;
     
     playSwapSound();
     lastMoveTime.current = Date.now();
@@ -254,13 +256,18 @@ export function useGameState() {
       return;
     }
     
-    // Start match sequence with combo level 0
     handleMatch(newEntities, id1, 0);
-  }, [entities, handleMatch, isProcessing, isGameOver, isWin, isLocked, isPaused]);
+  }, [entities, handleMatch, isProcessing, isGameOver, isWin, isLocked, isPaused, gameStarted]);
+
+  const startGame = () => {
+    playUIClickSound();
+    setGameStarted(true);
+  };
 
   return {
     entities, score, targetScore, timeLeft, level, gameMode, setGameMode,
     isGameOver, isWin, isLocked, isPaused, setIsPaused, lore, selectedId, setSelectedId,
-    swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame
+    swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
+    gameStarted, startGame
   };
 }

@@ -36,6 +36,34 @@
   }
 }
 
+/* Cosmic Start Button: Capsule Style */
+.btn-cosmic-start {
+  @apply relative px-16 py-5 rounded-full font-headline font-black text-3xl tracking-[0.3em] text-white uppercase transition-all duration-300 cursor-pointer select-none overflow-hidden flex items-center justify-center;
+  background: linear-gradient(135deg, #1e1b4b 0%, #5b21b6 50%, #1e1b4b 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 0 30px rgba(255, 215, 0, 0.2),
+    inset 0 0 15px rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+}
+
+.btn-cosmic-start:hover {
+  @apply scale-105;
+  box-shadow: 
+    0 0 45px rgba(255, 215, 0, 0.4),
+    inset 0 0 20px rgba(255, 255, 255, 0.2);
+  filter: brightness(1.2);
+}
+
+.btn-cosmic-start:active {
+  @apply scale-95;
+}
+
+.btn-cosmic-start::after {
+  content: '';
+  @apply absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent pointer-events-none;
+}
+
 /* Candy Crush Style 3D Button */
 .btn-glossy-red {
   @apply relative overflow-hidden transition-all duration-75 select-none;
