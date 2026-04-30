@@ -323,28 +323,28 @@ export function Board() {
 
       {/* Exit Confirmation Modal */}
       <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
-        <AlertDialogContent className="glass-morphism border-primary/20">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white font-headline text-2xl font-black italic uppercase tracking-tighter">
-              Abort Current Mission?
+        <AlertDialogContent className="bg-[#1a0b2e]/80 backdrop-blur-2xl border-2 border-cyan-500/50 shadow-[0_0_30px_rgba(6,182,212,0.2)] rounded-3xl p-10 max-w-sm">
+          <AlertDialogHeader className="text-center space-y-6">
+            <AlertDialogTitle className="text-white font-headline text-3xl font-light tracking-[0.15em] uppercase text-center">
+              ABANDON MISSION?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-muted-foreground uppercase text-[10px] tracking-widest font-bold">
-              Mission progress in this sector will be lost and telemetry will be purged. Confirm manual override?
+            <AlertDialogDescription className="text-cyan-200/60 uppercase text-[9px] tracking-[0.3em] font-medium leading-relaxed">
+              Neural link will be severed. All sector telemetry will be lost to the void.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="mt-6">
-            <AlertDialogCancel 
-              onClick={cancelAbort}
-              className="border-white/10 hover:bg-white/5 uppercase text-[10px] font-black tracking-widest h-12 px-8"
-            >
-              Continue Mission
-            </AlertDialogCancel>
+          <AlertDialogFooter className="flex flex-col sm:flex-col gap-4 mt-10">
             <AlertDialogAction 
               onClick={confirmAbort}
-              className="bg-destructive hover:bg-destructive/80 uppercase text-[10px] font-black tracking-widest h-12 px-8"
+              className="w-full bg-red-500/20 hover:bg-red-500/40 text-red-200 border border-red-500/50 uppercase text-[10px] font-black tracking-[0.3em] h-14 rounded-full transition-all duration-300 shadow-lg"
             >
-              Confirm Abort
+              YES
             </AlertDialogAction>
+            <AlertDialogCancel 
+              onClick={cancelAbort}
+              className="w-full bg-amber-400 text-black hover:bg-amber-300 border-none shadow-[0_0_20px_rgba(251,191,36,0.4)] uppercase text-[10px] font-black tracking-[0.3em] h-14 rounded-full transition-all duration-300"
+            >
+              NO
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
