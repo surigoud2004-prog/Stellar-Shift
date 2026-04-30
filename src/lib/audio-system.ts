@@ -60,3 +60,56 @@ export function playSwapSound() {
     console.warn('Audio playback failed', e);
   }
 }
+
+/**
+ * Plays a bright, melodic 3-note ascending chime for successful matches.
+ * Synthesizes a glass-like twinkling star sound.
+ */
+export function playMatchSound() {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const audioCtx = new AudioContextClass();
+    const startTime = audioCtx.currentTime;
+
+    const playNote = (freq: number, start: number, duration: number) => {
+      const osc = audioCtx.createOscillator();
+      const shimmer = audioCtx.createOscillator(); // Harmonic for crystalline texture
+      const gainNode = audioCtx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, start);
+      
+      shimmer.type = 'sine';
+      shimmer.frequency.setValueAtTime(freq * 2, start); // Octave up
+      
+      gainNode.gain.setValueAtTime(0, start);
+      gainNode.gain.linearRampToValueAtTime(0.08, start + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, start + duration);
+      
+      // High-pass filter to remove mud and keep it "twinkly"
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'highpass';
+      filter.frequency.setValueAtTime(1500, start);
+      
+      osc.connect(gainNode);
+      shimmer.connect(gainNode);
+      gainNode.connect(filter);
+      filter.connect(audioCtx.destination);
+      
+      osc.start(start);
+      shimmer.start(start);
+      osc.stop(start + duration);
+      shimmer.stop(start + duration);
+    };
+
+    // Ascending melodic chime (C6, E6, G6 approximate)
+    playNote(1046.50, startTime, 0.4);
+    playNote(1318.51, startTime + 0.12, 0.4);
+    playNote(1567.98, startTime + 0.24, 0.6);
+    
+  } catch (e) {
+    console.warn('Match audio failed', e);
+  }
+}

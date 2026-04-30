@@ -13,7 +13,7 @@ import { generateDynamicLore } from '@/ai/flows/dynamic-lore-generation';
 import { collection, addDoc } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 import { initializeFirebase } from '@/firebase';
-import { playSwapSound } from '@/lib/audio-system';
+import { playSwapSound, playMatchSound } from '@/lib/audio-system';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
 
@@ -147,6 +147,7 @@ export function useGameState() {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMoveId);
     
     if (matches.length > 0) {
+      playMatchSound();
       setIsProcessing(true);
       lastMatchTime.current = Date.now();
       
