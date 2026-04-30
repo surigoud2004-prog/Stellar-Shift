@@ -24,6 +24,7 @@ export function useGameState() {
   const [timeLeft, setTimeLeft] = useState(180);
   const [isGameOver, setIsGameOver] = useState(false);
   const [isWin, setIsWin] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [lore, setLore] = useState<string>("Align the shards to stabilize the sector.");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -82,6 +83,7 @@ export function useGameState() {
     setEntities(initial);
     setIsGameOver(false);
     setIsWin(false);
+    setIsPaused(false);
     setScore(0);
     lastMatchTime.current = Date.now();
     lastMoveTime.current = Date.now();
@@ -94,7 +96,11 @@ export function useGameState() {
   }, [initBoard]);
 
   useEffect(() => {
-    if (isGameOver || isWin) return;
+    if (isGameOver || isWin || isPaused) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      return;
+    }
+    
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -108,11 +114,11 @@ export function useGameState() {
       }
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [isGameOver, isWin, score, targetScore, gameMode]);
+  }, [isGameOver, isWin, isPaused, score, targetScore, gameMode]);
 
   // Pity Timer (Comet spawn after 15s)
   useEffect(() => {
-    if (isGameOver || isWin || isProcessing) return;
+    if (isGameOver || isWin || isProcessing || isPaused) return;
     const interval = setInterval(() => {
       if (Date.now() - lastMatchTime.current > 15000) {
         setEntities(prev => {
@@ -126,7 +132,7 @@ export function useGameState() {
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [isGameOver, isWin, isProcessing]);
+  }, [isGameOver, isWin, isProcessing, isPaused]);
 
   useEffect(() => {
     if (score >= targetScore && !isWin) {
@@ -143,10 +149,8 @@ export function useGameState() {
       setIsProcessing(true);
       lastMatchTime.current = Date.now();
       
-      // Visual feedback: mark matched entities
       setEntities(prev => prev.map(e => matches.includes(e.id) ? { ...e, isMatched: true } : e));
       
-      // Wait for collapse animation (400ms)
       await new Promise(resolve => setTimeout(resolve, 400));
 
       let matchedSet = new Set(matches);
@@ -166,7 +170,6 @@ export function useGameState() {
 
       setScore(s => s + matches.length * 20);
 
-      // Gravity Physics
       const variety = getColorVariety(level);
       const newGrid: CelestialEntity[] = [];
       for (let q = 0; q < GRID_SIZE; q++) {
@@ -182,7 +185,6 @@ export function useGameState() {
       }
 
       setEntities(newGrid);
-      // Wait for drop animation
       await new Promise(resolve => setTimeout(resolve, 300));
       handleMatch(newGrid);
     } else {
@@ -191,7 +193,7 @@ export function useGameState() {
   }, [level]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
-    if (isProcessing || isGameOver || isWin || isLocked) return;
+    if (isProcessing || isGameOver || isWin || isLocked || isPaused) return;
     lastMoveTime.current = Date.now();
     setIsLocked(false);
     setIsProcessing(true);
@@ -200,7 +202,6 @@ export function useGameState() {
     const idx1 = newEntities.findIndex(e => e.id === id1);
     const idx2 = newEntities.findIndex(e => e.id === id2);
 
-    // Special: Comet tap
     if (newEntities[idx1].special === 'comet' || newEntities[idx2].special === 'comet') {
       const comet = newEntities[idx1].special === 'comet' ? newEntities[idx1] : newEntities[idx2];
       const cleared = entities.filter(e => e.id !== comet.id).slice(0, 5).map(e => e.id);
@@ -211,38 +212,34 @@ export function useGameState() {
       return;
     }
 
-    // Perform the visual swap
     const q1 = newEntities[idx1].q;
     const r1 = newEntities[idx1].r;
     newEntities[idx1] = { ...newEntities[idx1], q: newEntities[idx2].q, r: newEntities[idx2].r };
     newEntities[idx2] = { ...newEntities[idx2], q: q1, r: r1 };
     setEntities(newEntities);
 
-    // Wait for swap animation (300ms)
     await new Promise(resolve => setTimeout(resolve, 300));
 
     const { matches } = findMatches(newEntities);
     if (matches.length === 0) {
       setLore("ALIGNMENT REJECTED: Resonant frequency mismatch.");
       
-      // Revert Animation
       const reverted = [...newEntities];
       reverted[idx1] = { ...reverted[idx1], q: q1, r: r1 };
       reverted[idx2] = { ...reverted[idx2], q: newEntities[idx1].q, r: newEntities[idx1].r };
       setEntities(reverted);
       
-      // Wait for revert animation
       await new Promise(resolve => setTimeout(resolve, 300));
       setIsProcessing(false);
       return;
     }
     
     handleMatch(newEntities, id1);
-  }, [entities, handleMatch, isProcessing, isGameOver, isWin, isLocked]);
+  }, [entities, handleMatch, isProcessing, isGameOver, isWin, isLocked, isPaused]);
 
   return {
     entities, score, targetScore, timeLeft, level, gameMode, setGameMode,
-    isGameOver, isWin, isLocked, lore, selectedId, setSelectedId,
+    isGameOver, isWin, isLocked, isPaused, setIsPaused, lore, selectedId, setSelectedId,
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame
   };
 }

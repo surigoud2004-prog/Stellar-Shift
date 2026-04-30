@@ -8,21 +8,34 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Zap, Atom, Orbit, Shield, Cpu, Timer, Trophy, Skull, Lock, Globe, Terminal } from 'lucide-react';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
+import { 
+  Sparkles, Zap, Atom, Orbit, Shield, Cpu, Timer, Trophy, 
+  Skull, Lock, Globe, Terminal, X, Pause 
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HallOfFame } from './HallOfFame';
 
 export function Board() {
   const { 
     entities, score, targetScore, timeLeft, level, gameMode, setGameMode,
-    isGameOver, isWin, isLocked, lore, selectedId, setSelectedId, 
+    isGameOver, isWin, isLocked, isPaused, setIsPaused, lore, selectedId, setSelectedId, 
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame
   } = useGameState();
 
   const logEndRef = useRef<HTMLDivElement>(null);
   const [logHistory, setLogHistory] = useState<string[]>([]);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
 
-  // Auto-scrolling Archive Logs with CLI feel
   useEffect(() => {
     if (lore) {
       setLogHistory(prev => [...prev.slice(-100), `[${new Date().toLocaleTimeString()}] ${lore}`]);
@@ -34,7 +47,7 @@ export function Board() {
   }, [logHistory]);
 
   const handleSelect = (id: string) => {
-    if (isProcessing || isGameOver || isWin || isLocked) return;
+    if (isProcessing || isGameOver || isWin || isLocked || isPaused) return;
     if (selectedId === null) {
       setSelectedId(id);
     } else {
@@ -51,6 +64,21 @@ export function Board() {
         setSelectedId(id);
       }
     }
+  };
+
+  const handleAbortMission = () => {
+    setIsPaused(true);
+    setShowExitConfirm(true);
+  };
+
+  const cancelAbort = () => {
+    setShowExitConfirm(false);
+    setIsPaused(false);
+  };
+
+  const confirmAbort = () => {
+    setShowExitConfirm(false);
+    initBoard(); // Reset or go to menu logic
   };
 
   const progress = Math.min(100, (score / targetScore) * 100);
@@ -75,6 +103,11 @@ export function Board() {
               <span className="text-3xl font-mono font-bold tracking-tighter">
                 {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
               </span>
+              {isPaused && (
+                <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50 uppercase text-[8px]">
+                  Paused
+                </Badge>
+              )}
             </div>
             <div className="relative pt-2">
               <div className="flex justify-between text-[10px] mb-1.5 text-muted-foreground uppercase tracking-widest font-bold">
@@ -82,20 +115,11 @@ export function Board() {
                 <span>{Math.floor(progress)}%</span>
               </div>
               <Progress value={progress} className="h-1.5 bg-muted/30" />
-              {progress > 80 && (
-                <div className="absolute -top-1 right-0 text-primary animate-bounce">
-                  <Sparkles className="w-3 h-3" />
-                </div>
-              )}
             </div>
             <div className="pt-6 border-t border-white/10">
               <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-1">Current Output</p>
-              <div className="text-5xl font-headline font-black text-white tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+              <div className="text-5xl font-headline font-black text-white tabular-nums">
                 {score.toLocaleString()}
-              </div>
-              <div className="flex items-center justify-between mt-2">
-                <p className="text-[10px] text-muted-foreground font-bold">RECORD: {bestScore.toLocaleString()}</p>
-                <div className="w-12 h-[2px] bg-secondary/40" />
               </div>
             </div>
           </div>
@@ -111,23 +135,34 @@ export function Board() {
                 key={mode} 
                 variant={gameMode === mode ? "default" : "outline"} 
                 size="sm"
-                className={cn(
-                  "w-full uppercase text-[10px] font-bold tracking-widest h-10",
-                  gameMode === mode && "shadow-[0_0_15px_rgba(13,104,242,0.4)]"
-                )}
+                className="w-full uppercase text-[10px] font-bold tracking-widest"
                 onClick={() => setGameMode(mode)}
+                disabled={isPaused}
               >
                 {mode}
               </Button>
             ))}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full uppercase text-[10px] mt-4 font-bold tracking-widest hover:border-primary/50 h-12"
-              onClick={() => setShowHallOfFame(!showHallOfFame)}
-            >
-              <Globe className="w-4 h-4 mr-2" /> {showHallOfFame ? "Close Fame" : "Hall of Fame"}
-            </Button>
+            
+            <div className="mt-6 flex flex-col gap-4">
+              {/* Glossy Red Abort Button */}
+              <button 
+                onClick={handleAbortMission}
+                className="btn-glossy-red w-full h-14 flex items-center justify-center gap-3 text-white font-black uppercase tracking-[0.2em] text-xs"
+              >
+                <X className="w-5 h-5" strokeWidth={3} />
+                Abort Mission
+              </button>
+
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full uppercase text-[10px] font-bold tracking-widest hover:border-primary/50"
+                onClick={() => setShowHallOfFame(!showHallOfFame)}
+                disabled={isPaused}
+              >
+                <Globe className="w-4 h-4 mr-2" /> {showHallOfFame ? "Close Fame" : "Hall of Fame"}
+              </Button>
+            </div>
           </div>
         </Card>
       </div>
@@ -142,7 +177,6 @@ export function Board() {
               <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
                 <Skull className="w-20 h-20 text-destructive mb-6 animate-bounce" />
                 <h2 className="text-5xl font-headline font-black text-white mb-2 tracking-tighter">MISSION TERMINATED</h2>
-                <p className="text-muted-foreground mb-8 uppercase tracking-widest text-xs">Sector collapse. Synchronization failed.</p>
                 <Button onClick={initBoard} size="lg" className="bg-destructive hover:bg-destructive/80 px-12 h-14 font-black uppercase tracking-[0.2em]">REBOOT SYSTEM</Button>
               </div>
             )}
@@ -150,19 +184,24 @@ export function Board() {
               <div className="absolute inset-0 z-50 bg-primary/30 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center animate-in zoom-in duration-500">
                 <Trophy className="w-20 h-20 text-white mb-6 animate-pulse" />
                 <h2 className="text-5xl font-headline font-black text-white mb-2 tracking-tighter">VICTORY</h2>
-                <p className="text-white/80 mb-8 uppercase tracking-widest text-xs">Synchronization 100%. Advancing coordinates.</p>
               </div>
             )}
-            {isLocked && (
-              <div className="absolute inset-4 z-40 bg-black/40 backdrop-blur-[2px] border-2 border-destructive/20 rounded-2xl flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300">
-                <Lock className="w-12 h-12 text-destructive animate-pulse mb-2" />
-                <span className="text-destructive font-black text-xs uppercase tracking-[0.5em]">Systems Frozen</span>
+            {(isLocked || isPaused) && (
+              <div className="absolute inset-4 z-40 bg-black/40 backdrop-blur-[2px] border-2 border-primary/20 rounded-2xl flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300">
+                {isPaused ? (
+                  <Pause className="w-12 h-12 text-primary animate-pulse mb-2" />
+                ) : (
+                  <Lock className="w-12 h-12 text-destructive animate-pulse mb-2" />
+                )}
+                <span className="text-primary font-black text-xs uppercase tracking-[0.5em]">
+                  {isPaused ? "Sector Frozen" : "Systems Frozen"}
+                </span>
               </div>
             )}
 
             <div className="flex-1 relative p-12 overflow-hidden flex items-center justify-center">
               <div 
-                className={cn("relative transition-all duration-700", isLocked && "opacity-50 grayscale contrast-125")} 
+                className={cn("relative transition-all duration-700", (isLocked || isPaused) && "opacity-50 grayscale contrast-125")} 
                 style={{ width: `${GRID_SIZE * HEX_WIDTH}px`, height: `${(GRID_SIZE - 1) * HEX_WIDTH}px`, marginLeft: `-${HEX_WIDTH/2}px` }}
               >
                 {entities.map(entity => (
@@ -171,7 +210,7 @@ export function Board() {
                     entity={entity} 
                     isSelected={selectedId === entity.id}
                     onSelect={handleSelect}
-                    disabled={isProcessing || isGameOver || isWin || isLocked}
+                    disabled={isProcessing || isGameOver || isWin || isLocked || isPaused}
                   />
                 ))}
               </div>
@@ -203,11 +242,6 @@ export function Board() {
             <h2 className="font-headline text-sm font-bold text-primary flex items-center gap-2 uppercase tracking-widest">
               <Terminal className="w-4 h-4" /> Archive Logs
             </h2>
-            <div className="flex gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-red-500/50" />
-              <div className="w-2 h-2 rounded-full bg-yellow-500/50" />
-              <div className="w-2 h-2 rounded-full bg-green-500/50" />
-            </div>
           </div>
           <div className="flex-1 p-4 bg-black/40 font-mono text-[10px] text-muted-foreground/80 overflow-y-auto max-h-[450px] scrollbar-hide">
             {logHistory.length === 0 ? (
@@ -222,18 +256,36 @@ export function Board() {
             )}
             <div ref={logEndRef} />
           </div>
-          <div className="p-4 border-t border-white/10 bg-white/5">
-            <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
-              <Atom className="w-4 h-4 text-secondary animate-spin-slow" />
-              {isProcessing ? (
-                <span className="text-secondary animate-pulse">Syncing Shards...</span>
-              ) : (
-                <span>Scanner Active</span>
-              )}
-            </div>
-          </div>
         </Card>
       </div>
+
+      {/* Exit Confirmation Modal */}
+      <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+        <AlertDialogContent className="glass-morphism border-primary/20">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white font-headline text-2xl font-black italic uppercase tracking-tighter">
+              Abort Current Mission?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground uppercase text-[10px] tracking-widest font-bold">
+              Mission progress in this sector will be lost and telemetry will be purged. Confirm manual override?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-6">
+            <AlertDialogCancel 
+              onClick={cancelAbort}
+              className="border-white/10 hover:bg-white/5 uppercase text-[10px] font-black tracking-widest h-12 px-8"
+            >
+              Continue Mission
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmAbort}
+              className="bg-destructive hover:bg-destructive/80 uppercase text-[10px] font-black tracking-widest h-12 px-8"
+            >
+              Confirm Abort
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

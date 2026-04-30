@@ -36,6 +36,37 @@
   }
 }
 
+/* Candy Crush Style 3D Button */
+.btn-glossy-red {
+  @apply relative overflow-hidden transition-all duration-75 select-none;
+  background: linear-gradient(180deg, #ff5f5f 0%, #d40000 100%);
+  box-shadow: 
+    0 4px 0 0 #8b0000,
+    0 8px 15px rgba(0, 0, 0, 0.4),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4);
+  border: 2px solid #ff9999;
+  border-radius: 1rem;
+}
+
+.btn-glossy-red:active {
+  transform: translateY(2px) scale(0.95);
+  box-shadow: 
+    0 2px 0 0 #8b0000,
+    0 4px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-glossy-red:disabled {
+  @apply grayscale opacity-50 cursor-not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.btn-glossy-red::after {
+  content: '';
+  @apply absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent pointer-events-none;
+}
+
 /* Dynamic Starfield */
 .starfield {
   position: fixed;
