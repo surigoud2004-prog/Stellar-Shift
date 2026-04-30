@@ -7,11 +7,32 @@ interface ParallaxBackgroundProps {
   isWarping?: boolean;
 }
 
+interface Ember {
+  left: string;
+  top: string;
+  animationDelay: string;
+  animationDuration: string;
+  backgroundColor: string;
+  transform: string;
+}
+
 export function ParallaxBackground({ isWarping }: ParallaxBackgroundProps) {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [embers, setEmbers] = useState<Ember[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Generate embers only on the client to avoid hydration mismatch
+    const newEmbers = [...Array(25)].map((_, i) => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      animationDelay: `${Math.random() * 8}s`,
+      animationDuration: `${6 + Math.random() * 6}s`,
+      backgroundColor: i % 2 === 0 ? '#fff' : '#a855f7',
+      transform: `rotate(${Math.random() * 360}deg)`,
+    }));
+    setEmbers(newEmbers);
+
     const handleMouseMove = (e: MouseEvent) => {
       const { innerWidth, innerHeight } = window;
       const x = (e.clientX - innerWidth / 2) / 60;
@@ -60,18 +81,11 @@ export function ParallaxBackground({ isWarping }: ParallaxBackgroundProps) {
 
       {/* Layer 4 (Atmosphere): Floating Star Embers */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-[1]">
-        {[...Array(25)].map((_, i) => (
+        {embers.map((ember, i) => (
           <div 
             key={i}
             className="floating-ember"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 8}s`,
-              animationDuration: `${6 + Math.random() * 6}s`,
-              backgroundColor: i % 2 === 0 ? '#fff' : '#a855f7',
-              transform: `rotate(${Math.random() * 360}deg)`
-            }}
+            style={ember}
           />
         ))}
       </div>

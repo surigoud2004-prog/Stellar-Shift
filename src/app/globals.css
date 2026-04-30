@@ -275,3 +275,17 @@
 .gear-aura {
   @apply absolute inset-0 rounded-full ring-8 ring-primary/20 animate-pulse-slow opacity-0 transition-opacity pointer-events-none;
 }
+
+/* Floating Embers */
+.floating-ember {
+  @apply absolute w-1 h-1 rounded-full blur-[1px] opacity-0 pointer-events-none;
+  box-shadow: 0 0 8px currentColor;
+  animation: floatToward linear infinite;
+}
+
+@keyframes floatToward {
+  0% { transform: translate(0, 0) scale(0); opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { transform: translate(var(--tx, 100px), var(--ty, 100px)) scale(4); opacity: 0; }
+}
+
