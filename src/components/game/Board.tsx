@@ -90,7 +90,7 @@ export function Board() {
         </Card>
       </div>
 
-      {/* Center - Hex Grid & Wall */}
+      {/* Center - Hex Grid & Foundation Wall */}
       <div className="lg:w-1/2 flex flex-col relative bg-black/40 rounded-3xl overflow-hidden border border-white/5 shadow-2xl hex-grid-container min-h-[650px]">
         {/* Game Area */}
         <div className="flex-1 relative p-12 overflow-hidden flex items-center justify-center">
@@ -114,7 +114,7 @@ export function Board() {
           </div>
         </div>
 
-        {/* Foundation Wall - Acts as a hard boundary at the bottom */}
+        {/* Foundation Wall - Hard Boundary at the bottom */}
         <div className="w-full h-32 bg-gradient-to-t from-primary/30 via-primary/10 to-transparent border-t-4 border-primary/40 relative flex items-center justify-center gap-12 px-12 z-40 mt-auto">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(187,112,255,0.15)_0%,transparent_70%)]" />
           

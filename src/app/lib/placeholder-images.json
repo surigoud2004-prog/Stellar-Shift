@@ -2,40 +2,40 @@
 {
   "placeholderImages": [
     {
-      "id": "shard-1",
-      "description": "A glowing purple pulsar crystal",
-      "imageUrl": "https://picsum.photos/seed/shard1/200/200",
-      "imageHint": "purple crystal"
+      "id": "space-1",
+      "description": "A vibrant violet pulsar radiating intense energy",
+      "imageUrl": "https://picsum.photos/seed/space1/200/200",
+      "imageHint": "pulsar star"
     },
     {
-      "id": "shard-2",
-      "description": "An electric blue energy cube",
-      "imageUrl": "https://picsum.photos/seed/shard2/200/200",
-      "imageHint": "blue cube"
+      "id": "space-2",
+      "description": "A swirling deep blue nebula cloud in deep space",
+      "imageUrl": "https://picsum.photos/seed/space2/200/200",
+      "imageHint": "blue nebula"
     },
     {
-      "id": "shard-3",
-      "description": "A translucent silver void shard",
-      "imageUrl": "https://picsum.photos/seed/shard3/200/200",
-      "imageHint": "silver shard"
+      "id": "space-3",
+      "description": "A dark event horizon of a black hole with a gravitational lens",
+      "imageUrl": "https://picsum.photos/seed/space3/200/200",
+      "imageHint": "black hole"
     },
     {
-      "id": "shard-4",
-      "description": "A vibrant green nebula block",
-      "imageUrl": "https://picsum.photos/seed/shard4/200/200",
-      "imageHint": "green crystal"
+      "id": "space-4",
+      "description": "A brilliant white supernova explosion from a dying sun",
+      "imageUrl": "https://picsum.photos/seed/space4/200/200",
+      "imageHint": "supernova star"
     },
     {
-      "id": "shard-5",
-      "description": "A fiery orange solar fragment",
-      "imageUrl": "https://picsum.photos/seed/shard5/200/200",
-      "imageHint": "orange gem"
+      "id": "space-5",
+      "description": "A detailed grey asteroid surface drifting through the void",
+      "imageUrl": "https://picsum.photos/seed/space5/200/200",
+      "imageHint": "asteroid rock"
     },
     {
-      "id": "shard-6",
-      "description": "A dark matter obsidian block with sparks",
-      "imageUrl": "https://picsum.photos/seed/shard6/200/200",
-      "imageHint": "black crystal"
+      "id": "space-6",
+      "description": "A fiery orange solar flare erupting from a stellar surface",
+      "imageUrl": "https://picsum.photos/seed/space6/200/200",
+      "imageHint": "solar flare"
     }
   ]
 }

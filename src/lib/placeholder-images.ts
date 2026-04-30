@@ -1,3 +1,4 @@
+
 import data from '@/app/lib/placeholder-images.json';
 
 export type ImagePlaceholder = {
@@ -7,5 +8,7 @@ export type ImagePlaceholder = {
   imageHint: string;
 };
 
-// Ensure we export the array directly for easy indexing
+/**
+ * Direct reference to space-themed placeholder images for the celestial grid.
+ */
 export const PlaceHolderImages: ImagePlaceholder[] = data.placeholderImages;
