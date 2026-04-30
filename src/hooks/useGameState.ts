@@ -13,6 +13,7 @@ import { generateDynamicLore } from '@/ai/flows/dynamic-lore-generation';
 import { collection, addDoc } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 import { initializeFirebase } from '@/firebase';
+import { playSwapSound } from '@/lib/audio-system';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
 
@@ -194,6 +195,8 @@ export function useGameState() {
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
     if (isProcessing || isGameOver || isWin || isLocked || isPaused) return;
+    
+    playSwapSound();
     lastMoveTime.current = Date.now();
     setIsLocked(false);
     setIsProcessing(true);
