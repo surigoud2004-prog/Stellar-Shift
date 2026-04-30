@@ -1,35 +1,94 @@
-
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   CelestialEntity, 
   generateRandomEntity, 
   findMatches, 
   GRID_SIZE, 
-  offsetToAxial
+  offsetToAxial,
+  calculateDifficulty,
+  getColorVariety
 } from '@/lib/game-utils';
 import { generateDynamicLore } from '@/ai/flows/dynamic-lore-generation';
+
+export type GameMode = 'easy' | 'hard' | 'hell';
 
 export function useGameState() {
   const [entities, setEntities] = useState<CelestialEntity[]>([]);
   const [score, setScore] = useState(0);
-  const [goals, setGoals] = useState({ stars: 0, nebulae: 0, target: 100 });
-  const [lore, setLore] = useState<string>("Welcome to the cosmos, explorer. Align the celestial bodies to power your journey.");
+  const [level, setLevel] = useState(1);
+  const [gameMode, setGameMode] = useState<GameMode>('easy');
+  const [timeLeft, setTimeLeft] = useState(180);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [isWin, setIsWin] = useState(false);
+  const [lore, setLore] = useState<string>("Select a difficulty mode to begin your alignment.");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+  
+  const lastMoveTime = useRef(Date.now());
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize Board as a Rectangle
-  useEffect(() => {
+  const targetScore = Math.floor(1000 * calculateDifficulty(level) * (gameMode === 'hard' ? 1.5 : gameMode === 'hell' ? 2 : 1));
+
+  const initBoard = useCallback(() => {
+    const variety = getColorVariety(level);
     const initial: CelestialEntity[] = [];
     for (let row = 0; row < GRID_SIZE; row++) {
       for (let col = 0; col < GRID_SIZE; col++) {
         const { q, r } = offsetToAxial(col, row);
-        initial.push(generateRandomEntity(q, r));
+        initial.push(generateRandomEntity(q, r, variety));
       }
     }
     setEntities(initial);
-  }, []);
+    setIsGameOver(false);
+    setIsWin(false);
+    setScore(0);
+    lastMoveTime.current = Date.now();
+    setIsLocked(false);
+    
+    const times = { easy: 180, hard: 90, hell: 45 };
+    setTimeLeft(times[gameMode]);
+  }, [level, gameMode]);
+
+  useEffect(() => {
+    initBoard();
+  }, [initBoard]);
+
+  // Core GameLoop: Timer and Win/Loss
+  useEffect(() => {
+    if (isGameOver || isWin) return;
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current!);
+          if (score < targetScore) setIsGameOver(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+
+      // Hell Mode Inactivity Lock
+      if (gameMode === 'hell' && Date.now() - lastMoveTime.current > 5000) {
+        setIsLocked(true);
+      }
+    }, 1000);
+
+    return () => clearInterval(timerRef.current!);
+  }, [isGameOver, isWin, score, targetScore, gameMode]);
+
+  // Check Win Condition every score update
+  useEffect(() => {
+    if (score >= targetScore && !isWin) {
+      setIsWin(true);
+      setLore("MISSION SUCCESS: Sector stability reached. Moving to next coordinate.");
+      setTimeout(() => {
+        setLevel(l => l + 1);
+      }, 3000);
+    }
+  }, [score, targetScore, isWin]);
 
   const triggerLore = useCallback(async (event: string, context?: string) => {
     try {
@@ -41,36 +100,53 @@ export function useGameState() {
   }, []);
 
   const handleMatch = useCallback(async (currentEntities: CelestialEntity[]) => {
-    const { matches, supernovas, blackholes } = findMatches(currentEntities);
+    const { matches, meteorStrike, timeWarp, pulseWave } = findMatches(currentEntities);
     
     if (matches.length > 0) {
       setIsProcessing(true);
       
-      const points = matches.length * 10;
-      setScore(prev => prev + points);
-      
-      if (blackholes.length > 0) {
-        triggerLore("Black Hole Triggered", "A massive cosmic collapse has occurred.");
-      } else if (supernovas.length > 0) {
-        triggerLore("Supernova Achieved", "Energy levels surging across the sector.");
-      } else if (matches.length > 10) {
-        triggerLore("Great Alignment", "Multiple celestial bodies matched in one cycle.");
+      let points = matches.length * 10;
+      if (meteorStrike) {
+        points += 500;
+        triggerLore("Meteor Strike Detected", "Random structures cleared by impact.");
+      }
+      if (timeWarp) {
+        setTimeLeft(t => t + 10);
+        triggerLore("Time Warp Stabilized", "Chronal energy restored.");
+      }
+      if (pulseWave) {
+        points += 200;
+        triggerLore("Pulse Wave Released", "Local space cleared of debris.");
       }
 
-      // Filter out matched entities
-      let updated = currentEntities.filter(e => !matches.includes(e.id));
+      setScore(prev => prev + points);
+
+      // Filter matches
+      let matchedSet = new Set(matches);
       
-      // Hexagonal Gravity Refill
+      // Meteor Strike logic: smash 5 randoms
+      if (meteorStrike) {
+        const remaining = currentEntities.filter(e => !matchedSet.has(e.id));
+        for (let i = 0; i < 5 && remaining.length > 0; i++) {
+          const randIdx = Math.floor(Math.random() * remaining.length);
+          matchedSet.add(remaining[randIdx].id);
+          remaining.splice(randIdx, 1);
+        }
+      }
+
+      let updated = currentEntities.filter(e => !matchedSet.has(e.id));
+      
+      // Gravity refill
       const finalEntities = [...updated];
       const gridMap = new Map<string, CelestialEntity>();
       finalEntities.forEach(e => gridMap.set(`${e.q},${e.r}`, e));
+      const variety = getColorVariety(level);
 
       for (let col = 0; col < GRID_SIZE; col++) {
         let holes = 0;
         for (let row = GRID_SIZE - 1; row >= 0; row--) {
           const { q, r } = offsetToAxial(col, row);
           const key = `${q},${r}`;
-          
           if (!gridMap.has(key)) {
             holes++;
           } else if (holes > 0) {
@@ -82,23 +158,26 @@ export function useGameState() {
             gridMap.set(`${e.q},${e.r}`, e);
           }
         }
-        // Fill top
         for (let h = 0; h < holes; h++) {
           const { q, r } = offsetToAxial(col, h);
-          const newE = generateRandomEntity(q, r);
-          finalEntities.push(newE);
+          finalEntities.push(generateRandomEntity(q, r, variety));
         }
       }
 
       setEntities(finalEntities);
-      setTimeout(() => handleMatch(finalEntities), 600);
+      // Speed scales with level
+      const dropSpeed = Math.max(100, 600 - (level * 5));
+      setTimeout(() => handleMatch(finalEntities), dropSpeed);
     } else {
       setIsProcessing(false);
     }
-  }, [triggerLore]);
+  }, [triggerLore, level]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
-    if (isProcessing) return;
+    if (isProcessing || isGameOver || isWin || isLocked) return;
+
+    lastMoveTime.current = Date.now();
+    setIsLocked(false);
 
     const newEntities = entities.map(e => ({ ...e }));
     const idx1 = newEntities.findIndex(e => e.id === id1);
@@ -106,7 +185,6 @@ export function useGameState() {
     
     if (idx1 === -1 || idx2 === -1) return;
 
-    // Swap axial coordinates
     const q1 = newEntities[idx1].q;
     const r1 = newEntities[idx1].r;
     newEntities[idx1].q = newEntities[idx2].q;
@@ -117,23 +195,31 @@ export function useGameState() {
     const { matches } = findMatches(newEntities);
     
     if (matches.length === 0) {
-      setLore("The stars refuse to shift. No resonance found in this alignment.");
-      return; // Revert
+      setLore("Alignment rejected. No resonance found.");
+      return;
     }
     
     setIsProcessing(true);
     setEntities(newEntities);
     setTimeout(() => handleMatch(newEntities), 200);
-  }, [entities, handleMatch, isProcessing]);
+  }, [entities, handleMatch, isProcessing, isGameOver, isWin, isLocked]);
 
   return {
     entities,
     score,
-    goals,
+    targetScore,
+    timeLeft,
+    level,
+    gameMode,
+    setGameMode,
+    isGameOver,
+    isWin,
+    isLocked,
     lore,
     selectedId,
     setSelectedId,
     swapEntities,
-    isProcessing
+    isProcessing,
+    initBoard
   };
 }

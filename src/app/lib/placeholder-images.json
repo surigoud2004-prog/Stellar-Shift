@@ -1,4 +1,3 @@
-
 {
   "placeholderImages": [
     {
@@ -36,6 +35,18 @@
       "description": "A fiery orange solar flare erupting from a stellar surface",
       "imageUrl": "https://picsum.photos/seed/space6/200/200",
       "imageHint": "solar flare"
+    },
+    {
+      "id": "space-7",
+      "description": "A glowing green cosmic cloud of ionized gas",
+      "imageUrl": "https://picsum.photos/seed/space7/200/200",
+      "imageHint": "green nebula"
+    },
+    {
+      "id": "space-8",
+      "description": "An electric cyan magnetar with swirling field lines",
+      "imageUrl": "https://picsum.photos/seed/space8/200/200",
+      "imageHint": "cyan magnetar"
     }
   ]
 }
