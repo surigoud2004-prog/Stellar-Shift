@@ -33,7 +33,8 @@ export function Board() {
     entities, score, targetScore, timeLeft, level, gameMode, setGameMode,
     isGameOver, isWin, isLocked, isPaused, setIsPaused, lore, selectedId, setSelectedId, 
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
-    gameStarted, startGame, resetToMainMenu, isSettingsOpen, setIsSettingsOpen, isInputFrozen
+    gameStarted, startGame, resetToMainMenu, isSettingsOpen, setIsSettingsOpen, isInputFrozen,
+    soundOn, musicOn, handleToggleSound, handleToggleMusic
   } = useGameState();
 
   const logEndRef = useRef<HTMLDivElement>(null);
@@ -135,6 +136,10 @@ export function Board() {
         onHome={handleAbortMission}
         disabled={isProcessing}
         gameInProgress={gameStarted && !isGameOver && !isWin}
+        soundOn={soundOn}
+        musicOn={musicOn}
+        onToggleSound={handleToggleSound}
+        onToggleMusic={handleToggleMusic}
       />
 
       {isFading && (

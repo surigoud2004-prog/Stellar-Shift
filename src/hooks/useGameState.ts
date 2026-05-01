@@ -19,7 +19,10 @@ import {
   playSpecialActivationSound, 
   playRejectSound,
   playComboSound,
-  playUIClickSound
+  playUIClickSound,
+  toggleSFX,
+  toggleMusic,
+  startBackgroundMusic
 } from '@/lib/audio-system';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
@@ -42,22 +45,54 @@ export function useGameState() {
   const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   
+  // Audio Settings
+  const [soundOn, setSoundOn] = useState(true);
+  const [musicOn, setMusicOn] = useState(true);
+  
   const lastMoveTime = useRef(Date.now());
   const lastMatchTime = useRef(Date.now());
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const targetScore = Math.floor(1000 * calculateDifficulty(level) * (gameMode === 'hard' ? 1.5 : gameMode === 'hell' ? 2 : 1));
 
-  // Sector States: pause timers and block inputs during settings or deliberate pause
   const isInputFrozen = isProcessing || isGameOver || isWin || isLocked || isPaused || isSettingsOpen;
   const isTimerFrozen = !gameStarted || isGameOver || isWin || isPaused || isSettingsOpen;
 
   useEffect(() => {
     const savedBest = localStorage.getItem('stellar_best_score');
     const savedLevel = localStorage.getItem('stellar_level');
+    const savedSound = localStorage.getItem('stellar_sound_on');
+    const savedMusic = localStorage.getItem('stellar_music_on');
+
     if (savedBest) setBestScore(parseInt(savedBest));
     if (savedLevel) setLevel(parseInt(savedLevel));
+    
+    if (savedSound !== null) {
+      const isSound = savedSound === 'true';
+      setSoundOn(isSound);
+      toggleSFX(isSound);
+    }
+    
+    if (savedMusic !== null) {
+      const isMusic = savedMusic === 'true';
+      setMusicOn(isMusic);
+      toggleMusic(isMusic);
+    }
   }, []);
+
+  const handleToggleSound = useCallback(() => {
+    const newState = !soundOn;
+    setSoundOn(newState);
+    toggleSFX(newState);
+    localStorage.setItem('stellar_sound_on', newState.toString());
+  }, [soundOn]);
+
+  const handleToggleMusic = useCallback(() => {
+    const newState = !musicOn;
+    setMusicOn(newState);
+    toggleMusic(newState);
+    localStorage.setItem('stellar_music_on', newState.toString());
+  }, [musicOn]);
 
   const syncHighScore = async () => {
     try {
@@ -264,6 +299,7 @@ export function useGameState() {
 
   const startGame = () => {
     playUIClickSound();
+    startBackgroundMusic();
     setGameStarted(true);
   };
 
@@ -285,6 +321,7 @@ export function useGameState() {
     isGameOver, isWin, isLocked, isPaused, setIsPaused, lore, selectedId, setSelectedId,
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
     gameStarted, startGame, resetToMainMenu,
-    isSettingsOpen, setIsSettingsOpen, isInputFrozen
+    isSettingsOpen, setIsSettingsOpen, isInputFrozen,
+    soundOn, musicOn, handleToggleSound, handleToggleMusic
   };
 }

@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from 'react';
-import { Settings, Volume2, Music, Home, Languages } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Music, Home, Languages } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { playUIClickSound } from '@/lib/audio-system';
 
@@ -11,12 +10,23 @@ interface SettingsDrawerProps {
   onHome: () => void;
   disabled?: boolean;
   gameInProgress?: boolean;
+  soundOn: boolean;
+  musicOn: boolean;
+  onToggleSound: () => void;
+  onToggleMusic: () => void;
 }
 
-export function SettingsDrawer({ isOpen, onToggle, onHome, disabled, gameInProgress }: SettingsDrawerProps) {
-  const [soundOn, setSoundOn] = useState(true);
-  const [musicOn, setMusicOn] = useState(true);
-
+export function SettingsDrawer({ 
+  isOpen, 
+  onToggle, 
+  onHome, 
+  disabled, 
+  gameInProgress,
+  soundOn,
+  musicOn,
+  onToggleSound,
+  onToggleMusic
+}: SettingsDrawerProps) {
   const toggleSettings = () => {
     if (disabled) return;
     playUIClickSound();
@@ -29,9 +39,23 @@ export function SettingsDrawer({ isOpen, onToggle, onHome, disabled, gameInProgr
   };
 
   const buttons = [
-    { icon: Volume2, label: 'Sound', active: soundOn, onClick: () => setSoundOn(!soundOn) },
-    { icon: Music, label: 'Music', active: musicOn, onClick: () => setMusicOn(!musicOn) },
-    { icon: Languages, label: 'Language', onClick: () => {} },
+    { 
+      icon: soundOn ? Volume2 : VolumeX, 
+      label: 'Sound', 
+      active: soundOn, 
+      onClick: onToggleSound 
+    },
+    { 
+      icon: Music, 
+      label: 'Music', 
+      active: musicOn, 
+      onClick: onToggleMusic 
+    },
+    { 
+      icon: Languages, 
+      label: 'Language', 
+      onClick: () => {} 
+    },
     ...(gameInProgress ? [{ icon: Home, label: 'Exit', onClick: onHome, color: 'text-destructive' }] : []),
   ];
 
