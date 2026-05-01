@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -7,6 +6,8 @@ import { initializeFirebase } from '@/firebase';
 import { Card } from '@/components/ui/card';
 import { Trophy, User, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface LeaderboardEntry {
   uid: string;
@@ -34,7 +35,11 @@ export function HallOfFame({ title, subtitle }: HallOfFameProps) {
         const results = querySnapshot.docs.map(doc => doc.data() as LeaderboardEntry);
         setEntries(results);
       } catch (e) {
-        console.error(e);
+        const permissionError = new FirestorePermissionError({
+          path: 'leaderboard',
+          operation: 'list',
+        });
+        errorEmitter.emit('permission-error', permissionError);
       } finally {
         setLoading(false);
       }
@@ -69,7 +74,7 @@ export function HallOfFame({ title, subtitle }: HallOfFameProps) {
                   </div>
                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground uppercase">
                     <Calendar className="w-3 h-3" />
-                    {format(entry.timestamp, 'MMM d, yyyy')}
+                    {entry.timestamp ? format(entry.timestamp, 'MMM d, yyyy') : 'N/A'}
                   </div>
                 </div>
               </div>

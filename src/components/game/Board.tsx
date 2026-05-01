@@ -1,8 +1,7 @@
-
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
-import { useGameState, GameMode } from '@/hooks/useGameState';
+import { useGameState } from '@/hooks/useGameState';
 import { Entity } from './Entity';
 import { areAdjacent, HEX_WIDTH, GRID_SIZE } from '@/lib/game-utils';
 import { Card } from '@/components/ui/card';
@@ -20,8 +19,8 @@ import {
   AlertDialogTitle 
 } from '@/components/ui/alert-dialog';
 import { 
-  Sparkles, Zap, Atom, Orbit, Shield, Cpu, Timer, Trophy, 
-  Skull, Lock, Globe, Terminal, X, Pause, Play, Hexagon
+  Orbit, Shield, Trophy, 
+  Skull, Lock, Terminal, Pause, Play, Timer, Cpu
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HallOfFame } from './HallOfFame';
@@ -32,7 +31,7 @@ import { SettingsDrawer } from './SettingsDrawer';
 export function Board() {
   const { 
     entities, score, targetScore, timeLeft, level, gameMode, setGameMode,
-    isGameOver, isWin, isLocked, isPaused, setIsPaused, lore, selectedId, setSelectedId, 
+    isGameOver, isWin, isPaused, setIsPaused, lore, selectedId, setSelectedId, 
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
     gameStarted, startGame, resetToMainMenu, isSettingsOpen, setIsSettingsOpen, isInputFrozen,
     soundOn, musicOn, handleToggleSound, handleToggleMusic, language, cycleLanguage, t
@@ -108,6 +107,11 @@ export function Board() {
     await new Promise(resolve => setTimeout(resolve, 500));
     resetToMainMenu();
     setIsFading(false);
+  };
+
+  const handleReboot = () => {
+    playUIClickSound();
+    initBoard();
   };
 
   const toggleHallOfFame = () => {

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -26,6 +25,8 @@ import {
   startBackgroundMusic
 } from '@/lib/audio-system';
 import { Language, LOCALIZATION } from '@/lib/localization';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
 
@@ -47,7 +48,6 @@ export function useGameState() {
   const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   
-  // Audio & Localization Settings
   const [soundOn, setSoundOn] = useState(true);
   const [musicOn, setMusicOn] = useState(true);
   const [language, setLanguage] = useState<Language>('en');
@@ -115,20 +115,32 @@ export function useGameState() {
     try {
       const { db, auth } = initializeFirebase();
       if (!auth.currentUser) await signInAnonymously(auth);
-      addDoc(collection(db, 'leaderboard'), {
+      
+      const payload = {
         uid: auth.currentUser?.uid || 'anon',
         displayName: 'Stellar Pilot',
         score,
         level,
         timestamp: Date.now()
-      });
+      };
+
+      addDoc(collection(db, 'leaderboard'), payload)
+        .catch(async () => {
+          const permissionError = new FirestorePermissionError({
+            path: 'leaderboard',
+            operation: 'create',
+            requestResourceData: payload,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        });
+
       if (score > bestScore) {
         setBestScore(score);
         localStorage.setItem('stellar_best_score', score.toString());
       }
       localStorage.setItem('stellar_level', level.toString());
     } catch (e) {
-      console.error("Telemetry sync failed", e);
+      // Auth or general failure
     }
   };
 
