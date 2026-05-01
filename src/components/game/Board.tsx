@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -20,7 +21,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { 
   Orbit, Shield, Trophy, 
-  Skull, Lock, Pause, Play, Timer, Cpu, X
+  Skull, Lock, Pause, Play, Timer, Cpu, X, Terminal
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HallOfFame } from './HallOfFame';
@@ -31,7 +32,7 @@ import { SettingsDrawer } from './SettingsDrawer';
 export function Board() {
   const { 
     entities, score, targetScore, timeLeft, level, gameMode, setGameMode,
-    isGameOver, isWin, isPaused, setIsPaused, lore, selectedId, setSelectedId, 
+    isGameOver, isWin, isPaused, setIsPaused, lore, loreLogs, selectedId, setSelectedId, 
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
     gameStarted, startGame, resetToMainMenu, isSettingsOpen, setIsSettingsOpen, isInputFrozen,
     soundOn, handleToggleSound, language, cycleLanguage, t
@@ -151,7 +152,7 @@ export function Board() {
       )}
 
       {/* Left Panel */}
-      <div className="lg:w-1/4 space-y-6 z-10">
+      <div className="lg:w-1/4 space-y-6 z-10 flex flex-col">
         <Card className="glass-morphism p-6 border-primary/20 relative overflow-hidden group">
           <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
           <div className="flex justify-between items-center mb-4">
@@ -188,6 +189,22 @@ export function Board() {
               </div>
             </div>
           </div>
+        </Card>
+
+        <Card className="glass-morphism p-6 border-secondary/20 flex-1 flex flex-col min-h-[300px] max-h-[500px]">
+           <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-4 font-bold flex items-center gap-2">
+             <Terminal className="w-3 h-3 text-primary" /> {t.archive}
+           </p>
+           <ScrollArea className="flex-1 w-full pr-4">
+             <div className="space-y-1">
+               {loreLogs.map((log, i) => (
+                 <div key={i} className="cli-line">
+                   {log}
+                 </div>
+               ))}
+             </div>
+             <ScrollBar orientation="vertical" />
+           </ScrollArea>
         </Card>
 
         <Card className="glass-morphism p-6 border-secondary/20 hidden md:block">

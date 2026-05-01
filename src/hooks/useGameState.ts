@@ -39,6 +39,7 @@ export function useGameState() {
   const [isPaused, setIsPaused] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [lore, setLore] = useState<string>("Align the shards to stabilize the sector.");
+  const [loreLogs, setLoreLogs] = useState<string[]>(["SYSTEM READY: Neural link established."]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
@@ -93,6 +94,11 @@ export function useGameState() {
     localStorage.setItem('stellar_language', nextLang);
     playUIClickSound();
   }, [language]);
+
+  const addLoreLog = useCallback((msg: string) => {
+    setLore(msg);
+    setLoreLogs(prev => [msg, ...prev].slice(0, 50));
+  }, []);
 
   const syncHighScore = async () => {
     try {
@@ -151,7 +157,8 @@ export function useGameState() {
     lastMoveTime.current = Date.now();
     setIsLocked(false);
     setTimeLeft(gameMode === 'easy' ? 180 : gameMode === 'hard' ? 90 : 45);
-  }, [level, gameMode]);
+    addLoreLog("SECTOR INITIALIZED: Awaiting alignment protocol.");
+  }, [level, gameMode, addLoreLog]);
 
   useEffect(() => {
     if (gameStarted) {
@@ -191,12 +198,12 @@ export function useGameState() {
           return next;
         });
         lastMatchTime.current = Date.now();
-        setLore("CELESTIAL ANOMALY: A comet shard has appeared.");
+        addLoreLog("CELESTIAL ANOMALY: A comet shard has appeared.");
         playSpecialActivationSound();
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [isInputFrozen]);
+  }, [isInputFrozen, addLoreLog]);
 
   useEffect(() => {
     if (gameStarted && score >= targetScore && !isWin) {
@@ -233,7 +240,7 @@ export function useGameState() {
           special: specialToSpawn.type
         });
         const loreRes = await generateDynamicLore({ gameEventDescription: `Created a ${specialToSpawn.type}` });
-        setLore(loreRes.loreSnippet);
+        addLoreLog(loreRes.loreSnippet);
       }
 
       setScore(s => s + matches.length * 20 * (comboLevel + 1));
@@ -258,7 +265,7 @@ export function useGameState() {
     } else {
       setIsProcessing(false);
     }
-  }, [level]);
+  }, [level, addLoreLog]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
     if (isInputFrozen) return;
@@ -293,7 +300,7 @@ export function useGameState() {
 
     const { matches } = findMatches(newEntities);
     if (matches.length === 0) {
-      setLore("ALIGNMENT REJECTED: Resonant frequency mismatch.");
+      addLoreLog("ALIGNMENT REJECTED: Resonant frequency mismatch.");
       playRejectSound();
       
       const reverted = [...newEntities];
@@ -307,7 +314,7 @@ export function useGameState() {
     }
     
     await handleMatch(newEntities, id1, 0);
-  }, [entities, handleMatch, isInputFrozen]);
+  }, [entities, handleMatch, isInputFrozen, addLoreLog]);
 
   const startGame = () => {
     playUIClickSound();
@@ -324,12 +331,13 @@ export function useGameState() {
     setIsLocked(false);
     setIsSettingsOpen(false);
     setGameStarted(false);
+    setLoreLogs(["SYSTEM READY: Neural link established."]);
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
   return {
     entities, score, targetScore, timeLeft, level, gameMode, setGameMode,
-    isGameOver, isWin, isLocked, isPaused, setIsPaused, lore, selectedId, setSelectedId,
+    isGameOver, isWin, isLocked, isPaused, setIsPaused, lore, loreLogs, selectedId, setSelectedId,
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
     gameStarted, startGame, resetToMainMenu,
     isSettingsOpen, setIsSettingsOpen, isInputFrozen,
