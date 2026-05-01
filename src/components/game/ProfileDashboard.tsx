@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { 
   X, User, Trophy, Star, Target, Zap, 
-  ChevronLeft, ChevronRight, Edit3, Check
+  ChevronLeft, ChevronRight, Edit3, Check, LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -134,42 +134,51 @@ export function ProfileDashboard({
           </div>
 
           {/* Right Side: Stats Grid */}
-          <div className="w-full md:w-1/2 p-8 bg-black/20 space-y-6">
-             <h3 className="text-[10px] uppercase tracking-[0.5em] text-cyan-400/60 font-black flex items-center gap-2">
-               <Target className="w-3 h-3" /> {labels.stats}
-             </h3>
+          <div className="w-full md:w-1/2 p-8 bg-black/20 flex flex-col justify-between">
+             <div className="space-y-6">
+               <h3 className="text-[10px] uppercase tracking-[0.5em] text-cyan-400/60 font-black flex items-center gap-2">
+                 <Target className="w-3 h-3" /> {labels.stats}
+               </h3>
 
-             <div className="grid grid-cols-1 gap-4">
-                <StatBox 
-                  icon={Zap} 
-                  label={labels.matches} 
-                  value={profile.totalMatches.toLocaleString()} 
-                  color="text-primary" 
-                />
-                <StatBox 
-                  icon={Trophy} 
-                  label={labels.wins} 
-                  value={profile.gamesWon.toLocaleString()} 
-                  color="text-amber-400" 
-                />
-                <StatBox 
-                  icon={Star} 
-                  label={labels.stars} 
-                  value={profile.starsCollected.toLocaleString()} 
-                  color="text-secondary" 
-                />
-                <StatBox 
-                  icon={Zap} 
-                  label={labels.allTimeHigh} 
-                  value={profile.allTimeHigh.toLocaleString()} 
-                  color="text-white" 
-                />
+               <div className="grid grid-cols-1 gap-4">
+                  <StatBox 
+                    icon={Zap} 
+                    label={labels.matches} 
+                    value={profile.totalMatches.toLocaleString()} 
+                    color="text-primary" 
+                  />
+                  <StatBox 
+                    icon={Trophy} 
+                    label={labels.wins} 
+                    value={profile.gamesWon.toLocaleString()} 
+                    color="text-amber-400" 
+                  />
+                  <StatBox 
+                    icon={Star} 
+                    label={labels.stars} 
+                    value={profile.starsCollected.toLocaleString()} 
+                    color="text-secondary" 
+                  />
+                  <StatBox 
+                    icon={Zap} 
+                    label={labels.allTimeHigh} 
+                    value={profile.allTimeHigh.toLocaleString()} 
+                    color="text-white" 
+                  />
+               </div>
              </div>
 
-             <div className="pt-6 border-t border-white/10">
+             <div className="pt-8 border-t border-white/10 space-y-6">
                 <p className="text-[9px] text-muted-foreground/40 leading-relaxed italic text-center uppercase tracking-widest">
                   Neural link sync established. Telemetry verified by Sector command.
                 </p>
+                <Button 
+                  onClick={onClose}
+                  className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-black uppercase tracking-[0.2em] h-14 rounded-2xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] group"
+                >
+                  <LogOut className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-transform" />
+                  {labels.exit}
+                </Button>
              </div>
           </div>
         </div>
