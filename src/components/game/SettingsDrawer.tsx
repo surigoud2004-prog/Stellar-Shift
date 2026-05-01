@@ -10,9 +10,10 @@ interface SettingsDrawerProps {
   onToggle: (open: boolean) => void;
   onHome: () => void;
   disabled?: boolean;
+  gameInProgress?: boolean;
 }
 
-export function SettingsDrawer({ isOpen, onToggle, onHome, disabled }: SettingsDrawerProps) {
+export function SettingsDrawer({ isOpen, onToggle, onHome, disabled, gameInProgress }: SettingsDrawerProps) {
   const [soundOn, setSoundOn] = useState(true);
   const [musicOn, setMusicOn] = useState(true);
 
@@ -31,12 +32,12 @@ export function SettingsDrawer({ isOpen, onToggle, onHome, disabled }: SettingsD
     { icon: Volume2, label: 'Sound', active: soundOn, onClick: () => setSoundOn(!soundOn) },
     { icon: Music, label: 'Music', active: musicOn, onClick: () => setMusicOn(!musicOn) },
     { icon: Languages, label: 'Language', onClick: () => {} },
-    { icon: Home, label: 'Exit', onClick: onHome, color: 'text-destructive' },
+    ...(gameInProgress ? [{ icon: Home, label: 'Exit', onClick: onHome, color: 'text-destructive' }] : []),
   ];
 
   return (
     <div className="fixed top-8 right-8 z-[60] flex flex-row-reverse items-start gap-6 pointer-events-none">
-      {/* Settings Gear - Fixed Positioned relative to container right edge */}
+      {/* Settings Gear */}
       <button
         onClick={toggleSettings}
         disabled={disabled}
@@ -51,7 +52,7 @@ export function SettingsDrawer({ isOpen, onToggle, onHome, disabled }: SettingsD
         <div className={cn("gear-aura", !disabled && "group-hover:opacity-100")} />
       </button>
 
-      {/* Drawer Panel - Slides out to the left of the fixed gear */}
+      {/* Drawer Panel */}
       <div className={cn(
         "pointer-events-auto glass-morphism border-primary/20 rounded-[2rem] p-5 transition-all duration-700 ease-out flex flex-col gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]",
         isOpen ? "translate-x-0 opacity-100 w-24" : "translate-x-12 opacity-0 w-0 p-0 overflow-hidden"

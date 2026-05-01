@@ -47,7 +47,6 @@ export function Board() {
     if (lore) {
       setLogHistory(prev => [...prev.slice(-100), `[${new Date().toLocaleTimeString()}] ${lore}`]);
       
-      // Trigger border flash and warp effect on special events or matches
       if (lore.includes('ANOMALY')) setFlashColor('cyan');
       else if (lore.includes('Supernova') || lore.includes('Black Hole') || lore.includes('Aligned')) {
         setFlashColor('gold');
@@ -134,7 +133,8 @@ export function Board() {
         isOpen={isSettingsOpen} 
         onToggle={setIsSettingsOpen} 
         onHome={handleAbortMission}
-        disabled={!gameStarted || isGameOver || isWin}
+        disabled={isProcessing}
+        gameInProgress={gameStarted && !isGameOver && !isWin}
       />
 
       {isFading && (
@@ -200,13 +200,15 @@ export function Board() {
             ))}
             
             <div className="mt-6 flex flex-col gap-4">
-              <button 
-                onClick={handleAbortMission}
-                className="btn-glossy-red w-full h-14 flex items-center justify-center gap-3 text-white font-black uppercase tracking-[0.2em] text-xs"
-              >
-                <X className="w-5 h-5" strokeWidth={3} />
-                Abort Mission
-              </button>
+              {gameStarted && (
+                <button 
+                  onClick={handleAbortMission}
+                  className="btn-glossy-red w-full h-14 flex items-center justify-center gap-3 text-white font-black uppercase tracking-[0.2em] text-xs"
+                >
+                  <X className="w-5 h-5" strokeWidth={3} />
+                  Abort Mission
+                </button>
+              )}
 
               <Button 
                 variant="outline" 
@@ -228,15 +230,12 @@ export function Board() {
         flashColor === 'cyan' && "match-flash-cyan",
         flashColor === 'gold' && "match-flash-gold"
       )}>
-        {/* Scrolling Nebula Background Layer */}
         <div className="nebula-scroll" />
         
-        {/* Floating Crystal Shards (Moving Parts) */}
         <div className="floating-shard top-10 left-10" style={{ animationDelay: '0s' }} />
         <div className="floating-shard bottom-20 right-10" style={{ animationDelay: '2s' }} />
         <div className="floating-shard top-40 right-20" style={{ animationDelay: '5s' }} />
         
-        {/* Corner Accents (Metallic Gold) */}
         <div className="corner-accent top-0 left-0 border-t-amber-400 border-l-amber-400 rounded-tl-3xl" />
         <div className="corner-accent top-0 right-0 border-t-amber-400 border-r-amber-400 rounded-tr-3xl" />
         <div className="corner-accent bottom-0 left-0 border-b-amber-400 border-l-amber-400 rounded-bl-3xl" />
@@ -318,7 +317,6 @@ export function Board() {
               </div>
             </div>
 
-            {/* Glowing Neon Strips (UI Accents) */}
             <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-32 bg-cyan-400 blur-[2px] opacity-40 animate-pulse" />
             <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[2px] h-32 bg-violet-400 blur-[2px] opacity-40 animate-pulse" />
 
@@ -365,7 +363,6 @@ export function Board() {
         </Card>
       </div>
 
-      {/* Exit Confirmation Modal */}
       <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
         <AlertDialogContent className="bg-[#1a0b2e]/80 backdrop-blur-2xl border-2 border-cyan-500/50 shadow-[0_0_30px_rgba(6,182,212,0.2)] rounded-3xl p-10 max-w-sm">
           <AlertDialogHeader className="text-center space-y-6">
