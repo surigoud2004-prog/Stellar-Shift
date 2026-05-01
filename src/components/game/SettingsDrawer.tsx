@@ -1,6 +1,7 @@
+
 "use client";
 
-import { Settings, Volume2, VolumeX, Languages, Zap, Trophy } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Languages, Zap, Trophy, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { playUIClickSound } from '@/lib/audio-system';
 import { Language } from '@/lib/localization';
@@ -17,6 +18,7 @@ interface SettingsDrawerProps {
   gameMode: GameMode;
   onSetGameMode: (mode: GameMode) => void;
   onShowFame: () => void;
+  onShowProfile: () => void;
   labels: Record<string, string>;
 }
 
@@ -31,6 +33,7 @@ export function SettingsDrawer({
   gameMode,
   onSetGameMode,
   onShowFame,
+  onShowProfile,
   labels
 }: SettingsDrawerProps) {
   const toggleSettings = () => {
@@ -53,11 +56,11 @@ export function SettingsDrawer({
 
   const buttons = [
     { 
-      icon: Zap, 
-      label: `${labels.subsystems}: ${gameMode.toUpperCase()}`, 
-      onClick: cycleDifficulty,
+      icon: User, 
+      label: labels.profile, 
+      onClick: onShowProfile,
       active: true,
-      color: 'text-amber-400'
+      color: 'text-cyan-400'
     },
     { 
       icon: Trophy, 
@@ -65,6 +68,13 @@ export function SettingsDrawer({
       onClick: onShowFame,
       active: true,
       color: 'text-primary'
+    },
+    { 
+      icon: Zap, 
+      label: `${labels.subsystems}: ${gameMode.toUpperCase()}`, 
+      onClick: cycleDifficulty,
+      active: true,
+      color: 'text-amber-400'
     },
     { 
       icon: soundOn ? Volume2 : VolumeX, 

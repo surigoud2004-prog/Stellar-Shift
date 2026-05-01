@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
@@ -28,6 +29,7 @@ import { HallOfFame } from './HallOfFame';
 import { playUIClickSound } from '@/lib/audio-system';
 import { ParallaxBackground } from './ParallaxBackground';
 import { SettingsDrawer } from './SettingsDrawer';
+import { ProfileDashboard } from './ProfileDashboard';
 
 export function Board() {
   const { 
@@ -35,7 +37,7 @@ export function Board() {
     isGameOver, isWin, isPaused, setIsPaused, lore, loreLogs, selectedId, setSelectedId, 
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
     gameStarted, startGame, resetToMainMenu, isSettingsOpen, setIsSettingsOpen, isInputFrozen,
-    soundOn, handleToggleSound, language, cycleLanguage, t
+    soundOn, handleToggleSound, language, cycleLanguage, t, profile
   } = useGameState();
 
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -117,7 +119,7 @@ export function Board() {
     <div className="flex flex-col lg:flex-row gap-8 w-full max-w-7xl mx-auto p-4 lg:p-8 min-h-[90vh] relative">
       <ParallaxBackground isWarping={isWarping} />
       
-      {/* Top Right command console cluster */}
+      {/* Command Cluster */}
       <div className="fixed top-8 right-8 z-[70] flex flex-col items-end gap-4 pointer-events-none">
         <div className="flex items-center gap-4 pointer-events-auto">
           <SettingsDrawer 
@@ -131,6 +133,7 @@ export function Board() {
             gameMode={gameMode}
             onSetGameMode={setGameMode}
             onShowFame={toggleHallOfFame}
+            onShowProfile={() => profile.setShowProfile(true)}
             labels={t}
           />
           <button 
@@ -146,6 +149,16 @@ export function Board() {
           </button>
         </div>
       </div>
+
+      <ProfileDashboard 
+        isOpen={profile.showProfile}
+        onClose={() => profile.setShowProfile(false)}
+        profile={profile.profile}
+        onUpdateAvatar={profile.setAvatar}
+        onUpdateName={profile.setName}
+        getRankLabel={profile.getRank}
+        labels={t}
+      />
 
       {isFading && (
         <div className="fixed inset-0 bg-black z-[100] animate-in fade-in duration-500" />
@@ -206,29 +219,9 @@ export function Board() {
              <ScrollBar orientation="vertical" />
            </ScrollArea>
         </Card>
-
-        <Card className="glass-morphism p-6 border-secondary/20 hidden md:block">
-           <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-4 font-bold flex items-center gap-2">
-             <Shield className="w-3 h-3 text-primary" /> Sector Status
-           </p>
-           <div className="space-y-2">
-             <div className="flex justify-between text-[9px] uppercase tracking-widest">
-                <span className="text-muted-foreground">Encryption</span>
-                <span className="text-primary font-bold">Stable</span>
-             </div>
-             <div className="flex justify-between text-[9px] uppercase tracking-widest">
-                <span className="text-muted-foreground">Neural Link</span>
-                <span className="text-secondary font-bold">Active</span>
-             </div>
-             <div className="flex justify-between text-[9px] uppercase tracking-widest">
-                <span className="text-muted-foreground">AI Core</span>
-                <span className="text-amber-400 font-bold">Online</span>
-             </div>
-           </div>
-        </Card>
       </div>
 
-      {/* Center - Hex Grid or Hall of Fame with STELLAR FRAME */}
+      {/* Center - Hex Grid */}
       <div className={cn(
         "lg:w-3/4 flex flex-col relative stellar-frame breathing-glow min-h-[650px] z-10",
         flashColor === 'cyan' && "match-flash-cyan",
@@ -318,25 +311,6 @@ export function Board() {
                     disabled={isInputFrozen}
                   />
                 ))}
-              </div>
-            </div>
-
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-32 bg-cyan-400 blur-[2px] opacity-40 animate-pulse" />
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[2px] h-32 bg-violet-400 blur-[2px] opacity-40 animate-pulse" />
-
-            <div className="w-full h-24 bg-gradient-to-t from-primary/20 via-primary/5 to-transparent border-t border-primary/20 flex items-center justify-center gap-12 px-12 z-40 mt-auto backdrop-blur-sm">
-              <div className="flex flex-col items-center">
-                <div className="flex items-center gap-2 text-primary font-headline text-[10px] uppercase tracking-[0.5em] font-black">
-                  <Shield className="w-4 h-4 animate-pulse" /> Vanguard Wall
-                </div>
-                <div className="flex gap-1 mt-3">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
-                    <div key={i} className="w-2 h-2 rounded-sm bg-primary/40 border border-primary/20" />
-                  ))}
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-secondary font-headline text-[10px] uppercase tracking-[0.5em] font-black opacity-60">
-                <Cpu className="w-4 h-4 animate-spin-slow" /> Core Stable
               </div>
             </div>
           </div>

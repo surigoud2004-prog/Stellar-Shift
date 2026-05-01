@@ -2,52 +2,76 @@
 {
   "placeholderImages": [
     {
-      "id": "space-1",
-      "description": "Deep Field Galaxy Cluster with gravitational lensing",
-      "imageUrl": "https://picsum.photos/seed/galaxy1/200/200",
-      "imageHint": "galaxy cluster"
+      "id": "planet-1",
+      "description": "A vibrant purple gas giant planet with glowing rings",
+      "imageUrl": "https://picsum.photos/seed/planet1/200/200",
+      "imageHint": "purple planet"
     },
     {
-      "id": "space-2",
-      "description": "Vibrant blue and cyan nebula cloud",
-      "imageUrl": "https://picsum.photos/seed/nebula2/200/200",
-      "imageHint": "blue nebula"
+      "id": "planet-2",
+      "description": "An electric blue crystal star radiating energy",
+      "imageUrl": "https://picsum.photos/seed/planet2/200/200",
+      "imageHint": "blue star"
     },
     {
-      "id": "space-3",
-      "description": "Golden spiral galaxy seen from a tilted angle",
-      "imageUrl": "https://picsum.photos/seed/galaxy3/200/200",
-      "imageHint": "spiral galaxy"
+      "id": "planet-3",
+      "description": "A glowing crescent moon with a silver sheen",
+      "imageUrl": "https://picsum.photos/seed/planet3/200/200",
+      "imageHint": "crescent moon"
     },
     {
-      "id": "space-4",
-      "description": "Intense red supergiant star with solar flares",
-      "imageUrl": "https://picsum.photos/seed/star4/200/200",
-      "imageHint": "red star"
+      "id": "planet-4",
+      "description": "A swirling green nebula contained in an orb",
+      "imageUrl": "https://picsum.photos/seed/planet4/200/200",
+      "imageHint": "green nebula"
     },
     {
-      "id": "space-5",
-      "description": "Pillars of Creation style gas and dust columns",
-      "imageUrl": "https://picsum.photos/seed/pillars5/200/200",
-      "imageHint": "cosmic dust"
+      "id": "planet-5",
+      "description": "A fiery orange celestial sun-like body",
+      "imageUrl": "https://picsum.photos/seed/planet5/200/200",
+      "imageHint": "orange sun"
     },
     {
-      "id": "space-6",
-      "description": "Supernova remnant with expanding gas shells",
-      "imageUrl": "https://picsum.photos/seed/supernova6/200/200",
-      "imageHint": "supernova remnant"
+      "id": "planet-6",
+      "description": "A mysterious dark matter void with white sparks",
+      "imageUrl": "https://picsum.photos/seed/planet6/200/200",
+      "imageHint": "dark void"
     },
     {
-      "id": "space-7",
-      "description": "Protostellar disk glowing in deep orange",
-      "imageUrl": "https://picsum.photos/seed/disk7/200/200",
-      "imageHint": "protostar disk"
+      "id": "avatar-1",
+      "description": "Futuristic astronaut in a white suit",
+      "imageUrl": "https://picsum.photos/seed/astro1/200/200",
+      "imageHint": "astronaut suit"
     },
     {
-      "id": "space-8",
-      "description": "Electric violet magnetar with field lines",
-      "imageUrl": "https://picsum.photos/seed/pulsar8/200/200",
-      "imageHint": "violet pulsar"
+      "id": "avatar-2",
+      "description": "Glowing cyan alien being with energy trails",
+      "imageUrl": "https://picsum.photos/seed/alien2/200/200",
+      "imageHint": "alien being"
+    },
+    {
+      "id": "avatar-3",
+      "description": "Robotic space explorer with bronze plating",
+      "imageUrl": "https://picsum.photos/seed/bot3/200/200",
+      "imageHint": "space robot"
+    },
+    {
+      "id": "avatar-4",
+      "description": "Star-shining nebula goddess with violet hair",
+      "imageUrl": "https://picsum.photos/seed/goddess4/200/200",
+      "imageHint": "nebula goddess"
+    },
+    {
+      "id": "avatar-5",
+      "description": "Sleek chrome helmet reflecting stars",
+      "imageUrl": "https://picsum.photos/seed/helmet5/200/200",
+      "imageHint": "space helmet"
+    },
+    {
+      "id": "avatar-6",
+      "description": "Abstract cosmic entity made of dark energy",
+      "imageUrl": "https://picsum.photos/seed/entity6/200/200",
+      "imageHint": "cosmic entity"
     }
   ]
 }

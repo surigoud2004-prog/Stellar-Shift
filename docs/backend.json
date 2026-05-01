@@ -13,6 +13,22 @@
         "timestamp": { "type": "number" }
       },
       "required": ["uid", "displayName", "score", "level", "timestamp"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Persistent data for a player's identity and progress.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "avatarId": { "type": "string" },
+        "xp": { "type": "number" },
+        "totalMatches": { "type": "number" },
+        "gamesWon": { "type": "number" },
+        "starsCollected": { "type": "number" },
+        "allTimeHigh": { "type": "number" }
+      },
+      "required": ["uid", "name", "avatarId", "xp"]
     }
   },
   "auth": {
@@ -22,6 +38,10 @@
     "/leaderboard/{scoreId}": {
       "schema": "#/entities/HighScore",
       "description": "Collection of global high scores."
+    },
+    "/users/{userId}": {
+      "schema": "#/entities/UserProfile",
+      "description": "Private user profile data."
     }
   }
 }

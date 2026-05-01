@@ -1,9 +1,9 @@
+
 'use client';
 
 /**
  * @fileOverview A synthesized audio system for Stellar Shift.
  * Uses Web Audio API to create cosmic sound effects without external assets.
- * Background music has been decommissioned to ensure a focused tactical environment.
  */
 
 let sfxEnabled = true;
@@ -19,14 +19,6 @@ function getAudioContext() {
 
 export function toggleSFX(enabled: boolean) {
   sfxEnabled = enabled;
-}
-
-export function toggleMusic(enabled: boolean) {
-  // Decommissioned: Background music is no longer supported
-}
-
-export function startBackgroundMusic() {
-  // Decommissioned: Background music is no longer supported
 }
 
 export function playSwapSound() {
@@ -88,6 +80,63 @@ export function playMatchSound() {
     playNote(1567.98, startTime + 0.2, 0.5);
   } catch (e) {
     console.warn('Match audio failed', e);
+  }
+}
+
+export function playLevelUpSound() {
+  if (typeof window === 'undefined' || !sfxEnabled) return;
+
+  try {
+    const ctx = getAudioContext();
+    const startTime = ctx.currentTime;
+    
+    // Bass swell
+    const bass = ctx.createOscillator();
+    const bassGain = ctx.createGain();
+    bass.type = 'triangle';
+    bass.frequency.setValueAtTime(60, startTime);
+    bass.frequency.exponentialRampToValueAtTime(120, startTime + 1.5);
+    bassGain.gain.setValueAtTime(0, startTime);
+    bassGain.gain.linearRampToValueAtTime(0.2, startTime + 1.0);
+    bassGain.gain.linearRampToValueAtTime(0, startTime + 2.0);
+    bass.connect(bassGain);
+    bassGain.connect(ctx.destination);
+    bass.start(startTime);
+    bass.stop(startTime + 2.0);
+
+    // Choral/Pad rise
+    const frequencies = [261.63, 329.63, 392.00, 523.25]; // C major chord
+    frequencies.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime + 0.5);
+      osc.frequency.exponentialRampToValueAtTime(freq * 2, startTime + 2.5);
+      gain.gain.setValueAtTime(0, startTime + 0.5);
+      gain.gain.linearRampToValueAtTime(0.05, startTime + 1.5);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 3.0);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(startTime + 0.5);
+      osc.stop(startTime + 3.0);
+    });
+
+    // Chimes
+    for(let j = 0; j < 5; j++) {
+      const chime = ctx.createOscillator();
+      const chimeGain = ctx.createGain();
+      chime.type = 'sine';
+      chime.frequency.setValueAtTime(2000 + (Math.random() * 1000), startTime + 1.5 + (j * 0.1));
+      chimeGain.gain.setValueAtTime(0, startTime + 1.5 + (j * 0.1));
+      chimeGain.gain.linearRampToValueAtTime(0.05, startTime + 1.55 + (j * 0.1));
+      chimeGain.gain.exponentialRampToValueAtTime(0.001, startTime + 2.0 + (j * 0.1));
+      chime.connect(chimeGain);
+      chimeGain.connect(ctx.destination);
+      chime.start(startTime + 1.5 + (j * 0.1));
+      chime.stop(startTime + 2.5);
+    }
+  } catch (e) {
+    console.warn('Level up audio failed', e);
   }
 }
 

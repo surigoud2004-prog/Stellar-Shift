@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -25,6 +26,7 @@ import {
 import { Language, LOCALIZATION } from '@/lib/localization';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { usePlayerProfile } from './usePlayerProfile';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
 
@@ -54,12 +56,14 @@ export function useGameState() {
   const lastMatchTime = useRef(Date.now());
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const profile = usePlayerProfile();
+
   const t = LOCALIZATION[language];
 
   const targetScore = Math.floor(1000 * calculateDifficulty(level) * (gameMode === 'hard' ? 1.5 : gameMode === 'hell' ? 2 : 1));
 
-  const isInputFrozen = isProcessing || isGameOver || isWin || isLocked || isPaused || isSettingsOpen;
-  const isTimerFrozen = !gameStarted || isGameOver || isWin || isPaused || isSettingsOpen;
+  const isInputFrozen = isProcessing || isGameOver || isWin || isLocked || isPaused || isSettingsOpen || profile.showProfile;
+  const isTimerFrozen = !gameStarted || isGameOver || isWin || isPaused || isSettingsOpen || profile.showProfile;
 
   useEffect(() => {
     const savedBest = localStorage.getItem('stellar_best_score');
@@ -107,7 +111,7 @@ export function useGameState() {
       
       const payload = {
         uid: auth.currentUser?.uid || 'anon',
-        displayName: 'Stellar Pilot',
+        displayName: profile.profile.name,
         score,
         level,
         timestamp: Date.now()
@@ -128,6 +132,9 @@ export function useGameState() {
         localStorage.setItem('stellar_best_score', score.toString());
       }
       localStorage.setItem('stellar_level', level.toString());
+      
+      // Update persistent player stats
+      profile.updateStats(score, 0, true);
     } catch (e) {
       // Auth or general failure
     }
@@ -243,7 +250,9 @@ export function useGameState() {
         addLoreLog(loreRes.loreSnippet);
       }
 
-      setScore(s => s + matches.length * 20 * (comboLevel + 1));
+      const matchPoints = matches.length * 20 * (comboLevel + 1);
+      setScore(s => s + matchPoints);
+      profile.updateStats(matchPoints, matches.length);
 
       const variety = getColorVariety(level);
       const newGrid: CelestialEntity[] = [];
@@ -265,7 +274,7 @@ export function useGameState() {
     } else {
       setIsProcessing(false);
     }
-  }, [level, addLoreLog]);
+  }, [level, addLoreLog, profile]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
     if (isInputFrozen) return;
@@ -283,7 +292,11 @@ export function useGameState() {
       playSpecialActivationSound();
       const comet = newEntities[idx1].special === 'comet' ? newEntities[idx1] : newEntities[idx2];
       const cleared = entities.filter(e => e.id !== comet.id).slice(0, 5).map(e => e.id);
-      setScore(s => s + 500);
+      
+      const bonusScore = 500;
+      setScore(s => s + bonusScore);
+      profile.updateStats(bonusScore, 1);
+
       const filtered = entities.filter(e => !cleared.includes(e.id) && e.id !== comet.id);
       setEntities(filtered);
       setTimeout(() => handleMatch(filtered, undefined, 0), 200);
@@ -314,7 +327,7 @@ export function useGameState() {
     }
     
     await handleMatch(newEntities, id1, 0);
-  }, [entities, handleMatch, isInputFrozen, addLoreLog]);
+  }, [entities, handleMatch, isInputFrozen, addLoreLog, profile]);
 
   const startGame = () => {
     playUIClickSound();
@@ -342,6 +355,7 @@ export function useGameState() {
     gameStarted, startGame, resetToMainMenu,
     isSettingsOpen, setIsSettingsOpen, isInputFrozen,
     soundOn, handleToggleSound,
-    language, cycleLanguage, t
+    language, cycleLanguage, t,
+    profile
   };
 }
