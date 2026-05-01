@@ -111,18 +111,7 @@ export function Board() {
   };
 
   const toggleHallOfFame = () => {
-    playUIClickSound();
     setShowHallOfFame(!showHallOfFame);
-  };
-
-  const changeMode = (mode: GameMode) => {
-    playUIClickSound();
-    setGameMode(mode);
-  };
-
-  const handleReboot = () => {
-    playUIClickSound();
-    initBoard();
   };
 
   const progress = Math.min(100, (score / targetScore) * 100);
@@ -143,6 +132,9 @@ export function Board() {
         onToggleMusic={handleToggleMusic}
         language={language}
         onCycleLanguage={cycleLanguage}
+        gameMode={gameMode}
+        onSetGameMode={setGameMode}
+        onShowFame={toggleHallOfFame}
         labels={t}
       />
 
@@ -190,46 +182,24 @@ export function Board() {
           </div>
         </Card>
 
-        <Card className="glass-morphism p-6 border-secondary/20">
-          <h2 className="font-headline text-xl font-bold mb-4 text-secondary flex items-center gap-2">
-            <Zap className="w-5 h-5" /> {t.subsystems}
-          </h2>
-          <div className="grid grid-cols-1 gap-2">
-            {(['easy', 'hard', 'hell'] as GameMode[]).map((mode) => (
-              <Button 
-                key={mode} 
-                variant={gameMode === mode ? "default" : "outline"} 
-                size="sm"
-                className="w-full uppercase text-[10px] font-bold tracking-widest"
-                onClick={() => changeMode(mode)}
-                disabled={isPaused || isSettingsOpen}
-              >
-                {mode}
-              </Button>
-            ))}
-            
-            <div className="mt-6 flex flex-col gap-4">
-              {gameStarted && (
-                <button 
-                  onClick={handleAbortMission}
-                  className="btn-glossy-red w-full h-14 flex items-center justify-center gap-3 text-white font-black uppercase tracking-[0.2em] text-xs"
-                >
-                  <X className="w-5 h-5" strokeWidth={3} />
-                  {t.abortMission}
-                </button>
-              )}
-
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full uppercase text-[10px] font-bold tracking-widest hover:border-primary/50"
-                onClick={toggleHallOfFame}
-                disabled={isPaused || isSettingsOpen}
-              >
-                <Globe className="w-4 h-4 mr-2" /> {showHallOfFame ? t.closeFame : t.hallOfFame}
-              </Button>
-            </div>
-          </div>
+        <Card className="glass-morphism p-6 border-secondary/20 hidden md:block">
+           <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-4 font-bold flex items-center gap-2">
+             <Shield className="w-3 h-3 text-primary" /> Sector Status
+           </p>
+           <div className="space-y-2">
+             <div className="flex justify-between text-[9px] uppercase tracking-widest">
+                <span className="text-muted-foreground">Encryption</span>
+                <span className="text-primary font-bold">Stable</span>
+             </div>
+             <div className="flex justify-between text-[9px] uppercase tracking-widest">
+                <span className="text-muted-foreground">Neural Link</span>
+                <span className="text-secondary font-bold">Active</span>
+             </div>
+             <div className="flex justify-between text-[9px] uppercase tracking-widest">
+                <span className="text-muted-foreground">AI Core</span>
+                <span className="text-amber-400 font-bold">Online</span>
+             </div>
+           </div>
         </Card>
       </div>
 

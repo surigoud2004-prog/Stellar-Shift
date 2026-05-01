@@ -1,10 +1,11 @@
 
 "use client";
 
-import { Settings, Volume2, VolumeX, Music, Home, Languages } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Music, Home, Languages, Zap, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { playUIClickSound } from '@/lib/audio-system';
 import { Language } from '@/lib/localization';
+import { GameMode } from '@/hooks/useGameState';
 
 interface SettingsDrawerProps {
   isOpen: boolean;
@@ -18,6 +19,9 @@ interface SettingsDrawerProps {
   onToggleMusic: () => void;
   language: Language;
   onCycleLanguage: () => void;
+  gameMode: GameMode;
+  onSetGameMode: (mode: GameMode) => void;
+  onShowFame: () => void;
   labels: Record<string, string>;
 }
 
@@ -33,6 +37,9 @@ export function SettingsDrawer({
   onToggleMusic,
   language,
   onCycleLanguage,
+  gameMode,
+  onSetGameMode,
+  onShowFame,
   labels
 }: SettingsDrawerProps) {
   const toggleSettings = () => {
@@ -46,7 +53,28 @@ export function SettingsDrawer({
     action();
   };
 
+  const cycleDifficulty = () => {
+    const modes: GameMode[] = ['easy', 'hard', 'hell'];
+    const currentIndex = modes.indexOf(gameMode);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    onSetGameMode(modes[nextIndex]);
+  };
+
   const buttons = [
+    { 
+      icon: Zap, 
+      label: `${labels.subsystems}: ${gameMode.toUpperCase()}`, 
+      onClick: cycleDifficulty,
+      active: true,
+      color: 'text-amber-400'
+    },
+    { 
+      icon: Trophy, 
+      label: labels.hallOfFame, 
+      onClick: onShowFame,
+      active: true,
+      color: 'text-primary'
+    },
     { 
       icon: soundOn ? Volume2 : VolumeX, 
       label: labels.sound, 
