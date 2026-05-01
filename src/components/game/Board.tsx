@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
@@ -22,7 +21,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { 
   Orbit, Shield, Trophy, 
-  Skull, Lock, Pause, Play, Timer, Cpu, X, Terminal
+  Skull, Lock, Pause, Play, Timer, Cpu, X, Terminal, User
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HallOfFame } from './HallOfFame';
@@ -122,6 +121,21 @@ export function Board() {
       {/* Command Cluster */}
       <div className="fixed top-8 right-8 z-[70] flex flex-col items-end gap-4 pointer-events-none">
         <div className="flex items-center gap-4 pointer-events-auto">
+          {/* Dedicated Profile Button */}
+          <button 
+            onClick={() => profile.setShowProfile(true)}
+            disabled={isProcessing}
+            className={cn(
+              "settings-gear-btn group",
+              isProcessing && "opacity-50 grayscale"
+            )}
+            title={t.profile}
+          >
+            <div className="gear-core bg-cyan-400" />
+            <User className="w-7 h-7 text-slate-900 relative z-10 drop-shadow-md group-hover:scale-110 transition-transform" />
+            <div className="gear-aura group-hover:opacity-100" />
+          </button>
+
           <SettingsDrawer 
             isOpen={isSettingsOpen} 
             onToggle={setIsSettingsOpen} 
@@ -133,7 +147,6 @@ export function Board() {
             gameMode={gameMode}
             onSetGameMode={setGameMode}
             onShowFame={toggleHallOfFame}
-            onShowProfile={() => profile.setShowProfile(true)}
             labels={t}
           />
           <button 
