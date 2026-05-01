@@ -200,7 +200,8 @@ export function useGameState() {
   useEffect(() => {
     if (isInputFrozen) return;
     const interval = setInterval(() => {
-      if (Date.now() - lastMatchTime.current > 15000) {
+      // Increased anomaly threshold to 25s for a more atmospheric experience
+      if (Date.now() - lastMatchTime.current > 25000) {
         setEntities(prev => {
           const next = [...prev];
           const randIdx = Math.floor(Math.random() * next.length);
