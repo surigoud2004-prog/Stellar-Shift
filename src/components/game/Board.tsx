@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
@@ -34,7 +35,7 @@ export function Board() {
     isGameOver, isWin, isLocked, isPaused, setIsPaused, lore, selectedId, setSelectedId, 
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
     gameStarted, startGame, resetToMainMenu, isSettingsOpen, setIsSettingsOpen, isInputFrozen,
-    soundOn, musicOn, handleToggleSound, handleToggleMusic
+    soundOn, musicOn, handleToggleSound, handleToggleMusic, language, cycleLanguage, t
   } = useGameState();
 
   const logEndRef = useRef<HTMLDivElement>(null);
@@ -140,6 +141,9 @@ export function Board() {
         musicOn={musicOn}
         onToggleSound={handleToggleSound}
         onToggleMusic={handleToggleMusic}
+        language={language}
+        onCycleLanguage={cycleLanguage}
+        labels={t}
       />
 
       {isFading && (
@@ -152,7 +156,7 @@ export function Board() {
           <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-headline text-2xl font-bold text-primary flex items-center gap-2">
-              <Orbit className="w-6 h-6 animate-spin-slow" /> Sector {level}
+              <Orbit className="w-6 h-6 animate-spin-slow" /> {t.sector} {level}
             </h2>
             <Badge variant="outline" className="border-primary uppercase text-[10px] animate-pulse">
               {gameMode}
@@ -166,19 +170,19 @@ export function Board() {
               </span>
               {isPaused && (
                 <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50 uppercase text-[8px]">
-                  Paused
+                  {t.paused}
                 </Badge>
               )}
             </div>
             <div className="relative pt-2">
               <div className="flex justify-between text-[10px] mb-1.5 text-muted-foreground uppercase tracking-widest font-bold">
-                <span>Alignment Resonance</span>
+                <span>{t.alignment}</span>
                 <span>{Math.floor(progress)}%</span>
               </div>
               <Progress value={progress} className="h-1.5 bg-muted/30" />
             </div>
             <div className="pt-6 border-t border-white/10">
-              <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-1">Current Output</p>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-1">{t.output}</p>
               <div className="text-5xl font-headline font-black text-white tabular-nums">
                 {score.toLocaleString()}
               </div>
@@ -188,7 +192,7 @@ export function Board() {
 
         <Card className="glass-morphism p-6 border-secondary/20">
           <h2 className="font-headline text-xl font-bold mb-4 text-secondary flex items-center gap-2">
-            <Zap className="w-5 h-5" /> Sub-Systems
+            <Zap className="w-5 h-5" /> {t.subsystems}
           </h2>
           <div className="grid grid-cols-1 gap-2">
             {(['easy', 'hard', 'hell'] as GameMode[]).map((mode) => (
@@ -211,7 +215,7 @@ export function Board() {
                   className="btn-glossy-red w-full h-14 flex items-center justify-center gap-3 text-white font-black uppercase tracking-[0.2em] text-xs"
                 >
                   <X className="w-5 h-5" strokeWidth={3} />
-                  Abort Mission
+                  {t.abortMission}
                 </button>
               )}
 
@@ -222,7 +226,7 @@ export function Board() {
                 onClick={toggleHallOfFame}
                 disabled={isPaused || isSettingsOpen}
               >
-                <Globe className="w-4 h-4 mr-2" /> {showHallOfFame ? "Close Fame" : "Hall of Fame"}
+                <Globe className="w-4 h-4 mr-2" /> {showHallOfFame ? t.closeFame : t.hallOfFame}
               </Button>
             </div>
           </div>
@@ -251,7 +255,7 @@ export function Board() {
              <div className="mb-12 relative">
                 <div className="absolute inset-0 bg-primary/20 blur-[60px] animate-pulse" />
                 <h1 className="text-6xl font-headline font-black italic text-white tracking-tighter uppercase mb-2">STELLAR SHIFT</h1>
-                <p className="text-[10px] tracking-[0.6em] text-primary font-bold uppercase">Alignment Protocol Engaged</p>
+                <p className="text-[10px] tracking-[0.6em] text-primary font-bold uppercase">{t.protocol}</p>
              </div>
              
              <button 
@@ -260,36 +264,36 @@ export function Board() {
              >
                <span className="relative z-10 flex items-center gap-3">
                  <Play className="w-8 h-8 fill-white" />
-                 START
+                 {t.start}
                </span>
              </button>
 
              <div className="mt-12 grid grid-cols-2 gap-8 max-w-sm">
                 <div className="text-center">
                   <div className="text-primary text-xl font-bold font-headline">{bestScore.toLocaleString()}</div>
-                  <div className="text-[8px] uppercase tracking-widest text-muted-foreground font-bold">Personal Best</div>
+                  <div className="text-[8px] uppercase tracking-widest text-muted-foreground font-bold">{t.best}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-secondary text-xl font-bold font-headline">{level}</div>
-                  <div className="text-[8px] uppercase tracking-widest text-muted-foreground font-bold">Highest Sector</div>
+                  <div className="text-[8px] uppercase tracking-widest text-muted-foreground font-bold">{t.highest}</div>
                 </div>
              </div>
           </div>
         ) : showHallOfFame ? (
-          <HallOfFame />
+          <HallOfFame title={t.hallOfFame} subtitle={t.highest} />
         ) : (
           <div className="relative z-10 flex flex-col h-full">
             {isGameOver && (
               <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500">
                 <Skull className="w-20 h-20 text-destructive mb-6 animate-bounce" />
-                <h2 className="text-5xl font-headline font-black text-white mb-2 tracking-tighter">MISSION TERMINATED</h2>
-                <Button onClick={handleReboot} size="lg" className="bg-destructive hover:bg-destructive/80 px-12 h-14 font-black uppercase tracking-[0.2em]">REBOOT SYSTEM</Button>
+                <h2 className="text-5xl font-headline font-black text-white mb-2 tracking-tighter">{t.missionTerminated}</h2>
+                <Button onClick={handleReboot} size="lg" className="bg-destructive hover:bg-destructive/80 px-12 h-14 font-black uppercase tracking-[0.2em]">{t.reboot}</Button>
               </div>
             )}
             {isWin && (
               <div className="absolute inset-0 z-50 bg-primary/30 backdrop-blur-xl flex flex-col items-center justify-center p-8 text-center animate-in zoom-in duration-500">
                 <Trophy className="w-20 h-20 text-white mb-6 animate-pulse" />
-                <h2 className="text-5xl font-headline font-black text-white mb-2 tracking-tighter">VICTORY</h2>
+                <h2 className="text-5xl font-headline font-black text-white mb-2 tracking-tighter">{t.victory}</h2>
               </div>
             )}
             {(isInputFrozen && !isProcessing) && (
@@ -300,7 +304,7 @@ export function Board() {
                   <Lock className="w-12 h-12 text-destructive animate-pulse mb-2" />
                 )}
                 <span className="text-primary font-black text-xs uppercase tracking-[0.5em]">
-                  {isPaused || isSettingsOpen ? "Sector Frozen" : "Systems Frozen"}
+                  {isPaused || isSettingsOpen ? t.paused : t.missionTerminated}
                 </span>
               </div>
             )}
@@ -349,12 +353,12 @@ export function Board() {
         <Card className="glass-morphism p-0 h-full flex flex-col border-white/10 overflow-hidden group">
           <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5">
             <h2 className="font-headline text-sm font-bold text-primary flex items-center gap-2 uppercase tracking-widest">
-              <Terminal className="w-4 h-4" /> Archive Logs
+              <Terminal className="w-4 h-4" /> {t.archive}
             </h2>
           </div>
           <div className="flex-1 p-4 bg-black/40 font-mono text-[10px] text-muted-foreground/80 overflow-y-auto max-h-[450px] scrollbar-hide">
             {logHistory.length === 0 ? (
-              <div className="animate-pulse">Waiting for telemetry...</div>
+              <div className="animate-pulse">{t.waiting}</div>
             ) : (
               logHistory.map((entry, idx) => (
                 <div key={idx} className="cli-line group/line">
@@ -372,10 +376,10 @@ export function Board() {
         <AlertDialogContent className="bg-[#1a0b2e]/80 backdrop-blur-2xl border-2 border-cyan-500/50 shadow-[0_0_30px_rgba(6,182,212,0.2)] rounded-3xl p-10 max-w-sm">
           <AlertDialogHeader className="text-center space-y-6">
             <AlertDialogTitle className="text-white font-headline text-3xl font-light tracking-[0.15em] uppercase text-center">
-              ABANDON MISSION?
+              {t.abandonMission}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-cyan-200/60 uppercase text-[9px] tracking-[0.3em] font-medium leading-relaxed">
-              Neural link will be severed. All sector telemetry will be lost to the void.
+              {t.abandonDesc}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex flex-col sm:flex-col gap-4 mt-10">
@@ -383,13 +387,13 @@ export function Board() {
               onClick={confirmAbort}
               className="w-full bg-red-500/20 hover:bg-red-500/40 text-red-200 border border-red-500/50 uppercase text-[10px] font-black tracking-[0.3em] h-14 rounded-full transition-all duration-300 shadow-lg"
             >
-              YES
+              {t.yes}
             </AlertDialogAction>
             <AlertDialogCancel 
               onClick={cancelAbort}
               className="w-full bg-amber-400 text-black hover:bg-amber-300 border-none shadow-[0_0_20px_rgba(251,191,36,0.4)] uppercase text-[10px] font-black tracking-[0.3em] h-14 rounded-full transition-all duration-300"
             >
-              NO
+              {t.no}
             </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>

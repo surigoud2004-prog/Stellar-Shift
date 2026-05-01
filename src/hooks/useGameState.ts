@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -24,6 +25,7 @@ import {
   toggleMusic,
   startBackgroundMusic
 } from '@/lib/audio-system';
+import { Language, LOCALIZATION } from '@/lib/localization';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
 
@@ -45,13 +47,16 @@ export function useGameState() {
   const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   
-  // Audio Settings
+  // Audio & Localization Settings
   const [soundOn, setSoundOn] = useState(true);
   const [musicOn, setMusicOn] = useState(true);
+  const [language, setLanguage] = useState<Language>('en');
   
   const lastMoveTime = useRef(Date.now());
   const lastMatchTime = useRef(Date.now());
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const t = LOCALIZATION[language];
 
   const targetScore = Math.floor(1000 * calculateDifficulty(level) * (gameMode === 'hard' ? 1.5 : gameMode === 'hell' ? 2 : 1));
 
@@ -63,9 +68,11 @@ export function useGameState() {
     const savedLevel = localStorage.getItem('stellar_level');
     const savedSound = localStorage.getItem('stellar_sound_on');
     const savedMusic = localStorage.getItem('stellar_music_on');
+    const savedLang = localStorage.getItem('stellar_language') as Language;
 
     if (savedBest) setBestScore(parseInt(savedBest));
     if (savedLevel) setLevel(parseInt(savedLevel));
+    if (savedLang) setLanguage(savedLang);
     
     if (savedSound !== null) {
       const isSound = savedSound === 'true';
@@ -93,6 +100,16 @@ export function useGameState() {
     toggleMusic(newState);
     localStorage.setItem('stellar_music_on', newState.toString());
   }, [musicOn]);
+
+  const cycleLanguage = useCallback(() => {
+    const languages: Language[] = ['en', 'es', 'fr'];
+    const currentIndex = languages.indexOf(language);
+    const nextIndex = (currentIndex + 1) % languages.length;
+    const nextLang = languages[nextIndex];
+    setLanguage(nextLang);
+    localStorage.setItem('stellar_language', nextLang);
+    playUIClickSound();
+  }, [language]);
 
   const syncHighScore = async () => {
     try {
@@ -322,6 +339,7 @@ export function useGameState() {
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
     gameStarted, startGame, resetToMainMenu,
     isSettingsOpen, setIsSettingsOpen, isInputFrozen,
-    soundOn, musicOn, handleToggleSound, handleToggleMusic
+    soundOn, musicOn, handleToggleSound, handleToggleMusic,
+    language, cycleLanguage, t
   };
 }

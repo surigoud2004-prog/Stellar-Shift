@@ -16,7 +16,12 @@ interface LeaderboardEntry {
   timestamp: number;
 }
 
-export function HallOfFame() {
+interface HallOfFameProps {
+  title: string;
+  subtitle: string;
+}
+
+export function HallOfFame({ title, subtitle }: HallOfFameProps) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,8 +47,8 @@ export function HallOfFame() {
       <div className="flex items-center gap-3 mb-6">
         <Trophy className="w-8 h-8 text-primary animate-pulse" />
         <div>
-          <h2 className="text-2xl font-headline font-bold text-white">Hall of Fame</h2>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Top 100 Galactic Pilots</p>
+          <h2 className="text-2xl font-headline font-bold text-white">{title}</h2>
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{subtitle}</p>
         </div>
       </div>
 
@@ -70,7 +75,7 @@ export function HallOfFame() {
               </div>
               <div className="text-right">
                 <div className="text-lg font-bold text-white">{entry.score.toLocaleString()}</div>
-                <div className="text-[10px] text-secondary font-bold">LEVEL {entry.level}</div>
+                <div className="text-[10px] text-secondary font-bold">{subtitle.split(' ')[0]} {entry.level}</div>
               </div>
             </div>
           ))

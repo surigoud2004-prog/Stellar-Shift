@@ -1,8 +1,10 @@
+
 "use client";
 
 import { Settings, Volume2, VolumeX, Music, Home, Languages } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { playUIClickSound } from '@/lib/audio-system';
+import { Language } from '@/lib/localization';
 
 interface SettingsDrawerProps {
   isOpen: boolean;
@@ -14,6 +16,9 @@ interface SettingsDrawerProps {
   musicOn: boolean;
   onToggleSound: () => void;
   onToggleMusic: () => void;
+  language: Language;
+  onCycleLanguage: () => void;
+  labels: Record<string, string>;
 }
 
 export function SettingsDrawer({ 
@@ -25,7 +30,10 @@ export function SettingsDrawer({
   soundOn,
   musicOn,
   onToggleSound,
-  onToggleMusic
+  onToggleMusic,
+  language,
+  onCycleLanguage,
+  labels
 }: SettingsDrawerProps) {
   const toggleSettings = () => {
     if (disabled) return;
@@ -41,22 +49,23 @@ export function SettingsDrawer({
   const buttons = [
     { 
       icon: soundOn ? Volume2 : VolumeX, 
-      label: 'Sound', 
+      label: labels.sound, 
       active: soundOn, 
       onClick: onToggleSound 
     },
     { 
       icon: Music, 
-      label: 'Music', 
+      label: labels.music, 
       active: musicOn, 
       onClick: onToggleMusic 
     },
     { 
       icon: Languages, 
-      label: 'Language', 
-      onClick: () => {} 
+      label: labels.language + `: ${language.toUpperCase()}`, 
+      onClick: onCycleLanguage,
+      active: true
     },
-    ...(gameInProgress ? [{ icon: Home, label: 'Exit', onClick: onHome, color: 'text-destructive' }] : []),
+    ...(gameInProgress ? [{ icon: Home, label: labels.exit, onClick: onHome, color: 'text-destructive' }] : []),
   ];
 
   return (
@@ -66,7 +75,7 @@ export function SettingsDrawer({
         onClick={toggleSettings}
         disabled={disabled}
         className={cn(
-          "settings-gear-btn group flex-shrink-0",
+          "settings-gear-btn group flex-shrink-0 pointer-events-auto",
           isOpen && "rotate-90",
           disabled && "opacity-50 grayscale"
         )}
@@ -87,7 +96,7 @@ export function SettingsDrawer({
             onClick={() => handleAction(btn.onClick)}
             style={{ transitionDelay: `${isOpen ? (idx + 1) * 100 : 0}ms` }}
             className={cn(
-              "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500",
+              "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 relative group/btn",
               "hover:bg-primary/30 hover:scale-110 active:scale-95 shadow-lg",
               btn.active === false ? "bg-black/40 text-muted-foreground" : "bg-white/10 text-white",
               btn.color,
@@ -96,6 +105,9 @@ export function SettingsDrawer({
             title={btn.label}
           >
             <btn.icon className="w-7 h-7" />
+            <span className="absolute right-full mr-4 bg-black/80 text-[8px] px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap uppercase tracking-widest font-bold border border-white/10 pointer-events-none">
+              {btn.label}
+            </span>
           </button>
         ))}
       </div>
