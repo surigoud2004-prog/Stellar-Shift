@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { 
   Orbit, Shield, Trophy, 
-  Skull, Lock, Terminal, Pause, Play, Timer, Cpu
+  Skull, Lock, Terminal, Pause, Play, Timer, Cpu, X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HallOfFame } from './HallOfFame';
@@ -124,23 +124,37 @@ export function Board() {
     <div className="flex flex-col lg:flex-row gap-8 w-full max-w-7xl mx-auto p-4 lg:p-8 min-h-[90vh] relative">
       <ParallaxBackground isWarping={isWarping} />
       
-      <SettingsDrawer 
-        isOpen={isSettingsOpen} 
-        onToggle={setIsSettingsOpen} 
-        onHome={handleAbortMission}
-        disabled={isProcessing}
-        gameInProgress={gameStarted && !isGameOver && !isWin}
-        soundOn={soundOn}
-        musicOn={musicOn}
-        onToggleSound={handleToggleSound}
-        onToggleMusic={handleToggleMusic}
-        language={language}
-        onCycleLanguage={cycleLanguage}
-        gameMode={gameMode}
-        onSetGameMode={setGameMode}
-        onShowFame={toggleHallOfFame}
-        labels={t}
-      />
+      {/* Top Right command console cluster */}
+      <div className="fixed top-8 right-8 z-[70] flex flex-col items-end gap-4 pointer-events-none">
+        <div className="flex items-center gap-4 pointer-events-auto">
+          <SettingsDrawer 
+            isOpen={isSettingsOpen} 
+            onToggle={setIsSettingsOpen} 
+            disabled={isProcessing}
+            soundOn={soundOn}
+            musicOn={musicOn}
+            onToggleSound={handleToggleSound}
+            onToggleMusic={handleToggleMusic}
+            language={language}
+            onCycleLanguage={cycleLanguage}
+            gameMode={gameMode}
+            onSetGameMode={setGameMode}
+            onShowFame={toggleHallOfFame}
+            labels={t}
+          />
+          <button 
+            onClick={handleAbortMission}
+            className={cn(
+              "abort-hex group",
+              timeLeft < 15 && gameStarted && "animate-abort-pulse"
+            )}
+            title={t.abortMission}
+          >
+            <X className="w-6 h-6 text-destructive-foreground group-hover:scale-110 transition-transform" />
+            <div className="absolute inset-0 bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+        </div>
+      </div>
 
       {isFading && (
         <div className="fixed inset-0 bg-black z-[100] animate-in fade-in duration-500" />
@@ -160,7 +174,7 @@ export function Board() {
           </div>
           <div className="space-y-4">
             <div className="flex items-center gap-3 text-secondary">
-              <Timer className={cn("w-5 h-5", timeLeft < 15 && "text-destructive animate-pulse")} />
+              <Timer className={cn("w-5 h-5", timeLeft < 15 && gameStarted && "text-destructive animate-pulse")} />
               <span className="text-3xl font-mono font-bold tracking-tighter">
                 {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
               </span>
@@ -288,7 +302,7 @@ export function Board() {
                 className={cn("relative transition-all duration-700", isInputFrozen && "opacity-50 grayscale contrast-125")} 
                 style={{ width: `${GRID_SIZE * HEX_WIDTH}px`, height: `${(GRID_SIZE - 1) * HEX_WIDTH}px`, marginLeft: `-${HEX_WIDTH/2}px` }}
               >
-                {entities.map(entity => (
+                {entities.map((entity) => (
                   <Entity 
                     key={entity.id} 
                     entity={entity} 

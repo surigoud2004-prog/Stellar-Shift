@@ -23,9 +23,13 @@ export function getColorVariety(level: number): number {
   return Math.min(8, 4 + Math.floor(level / 10));
 }
 
+function generateStableId() {
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+}
+
 export function generateRandomEntity(q: number, r: number, variety: number = 6): CelestialEntity {
   return {
-    id: Math.random().toString(36).substring(7),
+    id: generateStableId(),
     type: Math.floor(Math.random() * variety) as EntityType,
     q,
     r,
@@ -119,13 +123,13 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
 
       if (hGroup && vGroup) {
         // T or L shape
-        specialToSpawn = { id: lastMoveId, type: 'bomb', entityType: moved.type, q: moved.q, r: moved.r };
+        specialToSpawn = { id: generateStableId(), type: 'bomb', entityType: moved.type, q: moved.q, r: moved.r };
       } else if (hGroup && hGroup.size >= 5 || vGroup && vGroup.size >= 5) {
         // Line 5
-        specialToSpawn = { id: lastMoveId, type: 'black-hole', entityType: moved.type, q: moved.q, r: moved.r };
+        specialToSpawn = { id: generateStableId(), type: 'black-hole', entityType: moved.type, q: moved.q, r: moved.r };
       } else if (hGroup && hGroup.size === 4 || vGroup && vGroup.size === 4) {
         // Line 4
-        specialToSpawn = { id: lastMoveId, type: 'nova-h', entityType: moved.type, q: moved.q, r: moved.r };
+        specialToSpawn = { id: generateStableId(), type: 'nova-h', entityType: moved.type, q: moved.q, r: moved.r };
       }
     }
   }

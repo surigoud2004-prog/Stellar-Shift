@@ -1,7 +1,6 @@
-
 "use client";
 
-import { Settings, Volume2, VolumeX, Music, Home, Languages, Zap, Trophy } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Music, Languages, Zap, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { playUIClickSound } from '@/lib/audio-system';
 import { Language } from '@/lib/localization';
@@ -10,9 +9,7 @@ import { GameMode } from '@/hooks/useGameState';
 interface SettingsDrawerProps {
   isOpen: boolean;
   onToggle: (open: boolean) => void;
-  onHome: () => void;
   disabled?: boolean;
-  gameInProgress?: boolean;
   soundOn: boolean;
   musicOn: boolean;
   onToggleSound: () => void;
@@ -28,9 +25,7 @@ interface SettingsDrawerProps {
 export function SettingsDrawer({ 
   isOpen, 
   onToggle, 
-  onHome, 
   disabled, 
-  gameInProgress,
   soundOn,
   musicOn,
   onToggleSound,
@@ -93,30 +88,29 @@ export function SettingsDrawer({
       onClick: onCycleLanguage,
       active: true
     },
-    ...(gameInProgress ? [{ icon: Home, label: labels.exit, onClick: onHome, color: 'text-destructive' }] : []),
   ];
 
   return (
-    <div className="fixed top-8 right-8 z-[60] flex flex-row-reverse items-start gap-6 pointer-events-none">
+    <div className="relative flex flex-col items-end gap-4">
       {/* Settings Gear */}
       <button
         onClick={toggleSettings}
         disabled={disabled}
         className={cn(
-          "settings-gear-btn group flex-shrink-0 pointer-events-auto",
+          "settings-gear-btn group pointer-events-auto",
           isOpen && "rotate-90",
           disabled && "opacity-50 grayscale"
         )}
       >
         <div className="gear-core" />
-        <Settings className="w-10 h-10 text-slate-900 relative z-10 drop-shadow-md" />
+        <Settings className="w-8 h-8 text-slate-900 relative z-10 drop-shadow-md" />
         <div className={cn("gear-aura", !disabled && "group-hover:opacity-100")} />
       </button>
 
-      {/* Drawer Panel */}
+      {/* Drawer Panel - Positioned below buttons */}
       <div className={cn(
-        "pointer-events-auto glass-morphism border-primary/20 rounded-[2rem] p-5 transition-all duration-700 ease-out flex flex-col gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]",
-        isOpen ? "translate-x-0 opacity-100 w-24" : "translate-x-12 opacity-0 w-0 p-0 overflow-hidden"
+        "absolute top-full right-0 mt-4 pointer-events-auto glass-morphism border-primary/20 rounded-[2rem] p-4 transition-all duration-700 ease-out flex flex-col gap-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[65]",
+        isOpen ? "translate-y-0 opacity-100 w-20" : "-translate-y-8 opacity-0 w-0 p-0 overflow-hidden"
       )}>
         {buttons.map((btn, idx) => (
           <button
@@ -124,15 +118,15 @@ export function SettingsDrawer({
             onClick={() => handleAction(btn.onClick)}
             style={{ transitionDelay: `${isOpen ? (idx + 1) * 100 : 0}ms` }}
             className={cn(
-              "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 relative group/btn",
+              "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 relative group/btn",
               "hover:bg-primary/30 hover:scale-110 active:scale-95 shadow-lg",
               btn.active === false ? "bg-black/40 text-muted-foreground" : "bg-white/10 text-white",
               btn.color,
-              isOpen ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+              isOpen ? "translate-x-0 opacity-100" : "translate-x-12 opacity-0"
             )}
             title={btn.label}
           >
-            <btn.icon className="w-7 h-7" />
+            <btn.icon className="w-6 h-6" />
             <span className="absolute right-full mr-4 bg-black/80 text-[8px] px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap uppercase tracking-widest font-bold border border-white/10 pointer-events-none">
               {btn.label}
             </span>

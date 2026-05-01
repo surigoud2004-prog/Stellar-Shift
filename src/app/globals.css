@@ -148,6 +148,26 @@
   @apply absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent pointer-events-none;
 }
 
+/* Hexagonal Command Console */
+.hex-frame {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  @apply relative flex items-center justify-center transition-all duration-300;
+}
+
+.abort-hex {
+  @apply hex-frame bg-destructive/20 border-2 border-destructive/50 w-14 h-14 cursor-pointer hover:bg-destructive/40 z-[80];
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+}
+
+@keyframes abort-pulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); border-color: rgba(239, 68, 68, 0.5); }
+  50% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.8); border-color: rgba(239, 68, 68, 1); }
+}
+
+.animate-abort-pulse {
+  animation: abort-pulse 1s ease-in-out infinite;
+}
+
 /* Cosmic Start Button: Glowing Capsule */
 .btn-cosmic-start {
   @apply relative px-20 py-6 rounded-full font-headline font-black text-4xl tracking-[0.4em] text-white uppercase transition-all duration-300 cursor-pointer select-none overflow-hidden flex items-center justify-center;
@@ -253,23 +273,13 @@
 
 /* Settings Gear Styling */
 .settings-gear-btn {
-  @apply pointer-events-auto relative w-16 h-16 rounded-full border-4 shadow-2xl transition-all duration-700 overflow-hidden flex items-center justify-center;
+  @apply pointer-events-auto relative w-14 h-14 rounded-full border-4 shadow-2xl transition-all duration-700 overflow-hidden flex items-center justify-center;
   background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 50%, #475569 100%);
   border-color: rgba(148, 163, 184, 0.6);
 }
 
 .settings-gear-btn .gear-core {
   @apply absolute w-6 h-6 rounded-full bg-violet-600 blur-[4px] opacity-60 animate-pulse;
-}
-
-.settings-gear-btn::after {
-  content: '';
-  @apply absolute inset-0 bg-gradient-to-tr from-transparent via-white/50 to-transparent -translate-x-full duration-1000 transition-transform;
-}
-
-/* Note: 'group-hover' logic moved to specific className to avoid @apply limitations */
-.settings-gear-btn:hover::after {
-  @apply translate-x-full;
 }
 
 .gear-aura {
@@ -288,4 +298,3 @@
   50% { opacity: 0.8; }
   100% { transform: translate(var(--tx, 100px), var(--ty, 100px)) scale(4); opacity: 0; }
 }
-
