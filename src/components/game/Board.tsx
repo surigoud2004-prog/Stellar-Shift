@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { 
   Orbit, Shield, Trophy, 
-  Skull, Lock, Terminal, Pause, Play, Timer, Cpu, X
+  Skull, Lock, Pause, Play, Timer, Cpu, X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HallOfFame } from './HallOfFame';
@@ -37,8 +37,6 @@ export function Board() {
     soundOn, musicOn, handleToggleSound, handleToggleMusic, language, cycleLanguage, t
   } = useGameState();
 
-  const logEndRef = useRef<HTMLDivElement>(null);
-  const [logHistory, setLogHistory] = useState<string[]>([]);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [isFading, setIsFading] = useState(false);
   const [flashColor, setFlashColor] = useState<'cyan' | 'gold' | null>(null);
@@ -46,8 +44,6 @@ export function Board() {
 
   useEffect(() => {
     if (lore) {
-      setLogHistory(prev => [...prev.slice(-100), `[${new Date().toLocaleTimeString()}] ${lore}`]);
-      
       if (lore.includes('ANOMALY')) setFlashColor('cyan');
       else if (lore.includes('Supernova') || lore.includes('Black Hole') || lore.includes('Aligned')) {
         setFlashColor('gold');
@@ -59,10 +55,6 @@ export function Board() {
       return () => clearTimeout(timer);
     }
   }, [lore]);
-
-  useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [logHistory]);
 
   const handleSelect = (id: string) => {
     if (isInputFrozen) return;
@@ -223,7 +215,7 @@ export function Board() {
 
       {/* Center - Hex Grid or Hall of Fame with STELLAR FRAME */}
       <div className={cn(
-        "lg:w-1/2 flex flex-col relative stellar-frame breathing-glow min-h-[650px] z-10",
+        "lg:w-3/4 flex flex-col relative stellar-frame breathing-glow min-h-[650px] z-10",
         flashColor === 'cyan' && "match-flash-cyan",
         flashColor === 'gold' && "match-flash-gold"
       )}>
@@ -334,30 +326,6 @@ export function Board() {
             </div>
           </div>
         )}
-      </div>
-
-      {/* Right Panel - Archive Logs CLI */}
-      <div className="lg:w-1/4 space-y-6 z-10">
-        <Card className="glass-morphism p-0 h-full flex flex-col border-white/10 overflow-hidden group">
-          <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5">
-            <h2 className="font-headline text-sm font-bold text-primary flex items-center gap-2 uppercase tracking-widest">
-              <Terminal className="w-4 h-4" /> {t.archive}
-            </h2>
-          </div>
-          <div className="flex-1 p-4 bg-black/40 font-mono text-[10px] text-muted-foreground/80 overflow-y-auto max-h-[450px] scrollbar-hide">
-            {logHistory.length === 0 ? (
-              <div className="animate-pulse">{t.waiting}</div>
-            ) : (
-              logHistory.map((entry, idx) => (
-                <div key={idx} className="cli-line group/line">
-                  <span className="text-primary/50 font-bold mr-2">{">"}</span>
-                  <span className="group-hover/line:text-white transition-colors">{entry}</span>
-                </div>
-              ))
-            )}
-            <div ref={logEndRef} />
-          </div>
-        </Card>
       </div>
 
       <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
