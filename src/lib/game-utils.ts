@@ -14,17 +14,17 @@ export const GRID_SIZE = 8;
 export const HEX_WIDTH = 64;
 
 export function calculateDifficulty(level: number): number {
-  // Formula: (1 + r)^n where r = 0.05 (5% growth)
   return Math.pow(1.05, level - 1);
 }
 
 export function getColorVariety(level: number): number {
-  // Increase from 4 to 8 colors as levels progress
   return Math.min(8, 4 + Math.floor(level / 10));
 }
 
+let idCounter = 0;
 function generateStableId() {
-  return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+  idCounter++;
+  return `shard-${Date.now()}-${idCounter}-${Math.random().toString(36).substring(2, 7)}`;
 }
 
 export function generateRandomEntity(q: number, r: number, variety: number = 6): CelestialEntity {
@@ -70,7 +70,7 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
   for (let r = 0; r < GRID_SIZE; r++) {
     let count = 1;
     for (let q = 1; q < GRID_SIZE; q++) {
-      if (grid[r][q] && grid[r][q-1] && grid[r][q].type === grid[r][q-1].type && !grid[r][q].special && !grid[r][q-1].special) {
+      if (grid[r][q] && grid[r][q-1] && grid[r][q].type === grid[r][q-1].type) {
         count++;
       } else {
         if (count >= 3) {
@@ -92,7 +92,7 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
   for (let q = 0; q < GRID_SIZE; q++) {
     let count = 1;
     for (let r = 1; r < GRID_SIZE; r++) {
-      if (grid[r][q] && grid[r-1][q] && grid[r][q].type === grid[r-1][q].type && !grid[r][q].special && !grid[r-1][q].special) {
+      if (grid[r][q] && grid[r-1][q] && grid[r][q].type === grid[r-1][q].type) {
         count++;
       } else {
         if (count >= 3) {
@@ -122,13 +122,10 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
       const vGroup = verticalGroups.find(g => g.has(lastMoveId));
 
       if (hGroup && vGroup) {
-        // T or L shape
         specialToSpawn = { id: generateStableId(), type: 'bomb', entityType: moved.type, q: moved.q, r: moved.r };
-      } else if (hGroup && hGroup.size >= 5 || vGroup && vGroup.size >= 5) {
-        // Line 5
+      } else if ((hGroup && hGroup.size >= 5) || (vGroup && vGroup.size >= 5)) {
         specialToSpawn = { id: generateStableId(), type: 'black-hole', entityType: moved.type, q: moved.q, r: moved.r };
-      } else if (hGroup && hGroup.size === 4 || vGroup && vGroup.size === 4) {
-        // Line 4
+      } else if ((hGroup && hGroup.size === 4) || (vGroup && vGroup.size === 4)) {
         specialToSpawn = { id: generateStableId(), type: 'nova-h', entityType: moved.type, q: moved.q, r: moved.r };
       }
     }

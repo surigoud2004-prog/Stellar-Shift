@@ -1,5 +1,4 @@
-
-"use client";
+'use client';
 
 import { useEffect, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
@@ -89,7 +88,12 @@ export function ParallaxBackground({ isWarping }: ParallaxBackgroundProps) {
             key={i}
             className="floating-ember"
             style={{
-              ...ember,
+              left: ember.left,
+              top: ember.top,
+              animationDelay: ember.animationDelay,
+              animationDuration: ember.animationDuration,
+              backgroundColor: ember.backgroundColor,
+              transform: ember.transform,
               '--tx': ember.tx,
               '--ty': ember.ty,
             } as any}

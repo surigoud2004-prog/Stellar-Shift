@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -244,7 +243,7 @@ export function useGameState() {
       if (specialToSpawn) {
         playSpecialActivationSound();
         updated.push({
-          id: Math.random().toString(36).substring(7),
+          id: specialToSpawn.id,
           type: specialToSpawn.entityType,
           q: specialToSpawn.q,
           r: specialToSpawn.r,
