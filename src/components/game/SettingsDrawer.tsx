@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings, Volume2, VolumeX, Music, Languages, Zap, Trophy } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Languages, Zap, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { playUIClickSound } from '@/lib/audio-system';
 import { Language } from '@/lib/localization';
@@ -11,9 +11,7 @@ interface SettingsDrawerProps {
   onToggle: (open: boolean) => void;
   disabled?: boolean;
   soundOn: boolean;
-  musicOn: boolean;
   onToggleSound: () => void;
-  onToggleMusic: () => void;
   language: Language;
   onCycleLanguage: () => void;
   gameMode: GameMode;
@@ -27,9 +25,7 @@ export function SettingsDrawer({
   onToggle, 
   disabled, 
   soundOn,
-  musicOn,
   onToggleSound,
-  onToggleMusic,
   language,
   onCycleLanguage,
   gameMode,
@@ -75,12 +71,6 @@ export function SettingsDrawer({
       label: labels.sound, 
       active: soundOn, 
       onClick: onToggleSound 
-    },
-    { 
-      icon: Music, 
-      label: labels.music, 
-      active: musicOn, 
-      onClick: onToggleMusic 
     },
     { 
       icon: Languages, 

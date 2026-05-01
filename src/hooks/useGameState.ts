@@ -20,9 +20,7 @@ import {
   playRejectSound,
   playComboSound,
   playUIClickSound,
-  toggleSFX,
-  toggleMusic,
-  startBackgroundMusic
+  toggleSFX
 } from '@/lib/audio-system';
 import { Language, LOCALIZATION } from '@/lib/localization';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -49,7 +47,6 @@ export function useGameState() {
   const [gameStarted, setGameStarted] = useState(false);
   
   const [soundOn, setSoundOn] = useState(true);
-  const [musicOn, setMusicOn] = useState(true);
   const [language, setLanguage] = useState<Language>('en');
   
   const lastMoveTime = useRef(Date.now());
@@ -67,7 +64,6 @@ export function useGameState() {
     const savedBest = localStorage.getItem('stellar_best_score');
     const savedLevel = localStorage.getItem('stellar_level');
     const savedSound = localStorage.getItem('stellar_sound_on');
-    const savedMusic = localStorage.getItem('stellar_music_on');
     const savedLang = localStorage.getItem('stellar_language') as Language;
 
     if (savedBest) setBestScore(parseInt(savedBest));
@@ -79,12 +75,6 @@ export function useGameState() {
       setSoundOn(isSound);
       toggleSFX(isSound);
     }
-    
-    if (savedMusic !== null) {
-      const isMusic = savedMusic === 'true';
-      setMusicOn(isMusic);
-      toggleMusic(isMusic);
-    }
   }, []);
 
   const handleToggleSound = useCallback(() => {
@@ -93,13 +83,6 @@ export function useGameState() {
     toggleSFX(newState);
     localStorage.setItem('stellar_sound_on', newState.toString());
   }, [soundOn]);
-
-  const handleToggleMusic = useCallback(() => {
-    const newState = !musicOn;
-    setMusicOn(newState);
-    toggleMusic(newState);
-    localStorage.setItem('stellar_music_on', newState.toString());
-  }, [musicOn]);
 
   const cycleLanguage = useCallback(() => {
     const languages: Language[] = ['en', 'es', 'fr'];
@@ -200,7 +183,6 @@ export function useGameState() {
   useEffect(() => {
     if (isInputFrozen) return;
     const interval = setInterval(() => {
-      // Increased anomaly threshold to 25s for a more atmospheric experience
       if (Date.now() - lastMatchTime.current > 25000) {
         setEntities(prev => {
           const next = [...prev];
@@ -329,7 +311,6 @@ export function useGameState() {
 
   const startGame = () => {
     playUIClickSound();
-    startBackgroundMusic();
     setGameStarted(true);
   };
 
@@ -352,7 +333,7 @@ export function useGameState() {
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
     gameStarted, startGame, resetToMainMenu,
     isSettingsOpen, setIsSettingsOpen, isInputFrozen,
-    soundOn, musicOn, handleToggleSound, handleToggleMusic,
+    soundOn, handleToggleSound,
     language, cycleLanguage, t
   };
 }

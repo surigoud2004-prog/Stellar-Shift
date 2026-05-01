@@ -34,7 +34,7 @@ export function Board() {
     isGameOver, isWin, isPaused, setIsPaused, lore, selectedId, setSelectedId, 
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
     gameStarted, startGame, resetToMainMenu, isSettingsOpen, setIsSettingsOpen, isInputFrozen,
-    soundOn, musicOn, handleToggleSound, handleToggleMusic, language, cycleLanguage, t
+    soundOn, handleToggleSound, language, cycleLanguage, t
   } = useGameState();
 
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -124,9 +124,7 @@ export function Board() {
             onToggle={setIsSettingsOpen} 
             disabled={isProcessing}
             soundOn={soundOn}
-            musicOn={musicOn}
             onToggleSound={handleToggleSound}
-            onToggleMusic={handleToggleMusic}
             language={language}
             onCycleLanguage={cycleLanguage}
             gameMode={gameMode}
