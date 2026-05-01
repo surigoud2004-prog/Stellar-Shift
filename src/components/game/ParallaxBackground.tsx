@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useRef } from 'react';
@@ -14,6 +15,8 @@ interface Ember {
   animationDuration: string;
   backgroundColor: string;
   transform: string;
+  tx: string;
+  ty: string;
 }
 
 export function ParallaxBackground({ isWarping }: ParallaxBackgroundProps) {
@@ -30,6 +33,8 @@ export function ParallaxBackground({ isWarping }: ParallaxBackgroundProps) {
       animationDuration: `${6 + Math.random() * 6}s`,
       backgroundColor: i % 2 === 0 ? '#fff' : '#a855f7',
       transform: `rotate(${Math.random() * 360}deg)`,
+      tx: `${(Math.random() - 0.5) * 400}px`,
+      ty: `${(Math.random() - 0.5) * 400}px`,
     }));
     setEmbers(newEmbers);
 
@@ -42,8 +47,6 @@ export function ParallaxBackground({ isWarping }: ParallaxBackgroundProps) {
 
     const handleDeviceOrientation = (e: DeviceOrientationEvent) => {
       if (e.beta !== null && e.gamma !== null) {
-        // beta: pitch (-180 to 180), gamma: roll (-90 to 90)
-        // Shifting coordinates for subtle effect
         const x = e.gamma / 1.5;
         const y = (e.beta - 45) / 1.5;
         setOffset({ x, y });
@@ -85,7 +88,11 @@ export function ParallaxBackground({ isWarping }: ParallaxBackgroundProps) {
           <div 
             key={i}
             className="floating-ember"
-            style={ember}
+            style={{
+              ...ember,
+              '--tx': ember.tx,
+              '--ty': ember.ty,
+            } as any}
           />
         ))}
       </div>

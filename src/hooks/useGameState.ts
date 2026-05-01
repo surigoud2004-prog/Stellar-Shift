@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -271,7 +272,7 @@ export function useGameState() {
 
       setEntities(newGrid);
       await new Promise(resolve => setTimeout(resolve, 400));
-      handleMatch(newGrid, undefined, comboLevel + 1);
+      await handleMatch(newGrid, undefined, comboLevel + 1);
     } else {
       setIsProcessing(false);
     }
@@ -323,7 +324,7 @@ export function useGameState() {
       return;
     }
     
-    handleMatch(newEntities, id1, 0);
+    await handleMatch(newEntities, id1, 0);
   }, [entities, handleMatch, isInputFrozen]);
 
   const startGame = () => {
