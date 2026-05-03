@@ -1,9 +1,7 @@
 "use client";
 
 import React, { memo, useState } from 'react';
-import Image from 'next/image';
 import { CelestialEntity, HEX_WIDTH } from '@/lib/game-utils';
-import { PLANET_IMAGES } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
 
 interface EntityProps {
@@ -14,12 +12,21 @@ interface EntityProps {
 }
 
 const BLOOM_MAP = [
-  "bloom-cyan border-cyan-400/30", 
-  "bloom-pink border-pink-400/30",     
-  "bloom-green border-green-400/30", 
-  "bloom-amber border-amber-400/30",   
-  "bloom-violet border-violet-400/30",       
-  "bloom-red border-red-400/30"    
+  "bloom-cyan", 
+  "bloom-pink",     
+  "bloom-green", 
+  "bloom-amber",   
+  "bloom-violet",       
+  "bloom-red"    
+];
+
+const CORE_CLASS_MAP = [
+  "neon-core-cyan",
+  "neon-core-pink",
+  "neon-core-green",
+  "neon-core-amber",
+  "neon-core-violet",
+  "neon-core-red"
 ];
 
 const SPARKLE_COLOR_MAP = [
@@ -37,8 +44,8 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
   const x = entity.q * HEX_WIDTH;
   const y = entity.r * HEX_WIDTH;
   
-  const placeholder = PLANET_IMAGES[entity.type % PLANET_IMAGES.length] || PLANET_IMAGES[0];
   const bloomClass = BLOOM_MAP[entity.type % BLOOM_MAP.length];
+  const coreClass = CORE_CLASS_MAP[entity.type % CORE_CLASS_MAP.length];
   const sparkleColor = SPARKLE_COLOR_MAP[entity.type % SPARKLE_COLOR_MAP.length];
 
   const handleInteraction = () => {
@@ -51,8 +58,8 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
     <div
       onClick={handleInteraction}
       className={cn(
-        "absolute cursor-pointer transition-all duration-300 p-1",
-        isSelected && "z-10 scale-110 brightness-125",
+        "absolute cursor-pointer transition-all duration-300 p-1.5",
+        isSelected && "z-10 scale-110",
         entity.isMatched && "animate-implode",
         !entity.isMatched && "shard-enter",
         entity.isExploding && "animate-implode"
@@ -65,49 +72,44 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
       }}
     >
       <div className={cn(
-        "w-full h-full transition-all relative flex items-center justify-center animate-core-breath overflow-hidden",
-        "bg-black border rounded-full shadow-2xl",
-        isSelected ? "border-white ring-2 ring-white/50" : bloomClass
+        "w-full h-full transition-all relative rounded-full animate-core-breath",
+        bloomClass,
+        isSelected && "ring-4 ring-white shadow-[0_0_30px_white]"
       )}>
-        {/* Color-Matched Sparkle Pop Layer */}
+        {/* Color-Matched Sparkle Burst Layer */}
         <div 
           key={sparkleKey} 
           className={cn("sparkle-effect", sparkleKey > 0 && "animate-sparkle")} 
-          style={{ background: `radial-gradient(circle, ${sparkleColor} 0%, transparent 75%)` }}
+          style={{ background: `radial-gradient(circle, ${sparkleColor} 0%, transparent 70%)` }}
         />
 
         {entity.special === 'bomb' ? (
-          <div className="w-full h-full bg-black relative flex items-center justify-center overflow-hidden rounded-full">
-             <div className="absolute inset-1 border-[4px] border-white/90 rounded-full animate-event-horizon shadow-[0_0_25px_#fff,0_0_50px_rgba(245,158,11,0.7)]" />
-             <div className="relative w-10 h-10 rounded-full bg-black shadow-[inset_0_0_35px_rgba(255,255,255,0.8)] border border-white/50">
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/60 to-transparent animate-pulse" />
-             </div>
-             <div className="absolute inset-0 glossy-overlay opacity-90" />
+          <div className="w-full h-full bg-black relative flex items-center justify-center overflow-hidden rounded-full border border-white/20">
+             {/* Rotating Event Horizon */}
+             <div className="absolute inset-0 border-[3px] border-white/80 rounded-full animate-event-horizon shadow-[0_0_20px_white,0_0_40px_gold]" />
+             <div className="absolute inset-[15%] border-[1px] border-gold/40 rounded-full animate-event-horizon reverse" style={{ animationDirection: 'reverse' }} />
+             {/* Black Hole Core */}
+             <div className="relative w-8 h-8 rounded-full bg-black shadow-[inset_0_0_25px_white]" />
+             {/* Glass FX */}
+             <div className="absolute inset-0 glossy-overlay opacity-60" />
              <div className="rim-light" />
           </div>
         ) : (
-          <div className="relative w-full h-full flex items-center justify-center rounded-full overflow-hidden">
-            {/* Vivid Space Photography */}
-            <Image
-              src={placeholder.imageUrl}
-              alt={placeholder.description}
-              width={HEX_WIDTH}
-              height={HEX_WIDTH}
-              data-ai-hint={placeholder.imageHint}
-              className="object-cover w-full h-full opacity-90 mix-blend-screen scale-110"
-            />
+          <div className="relative w-full h-full rounded-full overflow-hidden border border-white/10">
+            {/* The Solid Neon Core */}
+            <div className={cn("absolute inset-0", coreClass)} />
+            
+            {/* 3D Glass Marble: Inner Singularity Glow */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,white_0%,transparent_30%)] opacity-50" />
             
             {/* 3D Glass Marble: Specular Highlight */}
-            <div className="absolute inset-0 specular-highlight pointer-events-none opacity-100" />
+            <div className="absolute inset-0 specular-highlight pointer-events-none" />
             
             {/* 3D Glass Marble: Rim Light */}
             <div className="rim-light" />
             
             {/* 3D Glass Marble: Glossy Overlay */}
-            <div className="absolute inset-0 glossy-overlay pointer-events-none opacity-60" />
-            
-            {/* Vignette for Pop */}
-            <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,1)] pointer-events-none rounded-full" />
+            <div className="absolute inset-0 glossy-overlay pointer-events-none opacity-50" />
           </div>
         )}
       </div>
