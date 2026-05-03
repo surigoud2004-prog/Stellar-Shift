@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { signInAnonymously } from 'firebase/auth';
 import { initializeFirebase } from '@/firebase';
 import { Card } from '@/components/ui/card';
 import { Trophy, User, Calendar } from 'lucide-react';
@@ -29,7 +30,9 @@ export function HallOfFame({ title, subtitle }: HallOfFameProps) {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const { db } = initializeFirebase();
+        const { db, auth } = initializeFirebase();
+        if (!auth.currentUser) await signInAnonymously(auth);
+        
         const q = query(collection(db, 'leaderboard'), orderBy('score', 'desc'), limit(100));
         const querySnapshot = await getDocs(q);
         const results = querySnapshot.docs.map(doc => doc.data() as LeaderboardEntry);
@@ -57,7 +60,7 @@ export function HallOfFame({ title, subtitle }: HallOfFameProps) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto pr-2 space-y-2">
+      <div className="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
         {loading ? (
           <div className="flex justify-center p-12">
             <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
@@ -70,17 +73,17 @@ export function HallOfFame({ title, subtitle }: HallOfFameProps) {
                 <div>
                   <div className="flex items-center gap-2 font-bold text-white">
                     <User className="w-3 h-3 text-secondary" />
-                    {entry.displayName}
+                    {entry.displayName || 'Unknown Pilot'}
                   </div>
                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground uppercase">
                     <Calendar className="w-3 h-3" />
-                    {entry.timestamp ? format(entry.timestamp, 'MMM d, yyyy') : 'N/A'}
+                    {entry.timestamp ? format(new Date(entry.timestamp), 'MMM d, yyyy') : 'N/A'}
                   </div>
                 </div>
               </div>
               <div className="text-right">
                 <div className="text-lg font-bold text-white">{entry.score.toLocaleString()}</div>
-                <div className="text-[10px] text-secondary font-bold">{subtitle.split(' ')[0]} {entry.level}</div>
+                <div className="text-[10px] text-secondary font-bold">LVL {entry.level || 1}</div>
               </div>
             </div>
           ))

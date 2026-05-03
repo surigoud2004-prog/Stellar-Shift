@@ -65,7 +65,6 @@ export function useGameState() {
   const isInputFrozen = isProcessing || isGameOver || isWin || isLocked || isPaused || isSettingsOpen || profile.showProfile;
   const isTimerFrozen = !gameStarted || isGameOver || isWin || isPaused || isSettingsOpen || profile.showProfile;
 
-  // Persistence Logic
   const syncHighScore = useCallback(async () => {
     try {
       const { db, auth } = initializeFirebase();
@@ -97,7 +96,7 @@ export function useGameState() {
       
       profile.updateStats(score, 0, isWin);
     } catch (e) {
-      // Silence background telemetry failures
+      // Silence background failures
     }
   }, [score, level, bestScore, profile, isWin]);
 
@@ -173,6 +172,7 @@ export function useGameState() {
       if (matches.length === 0) hasMatches = false;
     }
     setEntities(initial);
+    setSelectedId(null);
     setIsGameOver(false);
     setIsWin(false);
     setIsPaused(false);
@@ -180,6 +180,7 @@ export function useGameState() {
     setScore(0);
     lastMatchTime.current = Date.now();
     setIsLocked(false);
+    setIsProcessing(false);
     setTimeLeft(gameMode === 'easy' ? 180 : gameMode === 'hard' ? 90 : 45);
     addLoreLog("SECTOR INITIALIZED");
   }, [level, gameMode, addLoreLog]);
@@ -303,7 +304,6 @@ export function useGameState() {
     if (isInputFrozen) return;
     
     playSwapSound();
-    setIsLocked(false);
     setIsProcessing(true);
 
     const newEntities = [...entities];
@@ -350,8 +350,6 @@ export function useGameState() {
     setIsWin(false);
     setIsPaused(false);
     setIsProcessing(false);
-    setIsLocked(false);
-    setIsSettingsOpen(false);
     setGameStarted(false);
     if (timerRef.current) clearInterval(timerRef.current);
   };

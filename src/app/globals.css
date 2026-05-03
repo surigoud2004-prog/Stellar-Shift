@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -65,7 +64,7 @@
 }
 
 .battery-saver * {
-  animation-duration: 2s !important; /* Slow down any remaining vital animations */
+  animation-duration: 2s !important;
 }
 
 .nebula-scroll {
@@ -130,13 +129,89 @@
   @apply font-mono text-[9px] py-1 border-l-2 border-primary/20 pl-2 mb-1;
 }
 
-/* Floating Elements */
-.floating-shard {
-  @apply absolute w-4 h-4 bg-white/5 backdrop-blur-sm border border-white/10 rotate-45 pointer-events-none;
-  animation: floatAround 15s ease-in-out infinite;
+/* Cosmic Bomb Effects */
+.animate-implode {
+  animation: implode 0.1s ease-in forwards;
 }
 
-@keyframes floatAround {
-  0%, 100% { transform: translate(0, 0) rotate(45deg); }
-  50% { transform: translate(10px, -10px) rotate(60deg); }
+@keyframes implode {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.2); opacity: 0.5; }
+}
+
+.ember-dissolve {
+  animation: emberDissolve 0.5s ease-out forwards;
+}
+
+@keyframes emberDissolve {
+  0% { opacity: 1; filter: brightness(2); transform: scale(1); }
+  100% { opacity: 0; filter: brightness(10) blur(10px); transform: scale(1.5) translateY(-20px); }
+}
+
+.animate-cosmic-shockwave {
+  @apply absolute rounded-full border-2 border-primary/40 pointer-events-none;
+  animation: shockwave 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes shockwave {
+  0% { transform: scale(0.1); opacity: 1; border-width: 10px; }
+  100% { transform: scale(3.5); opacity: 0; border-width: 1px; filter: blur(4px); }
+}
+
+.match-flash-cyan {
+  box-shadow: inset 0 0 100px rgba(6, 182, 212, 0.4);
+}
+
+.match-flash-gold {
+  box-shadow: inset 0 0 100px rgba(234, 179, 8, 0.4);
+}
+
+/* Supernova Core Components */
+.supernova-core {
+  @apply relative w-full h-full flex items-center justify-center;
+}
+
+.plasma-sphere {
+  @apply absolute w-8 h-8 rounded-full bg-gradient-to-tr from-white to-amber-200 blur-sm;
+  animation: pulsePlasma 1s ease-in-out infinite alternate;
+}
+
+@keyframes pulsePlasma {
+  0% { transform: scale(0.8); filter: brightness(1); }
+  100% { transform: scale(1.2); filter: brightness(2); box-shadow: 0 0 20px rgba(255, 255, 255, 0.8); }
+}
+
+.obsidian-cage {
+  @apply absolute w-10 h-10 border border-white/40 rotate-45;
+  animation: rotateCage 3s linear infinite;
+}
+
+.obsidian-cage-inner {
+  @apply absolute w-10 h-10 border border-white/20 -rotate-45;
+  animation: rotateCage 3s linear infinite reverse;
+}
+
+@keyframes rotateCage {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.warp-streak {
+  animation: warpStreak 0.5s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@keyframes warpStreak {
+  0% { transform: scaleY(1) translateY(0); filter: blur(0); }
+  50% { transform: scaleY(3) translateY(50px); filter: blur(10px); }
+  100% { transform: scaleY(1) translateY(0); filter: blur(0); }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-primary/20 rounded-full;
 }
