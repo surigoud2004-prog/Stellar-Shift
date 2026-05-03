@@ -1,29 +1,43 @@
 
 'use client';
 
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { getFirestore, Firestore } from 'firebase/firestore';
+import { getAuth, Auth } from 'firebase/auth';
 import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
 import { firebaseConfig } from './config';
 import { useRef } from 'react';
+
+let firebaseApp: FirebaseApp;
+let firestore: Firestore;
+let auth: Auth;
+let analyticsInstance: Analytics | undefined;
 
 /**
  * Idempotently initializes Firebase services.
  */
 export function initializeFirebase() {
-  const firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-  const firestore = getFirestore(firebaseApp);
-  const auth = getAuth(firebaseApp);
-  
-  let analytics: Analytics | undefined;
-  if (typeof window !== 'undefined') {
-    isSupported().then(yes => {
-      if (yes) analytics = getAnalytics(firebaseApp);
-    });
+  if (!firebaseApp) {
+    firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    firestore = getFirestore(firebaseApp);
+    auth = getAuth(firebaseApp);
+
+    // Initialize Analytics only in the browser and if the API key is not a placeholder
+    if (typeof window !== 'undefined' && !firebaseConfig.apiKey.includes('fake-key')) {
+      isSupported().then(yes => {
+        if (yes) {
+          try {
+            analyticsInstance = getAnalytics(firebaseApp);
+          } catch (e) {
+            // Silently handle analytics failures to prevent app breakage
+            console.warn('Firebase Analytics failed to initialize:', e);
+          }
+        }
+      });
+    }
   }
 
-  return { firebaseApp, firestore, auth, analytics, db: firestore };
+  return { firebaseApp, firestore, auth, analytics: analyticsInstance, db: firestore };
 }
 
 /**
