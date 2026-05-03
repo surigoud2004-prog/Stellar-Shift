@@ -15,12 +15,12 @@ interface EntityProps {
 }
 
 const BLOOM_MAP = [
-  "bloom-violet border-purple-400/50",
-  "bloom-orange border-orange-400/50",
-  "bloom-gold border-yellow-400/50",
-  "bloom-blue border-blue-400/50",
-  "bloom-green border-green-400/50",
-  "bloom-violet border-white/50"
+  "bloom-violet border-purple-400/50", // Violet Nebula
+  "bloom-blue border-blue-400/50",     // Azure Galaxy
+  "bloom-orange border-orange-400/50", // Fiery Sun
+  "bloom-green border-green-400/50",   // Green Aurora
+  "bloom-red border-red-500/50",       // Red Supernova
+  "bloom-gold border-yellow-400/50"    // Golden Planet
 ];
 
 const ROTATION_MAP = [
@@ -96,9 +96,12 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
               data-ai-hint={placeholder.imageHint}
               className="object-cover w-full h-full opacity-100 scale-100"
             />
-            {/* Glossy Photographic Bloom Overlays */}
-            <div className="absolute inset-0 glossy-overlay pointer-events-none opacity-30" />
-            <div className="absolute inset-0 lens-flare pointer-events-none opacity-40" />
+            {/* Glossy 3D Glass Finish Overlays */}
+            <div className="absolute inset-0 glossy-overlay pointer-events-none opacity-40" />
+            <div className="absolute inset-0 lens-flare pointer-events-none opacity-50" />
+            
+            {/* High-Saturation Glow Edge */}
+            <div className="absolute inset-0 border border-white/10 rounded-2xl pointer-events-none" />
             
             {/* Dark Edges Vignette */}
             <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] pointer-events-none" />

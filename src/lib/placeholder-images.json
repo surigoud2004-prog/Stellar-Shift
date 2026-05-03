@@ -2,39 +2,57 @@
   "placeholderImages": [
     {
       "id": "planet-1",
-      "description": "A vibrant blue Earth-like planet with swirling white clouds",
-      "imageUrl": "https://picsum.photos/seed/earth1/200/200",
-      "imageHint": "blue planet"
+      "description": "A vibrant swirling violet and pink nebula with bright sparkling stars",
+      "imageUrl": "https://picsum.photos/seed/nebula-violet-pink/300/300",
+      "imageHint": "violet nebula"
     },
     {
       "id": "planet-2",
-      "description": "An electric blue crystal star radiating cosmic energy",
-      "imageUrl": "https://picsum.photos/seed/star2/200/200",
-      "imageHint": "blue star"
+      "description": "A deep azure blue galaxy spiral with a glowing white core",
+      "imageUrl": "https://picsum.photos/seed/galaxy-azure-blue/300/300",
+      "imageHint": "blue galaxy"
     },
     {
       "id": "planet-3",
-      "description": "A glowing crescent moon with a cinematic silver sheen",
-      "imageUrl": "https://picsum.photos/seed/moon3/200/200",
-      "imageHint": "crescent moon"
+      "description": "A fiery burning sun with glowing orange solar flares",
+      "imageUrl": "https://picsum.photos/seed/sun-fiery-orange/300/300",
+      "imageHint": "burning sun"
     },
     {
       "id": "planet-4",
-      "description": "A swirling green and blue nebula contained in a celestial orb",
-      "imageUrl": "https://picsum.photos/seed/nebula4/200/200",
-      "imageHint": "green nebula"
+      "description": "A lime-green aurora space cloud with neon streaks",
+      "imageUrl": "https://picsum.photos/seed/aurora-lime-green/300/300",
+      "imageHint": "green aurora"
     },
     {
       "id": "planet-5",
-      "description": "A fiery orange celestial body resembling a distant sun",
-      "imageUrl": "https://picsum.photos/seed/sun5/200/200",
-      "imageHint": "orange sun"
+      "description": "A blood-red supernova explosion with high-contrast light rays",
+      "imageUrl": "https://picsum.photos/seed/supernova-blood-red/300/300",
+      "imageHint": "red supernova"
     },
     {
       "id": "planet-6",
-      "description": "A mysterious deep space void with shimmering white sparks",
-      "imageUrl": "https://picsum.photos/seed/void6/200/200",
-      "imageHint": "dark void"
+      "description": "A golden ringed planet glowing against a pitch-black void",
+      "imageUrl": "https://picsum.photos/seed/planet-golden-rings/300/300",
+      "imageHint": "ringed planet"
+    },
+    {
+      "id": "avatar-1",
+      "description": "Cybernetic space pilot helmet with neon visor",
+      "imageUrl": "https://picsum.photos/seed/pilot1/200/200",
+      "imageHint": "cyberpunk pilot"
+    },
+    {
+      "id": "avatar-2",
+      "description": "Neural link interface portrait with data streams",
+      "imageUrl": "https://picsum.photos/seed/pilot2/200/200",
+      "imageHint": "sci-fi interface"
+    },
+    {
+      "id": "avatar-3",
+      "description": "Stellar explorer silhouette against a nebula",
+      "imageUrl": "https://picsum.photos/seed/pilot3/200/200",
+      "imageHint": "space traveler"
     }
   ]
 }
