@@ -6,10 +6,31 @@ interface ParallaxBackgroundProps {
   disabled?: boolean;
 }
 
+interface Star {
+  width: string;
+  height: string;
+  left: string;
+  top: string;
+  delay: string;
+  opacity: number;
+}
+
 export function ParallaxBackground({ disabled }: ParallaxBackgroundProps) {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [stars, setStars] = useState<Star[]>([]);
 
   useEffect(() => {
+    // Generate stars only on the client side to avoid hydration mismatch
+    const generatedStars = [...Array(50)].map(() => ({
+      width: Math.random() * 2 + 1 + 'px',
+      height: Math.random() * 2 + 1 + 'px',
+      left: Math.random() * 100 + '%',
+      top: Math.random() * 100 + '%',
+      delay: Math.random() * 5 + 's',
+      opacity: Math.random() * 0.5 + 0.3
+    }));
+    setStars(generatedStars);
+
     if (disabled) return;
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -35,17 +56,17 @@ export function ParallaxBackground({ disabled }: ParallaxBackgroundProps) {
       
       {/* Static Star Field (Slow Drift) */}
       <div className="absolute inset-0 opacity-30">
-        {[...Array(50)].map((_, i) => (
+        {stars.map((star, i) => (
           <div 
             key={i}
             className="absolute bg-white rounded-full animate-pulse"
             style={{
-              width: Math.random() * 2 + 1 + 'px',
-              height: Math.random() * 2 + 1 + 'px',
-              left: Math.random() * 100 + '%',
-              top: Math.random() * 100 + '%',
-              animationDelay: Math.random() * 5 + 's',
-              opacity: Math.random() * 0.5 + 0.3
+              width: star.width,
+              height: star.height,
+              left: star.left,
+              top: star.top,
+              animationDelay: star.delay,
+              opacity: star.opacity
             }}
           />
         ))}
