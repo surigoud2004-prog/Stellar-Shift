@@ -140,6 +140,75 @@ export function playLevelUpSound() {
   }
 }
 
+export function playCosmicBombSound() {
+  if (typeof window === 'undefined' || !sfxEnabled) return;
+  try {
+    const ctx = getAudioContext();
+    const startTime = ctx.currentTime;
+
+    // 1. Shuck (Implosion) - pitch sweep up + gain swell
+    const shuckOsc = ctx.createOscillator();
+    const shuckGain = ctx.createGain();
+    shuckOsc.type = 'sine';
+    shuckOsc.frequency.setValueAtTime(100, startTime);
+    shuckOsc.frequency.exponentialRampToValueAtTime(800, startTime + 0.1);
+    shuckGain.gain.setValueAtTime(0, startTime);
+    shuckGain.gain.linearRampToValueAtTime(0.1, startTime + 0.08);
+    shuckGain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.1);
+    shuckOsc.connect(shuckGain);
+    shuckGain.connect(ctx.destination);
+    shuckOsc.start(startTime);
+    shuckOsc.stop(startTime + 0.1);
+
+    // 2. BOOM (Explosion) - deep sine + noise
+    const boomFreq = 50;
+    const boomOsc = ctx.createOscillator();
+    const boomGain = ctx.createGain();
+    boomOsc.type = 'sine';
+    boomOsc.frequency.setValueAtTime(boomFreq, startTime + 0.1);
+    boomOsc.frequency.exponentialRampToValueAtTime(20, startTime + 0.6);
+    boomGain.gain.setValueAtTime(0.5, startTime + 0.1);
+    boomGain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.5);
+    boomOsc.connect(boomGain);
+    boomGain.connect(ctx.destination);
+    boomOsc.start(startTime + 0.1);
+    boomOsc.stop(startTime + 1.5);
+
+    // White noise for the "boom" texture
+    const bufferSize = ctx.sampleRate * 2;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.3, startTime + 0.1);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.8);
+    noise.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+    noise.start(startTime + 0.1);
+    noise.stop(startTime + 0.8);
+
+    // 3. Tinkle (Crystalline) - high freq sine waves
+    const tinkFreqs = [2000, 2500, 3100];
+    tinkFreqs.forEach((f, i) => {
+      const tOsc = ctx.createOscillator();
+      const tGain = ctx.createGain();
+      tOsc.type = 'sine';
+      tOsc.frequency.setValueAtTime(f, startTime + 0.6 + (i * 0.1));
+      tGain.gain.setValueAtTime(0, startTime + 0.6 + (i * 0.1));
+      tGain.gain.linearRampToValueAtTime(0.05, startTime + 0.62 + (i * 0.1));
+      tGain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.2 + (i * 0.1));
+      tOsc.connect(tGain);
+      tGain.connect(ctx.destination);
+      tOsc.start(startTime + 0.6 + (i * 0.1));
+      tOsc.stop(startTime + 2.0);
+    });
+  } catch (e) {
+    console.warn('Cosmic bomb audio failed', e);
+  }
+}
+
 export function playSpecialActivationSound() {
   if (typeof window === 'undefined' || !sfxEnabled) return;
 

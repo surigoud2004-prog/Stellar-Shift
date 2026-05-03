@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -20,6 +21,7 @@ import {
   playRejectSound,
   playComboSound,
   playUIClickSound,
+  playCosmicBombSound,
   toggleSFX
 } from '@/lib/audio-system';
 import { Language, LOCALIZATION } from '@/lib/localization';
@@ -197,35 +199,37 @@ export function useGameState() {
       setIsProcessing(true);
       lastMatchTime.current = Date.now();
       
-      // Identify bombs in current matches
       const bombMatches = currentEntities.filter(e => matches.includes(e.id) && e.special === 'bomb');
       let finalMatchedIds = new Set(matches);
+      let bombClearedIds = new Set<string>();
 
       if (bombMatches.length > 0) {
-        // Implosion phase
+        // Phase 1: Implosion (0.1s)
         setEntities(prev => prev.map(e => {
           const isCore = bombMatches.some(b => b.id === e.id);
           return isCore ? { ...e, isExploding: true } : e;
         }));
+        playCosmicBombSound();
         await new Promise(resolve => setTimeout(resolve, 150));
 
-        // Explosion phase
+        // Phase 2: Explosion & AoE Detection
         const newExplosions: {q: number, r: number}[] = [];
         bombMatches.forEach(bomb => {
           newExplosions.push({ q: bomb.q, r: bomb.r });
-          // Clear 3x3 area
           currentEntities.forEach(e => {
             if (Math.abs(e.q - bomb.q) <= 1 && Math.abs(e.r - bomb.r) <= 1) {
-              finalMatchedIds.add(e.id);
+              if (!finalMatchedIds.has(e.id)) {
+                bombClearedIds.add(e.id);
+                finalMatchedIds.add(e.id);
+              }
             }
           });
         });
         
         setActiveExplosions(newExplosions);
-        playSpecialActivationSound();
         addLoreLog("COSMIC EVENT: Supernova Core triggered.");
         
-        // Brief pause for shockwave visual
+        // Sync with visual explosion
         await new Promise(resolve => setTimeout(resolve, 200));
         setActiveExplosions([]);
       } else {
@@ -233,6 +237,7 @@ export function useGameState() {
         else playComboSound(comboLevel);
       }
 
+      // Phase 3: Destruction/Ember Dissolve
       setEntities(prev => prev.map(e => finalMatchedIds.has(e.id) ? { ...e, isMatched: true } : e));
       await new Promise(resolve => setTimeout(resolve, 400));
 
@@ -251,7 +256,11 @@ export function useGameState() {
         addLoreLog(loreRes.loreSnippet);
       }
 
-      const matchPoints = finalMatchedIds.size * 20 * (comboLevel + 1);
+      // 5x Score Multiplier for bomb-cleared tiles
+      const regularPoints = matches.length * 20;
+      const bombPoints = bombClearedIds.size * 100; // 20 * 5 = 100
+      const matchPoints = (regularPoints + bombPoints) * (comboLevel + 1);
+      
       setScore(s => s + matchPoints);
       profile.updateStats(matchPoints, finalMatchedIds.size);
 
