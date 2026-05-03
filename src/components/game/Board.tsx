@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
@@ -6,7 +7,7 @@ import { Entity } from './Entity';
 import { areAdjacent, HEX_WIDTH, GRID_SIZE } from '@/lib/game-utils';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Trophy, Play, RotateCcw } from 'lucide-react';
+import { Trophy, Play, RotateCcw, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Board() {
@@ -38,13 +39,17 @@ export function Board() {
   }, [selectedId, entities, isProcessing, isGameOver, isWin, setSelectedId, swapEntities]);
 
   const progress = Math.min(100, (score / targetScore) * 100);
+  const isLoaded = entities.length > 0;
 
   return (
-    <div className="relative flex flex-col items-center justify-center p-4 w-full h-full">
+    <div className="relative flex flex-col items-center justify-center p-4 w-full h-full min-h-[600px]">
       <div className="nebula-bg" />
       
-      {/* Header Stats */}
-      <div className="w-full max-w-[500px] flex justify-between items-end mb-6">
+      {/* Header Stats - Hidden until game starts and entities load */}
+      <div className={cn(
+        "w-full max-w-[500px] flex justify-between items-end mb-6 transition-all duration-500",
+        gameStarted && isLoaded ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-8 pointer-events-none"
+      )}>
         <div className="flex flex-col gap-1">
           <span className="text-[10px] uppercase tracking-widest text-primary font-bold">Target Score</span>
           <div className="text-4xl font-black text-white tabular-nums">{score} / {targetScore}</div>
@@ -58,14 +63,20 @@ export function Board() {
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="stellar-grid-frame p-6">
+      {/* Grid Container */}
+      <div className="stellar-grid-frame p-6 flex items-center justify-center relative min-w-[320px] min-h-[320px]">
         {!gameStarted ? (
-          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
-            <h1 className="text-5xl font-black text-white mb-8 italic uppercase tracking-tighter">Stellar Shift</h1>
-            <Button size="lg" onClick={startGame} className="bg-primary hover:bg-primary/80 h-16 px-12 text-xl font-black uppercase tracking-widest rounded-full">
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm p-8 text-center">
+            <h1 className="text-4xl md:text-5xl font-black text-white mb-4 italic uppercase tracking-tighter">Stellar Shift</h1>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-primary mb-8 font-bold animate-pulse">Neural Link Ready</p>
+            <Button size="lg" onClick={startGame} className="bg-primary hover:bg-primary/80 h-16 px-12 text-xl font-black uppercase tracking-widest rounded-full shadow-[0_0_30px_rgba(168,85,247,0.4)]">
               <Play className="w-6 h-6 mr-2 fill-white" /> Start Mission
             </Button>
+          </div>
+        ) : !isLoaded ? (
+          <div className="flex flex-col items-center gap-4">
+             <Loader2 className="w-12 h-12 text-primary animate-spin" />
+             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Initializing Sector...</p>
           </div>
         ) : (
           <div 
@@ -73,7 +84,7 @@ export function Board() {
             style={{ 
               width: `${GRID_SIZE * HEX_WIDTH}px`, 
               height: `${GRID_SIZE * HEX_WIDTH}px`,
-              transform: `scale(${Math.min(1, 400 / (GRID_SIZE * HEX_WIDTH))})`,
+              transform: `scale(${Math.min(1, 380 / (GRID_SIZE * HEX_WIDTH))})`,
               transformOrigin: 'center center'
             }}
           >
@@ -109,7 +120,10 @@ export function Board() {
         )}
       </div>
 
-      <div className="mt-8 text-[10px] text-muted-foreground uppercase tracking-[0.4em] font-bold">
+      <div className={cn(
+        "mt-8 text-[10px] text-muted-foreground uppercase tracking-[0.4em] font-bold transition-opacity",
+        gameStarted ? "opacity-100" : "opacity-0"
+      )}>
         Align Shards to Stabilize Sector
       </div>
     </div>

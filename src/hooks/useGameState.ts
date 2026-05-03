@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -6,9 +7,13 @@ import {
   generateRandomEntity, 
   findMatches, 
   GRID_SIZE,
-  HEX_WIDTH
+  HEX_WIDTH,
+  SpecialType,
+  EntityType
 } from '@/lib/game-utils';
-import { playSwapSound, playMatchSound, playRejectSound } from '@/lib/audio-system';
+import { playSwapSound, playMatchSound, playRejectSound, playBombSound } from '@/lib/audio-system';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
 
@@ -49,14 +54,9 @@ export function useGameState() {
     setIsProcessing(false);
   }, []);
 
+  // Timer only starts if board is ready and game started
   useEffect(() => {
-    if (gameStarted && entities.length === 0) {
-      initBoard();
-    }
-  }, [initBoard, gameStarted, entities.length]);
-
-  useEffect(() => {
-    if (!gameStarted || isGameOver || isWin) {
+    if (!gameStarted || isGameOver || isWin || entities.length === 0) {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
@@ -72,20 +72,38 @@ export function useGameState() {
       });
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [gameStarted, isGameOver, isWin, score, targetScore]);
+  }, [gameStarted, isGameOver, isWin, score, targetScore, entities.length]);
 
-  const handleMatch = useCallback(async (currentEntities: CelestialEntity[]) => {
-    const { matches } = findMatches(currentEntities);
+  const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMovedId?: string) => {
+    const { matches, specialToSpawn } = findMatches(currentEntities, lastMovedId);
     
     if (matches.length > 0) {
       setIsProcessing(true);
       playMatchSound();
       
+      // Mark matches for animation
       setEntities(prev => prev.map(e => matches.includes(e.id) ? { ...e, isMatched: true } : e));
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      const updated = currentEntities.filter(e => !matches.includes(e.id));
-      setScore(s => s + matches.length * 10);
+      // Check for Bomb/AoE triggers
+      const bombIds: string[] = [];
+      matches.forEach(id => {
+        const ent = currentEntities.find(e => e.id === id);
+        if (ent?.special === 'bomb') {
+          // Identify 3x3 area
+          const neighbors = currentEntities.filter(e => 
+            Math.abs(e.q - ent.q) <= 1 && Math.abs(e.r - ent.r) <= 1
+          ).map(e => e.id);
+          bombIds.push(...neighbors);
+        }
+      });
+
+      const allToDelete = Array.from(new Set([...matches, ...bombIds]));
+      if (bombIds.length > 0) playBombSound();
+
+      const updated = currentEntities.filter(e => !allToDelete.includes(e.id));
+      const points = allToDelete.length * 10 * (bombIds.length > 0 ? 5 : 1);
+      setScore(s => s + points);
 
       const newGrid: CelestialEntity[] = [];
       for (let q = 0; q < GRID_SIZE; q++) {
@@ -98,6 +116,17 @@ export function useGameState() {
             newGrid.push(generateRandomEntity(q, r));
           }
         }
+      }
+
+      // If we spawned a special entity
+      if (specialToSpawn) {
+        newGrid.push({
+          id: specialToSpawn.id,
+          type: specialToSpawn.entityType,
+          q: specialToSpawn.q,
+          r: specialToSpawn.r,
+          special: specialToSpawn.type
+        });
       }
 
       setEntities(newGrid);
@@ -143,10 +172,13 @@ export function useGameState() {
       return;
     }
     
-    await handleMatch(newEntities);
+    await handleMatch(newEntities, id1);
   }, [entities, handleMatch, isProcessing]);
 
-  const startGame = () => setGameStarted(true);
+  const startGame = useCallback(() => {
+    setGameStarted(true);
+    initBoard();
+  }, [initBoard]);
 
   return {
     entities, score, targetScore, timeLeft, level,

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { memo } from 'react';
@@ -17,7 +18,10 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
   const x = entity.q * HEX_WIDTH;
   const y = entity.r * HEX_WIDTH;
   
-  const placeholder = PLANET_IMAGES[entity.type % PLANET_IMAGES.length];
+  // Safety check for planet images
+  const placeholder = PLANET_IMAGES.length > 0 
+    ? PLANET_IMAGES[entity.type % PLANET_IMAGES.length]
+    : { imageUrl: 'https://picsum.photos/seed/default/200/200', description: 'Stellar Shard', imageHint: 'planet' };
 
   return (
     <div
@@ -26,7 +30,8 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
         "absolute cursor-pointer transition-all duration-300",
         isSelected && "z-10 scale-110 brightness-125",
         entity.isMatched && "shard-match",
-        !entity.isMatched && "shard-enter"
+        !entity.isMatched && "shard-enter",
+        entity.isExploding && "animate-implode"
       )}
       style={{
         left: `${x}px`,
@@ -39,11 +44,13 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
         "w-full h-full rounded-2xl overflow-hidden border-2 transition-colors relative",
         isSelected ? "border-primary shadow-[0_0_15px_rgba(168,85,247,0.5)]" : "border-white/10"
       )}>
-        {entity.special === 'nova-h' ? (
-          <div className="w-full h-full bg-gradient-to-tr from-amber-500 via-white to-amber-200 animate-pulse relative">
-             <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px]" />
-             <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-8 h-8 rounded-full border-2 border-white/50 animate-spin" />
+        {entity.special === 'bomb' ? (
+          <div className="w-full h-full bg-black relative flex items-center justify-center overflow-hidden">
+             {/* Supernova Core Visual */}
+             <div className="absolute inset-0 bg-gradient-to-tr from-amber-500 via-white to-amber-200 animate-pulse opacity-80" />
+             <div className="relative w-8 h-8 rounded-full bg-white shadow-[0_0_20px_#fff] animate-core-pulse">
+                <div className="absolute inset-[-8px] border-2 border-primary rounded-full animate-spin duration-[2000ms]" />
+                <div className="absolute inset-[-4px] border border-white/50 rounded-lg animate-spin-reverse duration-[3000ms]" />
              </div>
           </div>
         ) : (

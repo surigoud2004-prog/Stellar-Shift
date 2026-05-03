@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -48,8 +49,23 @@
               #0a0512;
 }
 
-.shard-enter {
-  animation: shardEnter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+@keyframes corePulse {
+  0% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.15); filter: brightness(1.5); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.animate-core-pulse {
+  animation: corePulse 1s infinite ease-in-out;
+}
+
+@keyframes spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.animate-spin-reverse {
+  animation: spin-reverse 3s linear infinite;
 }
 
 @keyframes shardEnter {
@@ -57,14 +73,27 @@
   100% { transform: scale(1); opacity: 1; }
 }
 
-.shard-match {
-  animation: shardMatch 0.3s ease-out forwards;
+.shard-enter {
+  animation: shardEnter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 @keyframes shardMatch {
   0% { transform: scale(1); filter: brightness(1); }
   50% { transform: scale(1.2); filter: brightness(2); }
   100% { transform: scale(0); opacity: 0; }
+}
+
+.shard-match {
+  animation: shardMatch 0.3s ease-out forwards;
+}
+
+@keyframes implode {
+  0% { transform: scale(1); filter: brightness(1); }
+  100% { transform: scale(0); filter: brightness(3) blur(10px); }
+}
+
+.animate-implode {
+  animation: implode 0.15s ease-in forwards;
 }
 
 .glass-panel {
