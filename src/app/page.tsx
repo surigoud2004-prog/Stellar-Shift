@@ -13,7 +13,7 @@ import { CoinFountain } from '@/components/game/CoinFountain';
 import { GameStateProvider, useGameState } from '@/context/GameStateContext';
 import { useState, useEffect, useMemo } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
-import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff, Radio, Orbit, Coins } from 'lucide-react';
+import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff, Radio, Orbit, Coins, ShieldAlert } from 'lucide-react';
 import { getSectorInfo } from '@/lib/game-utils';
 import {
   AlertDialog,
@@ -26,6 +26,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
+import { playUIClickSound } from '@/lib/audio-system';
 
 function MissionContent() {
   const { 
@@ -34,7 +35,7 @@ function MissionContent() {
   
   const { 
     gameMode, setGameMode, gameStarted, quitGame, score, targetScore, timeLeft, startGame, level, isWin, isWarping,
-    powerUps, setPowerUps, isGameOver
+    powerUps, setPowerUps, isGameOver, setIsGameOver, isReviving, setIsReviving, revive
   } = useGameState();
 
   const [language, setLanguage] = useState<'en' | 'es' | 'fr'>('en');
@@ -47,6 +48,7 @@ function MissionContent() {
   const [abortDialogOpen, setAbortDialogOpen] = useState(false);
   const [uiVisible, setUiVisible] = useState(true);
   const [showCoins, setShowCoins] = useState(false);
+  const [reviveCountdown, setReviveCountdown] = useState(5);
   
   const [lastProcessedLevel, setLastProcessedLevel] = useState(0);
 
@@ -68,6 +70,26 @@ function MissionContent() {
     }
   }, [isWin, score, updateStats, level, lastProcessedLevel, timeLeft]);
 
+  // Handle Revive Countdown
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isReviving) {
+      setReviveCountdown(5);
+      timer = setInterval(() => {
+        setReviveCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setIsReviving(false);
+            setIsGameOver(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [isReviving, setIsReviving, setIsGameOver]);
+
   const handleAbort = () => {
     quitGame();
     setAbortDialogOpen(false);
@@ -88,13 +110,27 @@ function MissionContent() {
     setShowShop(true);
   };
 
+  const handleRecoverLink = () => {
+    if (profile.coins >= 200) {
+      if (spendCoins(200)) {
+        revive(20);
+      }
+    }
+  };
+
+  const handleFailAbort = () => {
+    setIsReviving(false);
+    setIsGameOver(true);
+    playUIClickSound();
+  };
+
   return (
     <main className="min-h-screen w-full flex flex-col items-center justify-center relative bg-black overflow-hidden">
       
       <ParallaxBackground disabled={isBatterySaver} isWarping={isWarping} level={level} />
       
-      {/* GLOBAL HUD - PERSISTENT & ANCHORED */}
-      <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
+      {/* GLOBAL HUD - PERSISTENT & ANCHORED AT TOP */}
+      <div id="Global_HUD" className="fixed inset-x-0 top-0 pointer-events-none z-[9999] h-32">
         
         {/* TOP-LEFT: UTILITY CLUSTER */}
         <div className="absolute top-[30px] left-[30px] flex items-center gap-3 pointer-events-auto">
@@ -225,6 +261,51 @@ function MissionContent() {
           <Board />
         )}
       </div>
+
+      {/* MISSION CRITICAL REVIVE POPUP */}
+      {isReviving && (
+        <div className="fixed inset-0 z-[10005] flex items-center justify-center bg-black/60 backdrop-blur-sm p-6 animate-in fade-in duration-300">
+          <div className="w-full max-w-md bg-black/80 border-2 border-primary/50 rounded-[3rem] p-10 backdrop-blur-xl shadow-[0_0_100px_rgba(168,85,247,0.4)] flex flex-col items-center text-center">
+            <ShieldAlert className="w-20 h-20 text-primary mb-6 animate-pulse" />
+            <h2 className="text-4xl font-headline font-black text-white uppercase italic tracking-tighter mb-2">Mission Critical</h2>
+            <p className="text-muted-foreground uppercase text-xs tracking-widest font-black mb-8">Neural Link Severing in {reviveCountdown}s</p>
+            
+            <div className="w-full flex flex-col gap-4">
+               <button 
+                 onClick={handleRecoverLink}
+                 disabled={profile.coins < 200}
+                 className={cn(
+                   "w-full h-16 rounded-2xl flex items-center justify-between px-8 font-black uppercase tracking-widest transition-all",
+                   profile.coins >= 200 
+                    ? "bg-primary text-white hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(168,85,247,0.5)]" 
+                    : "bg-white/5 text-white/20 cursor-not-allowed grayscale"
+                 )}
+               >
+                 <span className="flex items-center gap-2">
+                   Recover Link <span className="text-xs opacity-60 text-black font-black bg-white/40 px-2 py-0.5 rounded-md">+20s</span>
+                 </span>
+                 <div className="flex items-center gap-2">
+                    <Coins className="w-4 h-4" />
+                    200
+                 </div>
+               </button>
+
+               <button 
+                 onClick={handleFailAbort}
+                 className="w-full h-16 rounded-2xl bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 font-black uppercase tracking-widest transition-all"
+               >
+                 Abort Mission
+               </button>
+            </div>
+            
+            {profile.coins < 200 && (
+              <p className="mt-6 text-[10px] text-red-400 uppercase font-black tracking-widest animate-pulse">
+                Insufficient Coins for Link Recovery
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       <AlertDialog open={abortDialogOpen} onOpenChange={setAbortDialogOpen}>
         <AlertDialogContent className="glass-panel border-red-600/50 bg-black/95 text-white z-[10000] p-10 rounded-[3rem]">

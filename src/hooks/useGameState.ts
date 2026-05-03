@@ -43,6 +43,7 @@ export function useGameState() {
   const [isFlashing, setIsFlashing] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number>(0);
+  const [isReviving, setIsReviving] = useState(false);
 
   // Power Up States
   const [powerUps, setPowerUps] = useState<PowerUpState>({
@@ -122,6 +123,7 @@ export function useGameState() {
     setIsProcessing(false);
     setIsFlashing(false);
     setIsShaking(false);
+    setIsReviving(false);
   }, [getVariety, levelTimeLimit, powerUps.novaBlast]);
 
   // Handle Level Transition
@@ -130,25 +132,26 @@ export function useGameState() {
       setIsWarping(true);
       const timeout = setTimeout(() => {
         setLevel(prev => prev + 1);
-        // Score is reset to 0 in initBoard via level change dependency or manually here
         setScore(0);
         setIsWin(false);
         setIsWarping(false);
         setPowerUps(prev => ({ ...prev, timeDilator: false, novaBlast: false }));
-        // initBoard will trigger due to level change effect
       }, 2500); 
       return () => clearTimeout(timeout);
     }
   }, [isWin]);
 
   useEffect(() => {
-    if (gameStarted && !isWin && !isGameOver && !isWarping) {
-      initBoard();
+    if (gameStarted && !isWin && !isGameOver && !isWarping && !isReviving) {
+      // Only init if no entities exist yet (start of game)
+      if (entities.length === 0) {
+        initBoard();
+      }
     }
-  }, [level, gameStarted, initBoard, isWin, isGameOver]);
+  }, [level, gameStarted, initBoard, isWin, isGameOver, entities.length, isReviving, isWarping]);
 
   useEffect(() => {
-    if (!gameStarted || isGameOver || isWin || isWarping || entities.length === 0) {
+    if (!gameStarted || isGameOver || isWin || isWarping || isReviving || entities.length === 0) {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
@@ -156,14 +159,14 @@ export function useGameState() {
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          setIsGameOver(true);
+          setIsReviving(true);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [gameStarted, isGameOver, isWin, isWarping, entities.length]);
+  }, [gameStarted, isGameOver, isWin, isWarping, isReviving, entities.length]);
 
   const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMovedId?: string, comboFactor: number = 1) => {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMovedId);
@@ -219,6 +222,7 @@ export function useGameState() {
       if (triggeredFlash) {
         setIsFlashing(true);
         playBombSound();
+        setTimeout(() => setIsFlashing(true), 10);
         setTimeout(() => setIsFlashing(false), 400);
       }
       if (triggeredShake) {
@@ -228,17 +232,15 @@ export function useGameState() {
 
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000 * 1.3));
 
-      // Use Math.floor to keep score as an integer
       const points = Math.floor(allToDestroy.size * 10 * comboFactor * chainMultiplier);
       
-      let currentNewScore = 0;
       setScore(s => {
-        currentNewScore = Math.floor(s + points);
-        if (currentNewScore >= targetScore && !isWin && !isWarping) {
+        const newScore = Math.floor(s + points);
+        if (newScore >= targetScore && !isWin && !isWarping) {
            setIsWin(true);
            archiveLore("Sector Secured", `Level ${level} targets reached.`);
         }
-        return currentNewScore;
+        return newScore;
       });
 
       const updated = currentEntities.filter(e => !allToDestroy.has(e.id));
@@ -277,7 +279,7 @@ export function useGameState() {
   }, [targetScore, getVariety, isWin, isWarping, level, archiveLore, animationDuration]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
-    if (isProcessing || isWin || isGameOver || isWarping) return;
+    if (isProcessing || isWin || isGameOver || isWarping || isReviving) return;
     setIsProcessing(true);
     
     const newEntities = [...entities];
@@ -302,7 +304,6 @@ export function useGameState() {
     const { matches } = findMatches(newEntities, id1);
     const isSpecialMoved = e1.special || e2.special;
 
-    // Trigger even without match if special is moved
     if (matches.length === 0 && !isSpecialMoved) {
       playRejectSound();
       const reverted = [...newEntities];
@@ -315,10 +316,10 @@ export function useGameState() {
     }
     
     await handleMatch(newEntities, id1, 1);
-  }, [entities, handleMatch, isProcessing, isWin, isGameOver, isWarping, animationDuration]);
+  }, [entities, handleMatch, isProcessing, isWin, isGameOver, isWarping, isReviving, animationDuration]);
 
   const triggerColorNuke = useCallback(() => {
-    if (isProcessing || powerUps.colorNuke <= 0) return;
+    if (isProcessing || powerUps.colorNuke <= 0 || isReviving) return;
     playBombSound();
     setIsProcessing(true);
     setPowerUps(prev => ({ ...prev, colorNuke: prev.colorNuke - 1 }));
@@ -336,7 +337,7 @@ export function useGameState() {
     setTimeout(() => {
       handleMatch(updated);
     }, 500);
-  }, [entities, handleMatch, isProcessing, powerUps.colorNuke]);
+  }, [entities, handleMatch, isProcessing, powerUps.colorNuke, isReviving]);
 
   const startGame = useCallback(() => {
     playUIClickSound();
@@ -357,16 +358,25 @@ export function useGameState() {
     setIsGameOver(false);
     setIsWin(false);
     setIsWarping(false);
+    setIsReviving(false);
     setSessionStartTime(0);
     setPowerUps({ timeDilator: false, novaBlast: false, colorNuke: 0 });
   }, []);
 
+  const revive = useCallback((extraTime: number) => {
+    setTimeLeft(extraTime);
+    setIsReviving(false);
+    setIsGameOver(false);
+    playUIClickSound();
+  }, []);
+
   return {
     entities, score, targetScore, timeLeft, level,
-    isGameOver, isWin, isWarping, selectedId, setSelectedId,
+    isGameOver, setIsGameOver, isWin, isWarping, selectedId, setSelectedId,
     swapEntities, isProcessing, initBoard,
     gameStarted, startGame, quitGame, gameMode, setGameMode,
     isFlashing, isShaking, animationDuration,
-    powerUps, setPowerUps, triggerColorNuke
+    powerUps, setPowerUps, triggerColorNuke,
+    isReviving, setIsReviving, revive
   };
 }
