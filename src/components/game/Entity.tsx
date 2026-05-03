@@ -124,8 +124,18 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
         ) : entity.special === 'nova-h' ? (
           <div className="w-full h-full relative flex items-center justify-center overflow-hidden rounded-full border border-white/40">
              <div className={cn("absolute inset-0", NEON_CORE_MAP[entity.type % NEON_CORE_MAP.length])} />
-             <div className="absolute inset-x-0 h-2 bg-white blur-sm animate-pulse" />
+             {/* Horizontal Stripes Indicator */}
+             <div className="absolute inset-x-0 h-2 bg-white/60 blur-sm animate-pulse" />
              <div className="absolute inset-x-0 h-0.5 bg-white z-10" />
+             <div className="rim-light" />
+             <div className="absolute inset-0 glossy-overlay opacity-40" />
+          </div>
+        ) : entity.special === 'nova-v' ? (
+          <div className="w-full h-full relative flex items-center justify-center overflow-hidden rounded-full border border-white/40">
+             <div className={cn("absolute inset-0", NEON_CORE_MAP[entity.type % NEON_CORE_MAP.length])} />
+             {/* Vertical Stripes Indicator */}
+             <div className="absolute inset-y-0 w-2 bg-white/60 blur-sm animate-pulse" />
+             <div className="absolute inset-y-0 w-0.5 bg-white z-10" />
              <div className="rim-light" />
              <div className="absolute inset-0 glossy-overlay opacity-40" />
           </div>

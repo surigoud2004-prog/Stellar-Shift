@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Board } from '@/components/game/Board';
@@ -92,46 +91,45 @@ function MissionContent() {
       
       <ParallaxBackground disabled={isBatterySaver} isWarping={isWarping} level={level} />
       
-      {/* GLOBAL HUD - ALWAYS VISIBLE */}
+      {/* GLOBAL HUD - ANCHORED & REINFORCED */}
       <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
         
-        {/* TOP-LEFT: COMMAND CLUSTER */}
+        {/* TOP-LEFT: ABORT MISSION CLUSTER */}
         <div className="absolute top-[30px] left-[30px] flex items-center gap-3 pointer-events-auto">
           <button 
             onClick={() => setAbortDialogOpen(true)}
-            className="w-[50px] h-[50px] rounded-full bg-red-500 flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.5)] hover:scale-105 active:scale-90 transition-all border-none"
+            className="w-[50px] h-[50px] rounded-full bg-red-600 flex items-center justify-center shadow-[0_0_25px_rgba(220,38,38,0.7)] hover:scale-110 active:scale-90 transition-all border-2 border-white/20"
             title={labels.abortMission}
           >
-            <XIcon className="w-6 h-6 text-white stroke-[3px]" />
+            <XIcon className="w-7 h-7 text-white stroke-[4px]" />
           </button>
           
           <button 
             onClick={() => setUiVisible(!uiVisible)}
-            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/40 backdrop-blur-md"
+            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md"
             title="Cloak UI"
           >
             {uiVisible ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-white/40" />}
           </button>
         </div>
 
-        {/* TOP-CENTER: MISSION STATUS (Re-Anchored) */}
+        {/* TOP-CENTER: MISSION STATUS & SCORE */}
         <div className={cn(
           "absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center pointer-events-auto transition-all duration-500 w-full max-w-md",
-          !uiVisible && "opacity-0",
-          (isWarping || isGameOver) && "brightness-150"
+          !uiVisible && "opacity-0 translate-y-[-100px]"
         )}>
-          <h1 className="font-headline text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+          <h1 className="font-headline text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_20px_rgba(168,85,247,0.7)]">
             Stellar <span className="text-primary">Shift</span>
           </h1>
           
           <div className="mt-4 flex flex-col items-center gap-2">
             <div className="flex items-center gap-3">
-               <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-sm md:text-lg bg-black/60 px-6 py-2 rounded-xl border border-primary/20 backdrop-blur-md min-w-[200px] shadow-2xl">
-                {labels.score}: {score.toLocaleString()} / {targetScore.toLocaleString()}
+               <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-sm md:text-xl bg-black/70 px-8 py-3 rounded-2xl border-2 border-primary/40 backdrop-blur-xl min-w-[220px] shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+                {labels.score}: <span className="text-primary">{score.toLocaleString()}</span> / {targetScore.toLocaleString()}
               </div>
               <div className="flex flex-col gap-1">
-                <div className="bg-primary/20 border border-primary/40 rounded-xl px-4 py-1.5 flex items-center gap-2 backdrop-blur-md">
-                  <Radio className={cn("w-3.5 h-3.5 text-primary", (isWarping || gameStarted) ? "animate-pulse" : "")} />
+                <div className="bg-primary/30 border border-primary/50 rounded-xl px-4 py-1.5 flex items-center gap-2 backdrop-blur-md shadow-lg">
+                  <Radio className={cn("w-4 h-4 text-primary", (isWarping || gameStarted) ? "animate-pulse" : "")} />
                   <span className="text-white font-black uppercase text-xs tracking-widest">LVL {level}</span>
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-lg px-2 py-0.5 flex items-center justify-center gap-1.5 backdrop-blur-md">
@@ -144,32 +142,32 @@ function MissionContent() {
             </div>
             
             <div className={cn(
-              "text-white/80 font-mono text-xs uppercase tracking-widest bg-black/60 px-4 py-1 rounded-full border border-white/5 backdrop-blur-md transition-all shadow-xl",
-              timeLeft < 10 && "text-red-400 animate-pulse border-red-500/50",
+              "text-white font-mono text-sm uppercase tracking-[0.2em] bg-black/60 px-6 py-1.5 rounded-full border border-white/20 backdrop-blur-md transition-all shadow-xl",
+              timeLeft < 10 && "text-red-500 animate-pulse border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]",
               isWarping && "opacity-0 scale-50"
             )}>
-              {labels.time}: {timeLeft}s
+              {labels.time}: <span className={timeLeft < 10 ? "font-black" : ""}>{timeLeft}s</span>
             </div>
           </div>
         </div>
 
-        {/* TOP-RIGHT: COMMAND CLUSTER */}
+        {/* TOP-RIGHT: WALLET & SETTINGS */}
         <div className="absolute top-[30px] right-[30px] flex items-center gap-4 pointer-events-auto">
           <div className={cn(
-            "flex items-center gap-2 bg-black/40 px-4 py-2 rounded-xl border border-yellow-500/30 backdrop-blur-md shadow-[0_0_15px_rgba(234,179,8,0.1)] transition-all",
+            "flex items-center gap-3 bg-black/70 px-5 py-2.5 rounded-2xl border-2 border-yellow-500/40 backdrop-blur-xl shadow-[0_0_25px_rgba(234,179,8,0.2)] transition-all",
             !uiVisible && "opacity-0"
           )}>
-            <div className="w-5 h-5 rounded-full bg-yellow-400 flex items-center justify-center shadow-[0_0_10px_rgba(234,179,8,0.5)]">
-               <Coins className="w-3 h-3 text-black stroke-[3px]" />
+            <div className="w-6 h-6 rounded-full bg-yellow-400 flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.6)] border-2 border-yellow-200">
+               <Coins className="w-4 h-4 text-black stroke-[3px]" />
             </div>
-            <span className="text-white font-black text-sm tracking-widest">
+            <span className="text-white font-black text-lg tracking-widest">
               {(profile.coins || 0).toLocaleString()}
             </span>
           </div>
 
           <button 
             onClick={() => setShowLogs(true)}
-            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/40 backdrop-blur-md"
+            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md"
             title={labels.archive}
           >
             <BookOpen className="w-5 h-5 text-secondary" />
@@ -177,7 +175,7 @@ function MissionContent() {
 
           <button 
             onClick={() => setShowProfile(true)}
-            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/40 backdrop-blur-md"
+            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md"
             title={labels.profile}
           >
             <User className="w-5 h-5 text-primary" />
@@ -207,17 +205,17 @@ function MissionContent() {
 
       <CoinFountain isActive={showCoins} />
 
-      <div className="relative flex-1 w-full flex flex-col items-center justify-center z-10 pt-48 pb-20">
+      <div className="relative flex-1 w-full flex flex-col items-center justify-center z-10 pt-56 pb-20">
         {!gameStarted ? (
           <div className="flex flex-col items-center animate-in zoom-in duration-700">
              <button 
                 onClick={handleStartMission}
-                className="group relative px-16 py-8 bg-primary rounded-full text-2xl font-black uppercase tracking-[0.3em] text-white shadow-[0_0_50px_rgba(168,85,247,0.5)] hover:scale-110 active:scale-95 transition-all"
+                className="group relative px-20 py-10 bg-primary rounded-[2.5rem] text-3xl font-black uppercase tracking-[0.4em] text-white shadow-[0_0_60px_rgba(168,85,247,0.6)] hover:scale-110 active:scale-95 transition-all border-4 border-white/20"
              >
-                <div className="absolute inset-0 bg-white/20 rounded-full blur-xl group-hover:blur-2xl transition-all" />
+                <div className="absolute inset-0 bg-white/20 rounded-[2rem] blur-xl group-hover:blur-2xl transition-all" />
                 Start Mission
              </button>
-             <p className="mt-8 text-[10px] text-primary font-bold uppercase tracking-[0.5em] animate-pulse">
+             <p className="mt-10 text-sm text-primary font-black uppercase tracking-[0.6em] animate-pulse">
                Initialize Neural Link
              </p>
           </div>
@@ -227,22 +225,22 @@ function MissionContent() {
       </div>
 
       <AlertDialog open={abortDialogOpen} onOpenChange={setAbortDialogOpen}>
-        <AlertDialogContent className="glass-panel border-red-500/30 bg-black/95 text-white z-[10000]">
+        <AlertDialogContent className="glass-panel border-red-600/50 bg-black/95 text-white z-[10000] p-10 rounded-[3rem]">
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-headline text-2xl uppercase italic font-black text-red-500">
+            <AlertDialogTitle className="font-headline text-3xl uppercase italic font-black text-red-500 mb-4">
               {labels.abandonMission}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-muted-foreground uppercase text-[10px] tracking-widest font-bold">
+            <AlertDialogDescription className="text-muted-foreground uppercase text-xs tracking-[0.2em] font-black leading-relaxed">
               {labels.abandonDesc}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="mt-6 gap-2">
-            <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-12 uppercase font-black text-[10px]">
+          <AlertDialogFooter className="mt-10 gap-4">
+            <AlertDialogCancel className="bg-white/5 border-white/20 text-white hover:bg-white/10 rounded-2xl h-14 uppercase font-black text-xs tracking-widest px-8">
               {labels.no}
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleAbort}
-              className="bg-red-500 hover:bg-red-600 text-white rounded-xl h-12 uppercase font-black text-[10px] shadow-[0_0_20px_rgba(239,68,68,0.4)]"
+              className="bg-red-600 hover:bg-red-700 text-white rounded-2xl h-14 uppercase font-black text-xs tracking-widest px-8 shadow-[0_0_30px_rgba(220,38,38,0.5)]"
             >
               {labels.yes}
             </AlertDialogAction>

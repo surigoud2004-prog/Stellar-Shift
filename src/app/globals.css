@@ -37,11 +37,11 @@
 }
 
 .stellar-grid-frame {
-  @apply relative rounded-3xl border-4 border-primary/20 bg-black/60 backdrop-blur-md overflow-hidden shadow-2xl;
+  @apply relative rounded-[3rem] border-4 border-primary/20 bg-black/60 backdrop-blur-md overflow-hidden shadow-2xl;
   box-shadow: 0 0 100px rgba(0, 0, 0, 0.9), inset 0 0 60px rgba(168, 85, 247, 0.1);
 }
 
-/* MARBLE & CORE STYLING */
+/* NEON CORES */
 .neon-core-cyan { background: radial-gradient(circle at center, #ffffff 0%, #06b6d4 40%, #0891b2 100%); }
 .neon-core-pink { background: radial-gradient(circle at center, #ffffff 0%, #ec4899 40%, #be185d 100%); }
 .neon-core-green { background: radial-gradient(circle at center, #ffffff 0%, #22c55e 40%, #15803d 100%); }
@@ -145,6 +145,16 @@
   100% { transform: translate(calc(50vw - 100px), calc(-50vh + 60px)) scale(0.5); opacity: 0; }
 }
 
+@keyframes screenShake {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-2px, -2px); }
+  20% { transform: translate(2px, 2px); }
+  30% { transform: translate(-4px, 4px); }
+  40% { transform: translate(4px, -4px); }
+  50% { transform: translate(-2px, 2px); }
+  60% { transform: translate(2px, -2px); }
+}
+
 .animate-drift-left { animation: driftLeft 60s infinite linear; }
 .animate-drift-warp { animation: driftWarp 0.2s infinite linear; }
 .animate-nebula-breath { animation: nebulaBreath 12s infinite ease-in-out; }
@@ -155,6 +165,7 @@
 .animate-sparkle { animation: sparkleBurst 0.7s ease-out forwards; }
 .animate-energy-vibration { animation: energyVibration 0.1s infinite linear; }
 .animate-coin-fly { animation: coinFly 0.8s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards; }
+.animate-shake { animation: screenShake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
 
 .sparkle-effect {
   @apply absolute inset-0 pointer-events-none rounded-full opacity-0;

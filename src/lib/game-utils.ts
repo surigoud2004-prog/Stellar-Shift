@@ -1,5 +1,5 @@
 export type EntityType = 0 | 1 | 2 | 3 | 4 | 5;
-export type SpecialType = 'nova-h' | 'bomb' | 'nova-core' | null;
+export type SpecialType = 'nova-h' | 'nova-v' | 'bomb' | 'nova-core' | null;
 
 export interface CelestialEntity {
   id: string;
@@ -34,16 +34,26 @@ function generateStableId() {
 /**
  * Generates a random entity. 
  * 'variety' determines how many different types can spawn.
- * Includes a 2% chance for a random special entity.
+ * Includes a 5% chance for a random special entity.
  */
 export function generateRandomEntity(q: number, r: number, variety: number = 6): CelestialEntity {
-  const isSpecial = Math.random() < 0.02;
+  const luck = Math.random();
+  const isSpecial = luck < 0.05; // 5% Luck Chance
+  
+  let special: SpecialType = null;
+  if (isSpecial) {
+    const typeRoll = Math.random();
+    if (typeRoll < 0.4) special = 'nova-h';
+    else if (typeRoll < 0.8) special = 'nova-v';
+    else special = 'bomb';
+  }
+
   return {
     id: generateStableId(),
     type: Math.floor(Math.random() * variety) as EntityType,
     q,
     r,
-    special: isSpecial ? 'nova-h' : null
+    special: special
   };
 }
 
@@ -155,14 +165,17 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
 
     if (moved) {
       if (hGroup && vGroup) {
-        // L or T shape intersection
+        // L or T shape intersection -> Nova Core
         specialToSpawn = { id: generateStableId(), type: 'nova-core', entityType: moved.type, q: moved.q, r: moved.r };
-      } else if ((hGroup && hGroup.length >= 5) || (vGroup && vGroup.length >= 5)) {
-        // 5-match linear
+      } else if (hGroup && hGroup.length >= 5 || vGroup && vGroup.length >= 5) {
+        // 5-match linear -> Cosmic Bomb
         specialToSpawn = { id: generateStableId(), type: 'bomb', entityType: moved.type, q: moved.q, r: moved.r };
-      } else if ((hGroup && hGroup.length === 4) || (vGroup && vGroup.length === 4)) {
-        // 4-match linear
+      } else if (hGroup && hGroup.length === 4) {
+        // Horizontal 4-match -> Horizontal Beam
         specialToSpawn = { id: generateStableId(), type: 'nova-h', entityType: moved.type, q: moved.q, r: moved.r };
+      } else if (vGroup && vGroup.length === 4) {
+        // Vertical 4-match -> Vertical Beam
+        specialToSpawn = { id: generateStableId(), type: 'nova-v', entityType: moved.type, q: moved.q, r: moved.r };
       }
     }
   }

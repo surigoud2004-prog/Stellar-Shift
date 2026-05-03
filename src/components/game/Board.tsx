@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useCallback } from 'react';
@@ -12,7 +11,7 @@ import { cn } from '@/lib/utils';
 export function Board() {
   const { 
     entities, isGameOver, isWin, isWarping, selectedId, setSelectedId, 
-    swapEntities, isProcessing, initBoard, isFlashing, level, 
+    swapEntities, isProcessing, initBoard, isFlashing, isShaking, level, 
     powerUps, triggerColorNuke, quitGame
   } = useGameState();
 
@@ -37,7 +36,10 @@ export function Board() {
   }, [selectedId, entities, isProcessing, isGameOver, isWin, isWarping, setSelectedId, swapEntities]);
 
   return (
-    <div className="relative flex flex-col items-center justify-center p-2 w-full h-full max-w-[95vw]">
+    <div className={cn(
+      "relative flex flex-col items-center justify-center p-2 w-full h-full max-w-[95vw]",
+      isShaking && "animate-shake"
+    )}>
       {/* High-Contrast Negative Flash Overlay */}
       {isFlashing && (
         <div className="fixed inset-0 z-[10000] bg-white mix-blend-difference pointer-events-none animate-negative-flash" />

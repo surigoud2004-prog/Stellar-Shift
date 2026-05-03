@@ -40,6 +40,7 @@ export function useGameState() {
   const [gameStarted, setGameStarted] = useState(false);
   const [gameMode, setGameMode] = useState<GameMode>('easy');
   const [isFlashing, setIsFlashing] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number>(0);
 
   // Power Up States
@@ -63,7 +64,7 @@ export function useGameState() {
   const getVariety = useCallback(() => {
     if (!sessionStartTime) return 6;
     const elapsed = (Date.now() - sessionStartTime) / 1000;
-    return elapsed < 60 ? 4 : 6; 
+    return elapsed < 120 ? 4 : 6; // 4 colors for first 2 minutes for Flow State
   }, [sessionStartTime]);
 
   const archiveLore = useCallback(async (event: string, context?: string) => {
@@ -114,6 +115,7 @@ export function useGameState() {
     setScore(0);
     setIsProcessing(false);
     setIsFlashing(false);
+    setIsShaking(false);
   }, [getVariety, levelTimeLimit, powerUps.novaBlast]);
 
   useEffect(() => {
@@ -159,13 +161,13 @@ export function useGameState() {
     const activatedSpecialIds = new Set<string>();
     const explosiveIds = new Set<string>();
     let triggeredFlash = false;
+    let triggeredShake = false;
     let chainMultiplier = 1;
 
     const addExplosives = (id: string) => {
       const ent = currentEntities.find(e => e.id === id);
       if (!ent || activatedSpecialIds.has(id)) return;
       
-      // If a special triggers another special, double multiplier
       if (ent.special) {
         chainMultiplier *= 2;
       }
@@ -174,6 +176,7 @@ export function useGameState() {
 
       if (ent.special === 'bomb') {
         triggeredFlash = true;
+        triggeredShake = true;
         currentEntities.forEach(e => {
           if (Math.abs(e.q - ent.q) <= 1 && Math.abs(e.r - ent.r) <= 1) explosiveIds.add(e.id);
         });
@@ -181,8 +184,11 @@ export function useGameState() {
         currentEntities.forEach(e => {
           if (e.r === ent.r) explosiveIds.add(e.id);
         });
+      } else if (ent.special === 'nova-v') {
+        currentEntities.forEach(e => {
+          if (e.q === ent.q) explosiveIds.add(e.id);
+        });
       } else if (ent.special === 'nova-core') {
-        // Vaporize all entities of the same color
         currentEntities.forEach(e => {
           if (e.type === ent.type) explosiveIds.add(e.id);
         });
@@ -198,11 +204,17 @@ export function useGameState() {
       const allToDestroy = new Set([...matches, ...Array.from(explosiveIds)]);
       
       setEntities(prev => prev.map(e => allToDestroy.has(e.id) ? { ...e, isMatched: true } : e));
+      
       if (triggeredFlash) {
         setIsFlashing(true);
         playBombSound();
         setTimeout(() => setIsFlashing(false), 400);
       }
+      if (triggeredShake) {
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 500);
+      }
+
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000 * 1.3));
 
       const points = allToDestroy.size * 10 * comboFactor * chainMultiplier;
@@ -273,9 +285,10 @@ export function useGameState() {
     playSwapSound();
     await new Promise(resolve => setTimeout(resolve, animationDuration * 1000)); 
 
-    const { matches } = findMatches(newEntities);
+    const { matches } = findMatches(newEntities, id1);
     const isSpecialMoved = e1.special || e2.special;
 
+    // REWARD PROTOCOL: If a special is moved but no match, it still triggers
     if (matches.length === 0 && !isSpecialMoved) {
       playRejectSound();
       const reverted = [...newEntities];
@@ -338,7 +351,7 @@ export function useGameState() {
     isGameOver, isWin, isWarping, selectedId, setSelectedId,
     swapEntities, isProcessing, initBoard,
     gameStarted, startGame, quitGame, gameMode, setGameMode,
-    isFlashing, animationDuration,
+    isFlashing, isShaking, animationDuration,
     powerUps, setPowerUps, triggerColorNuke
   };
 }
