@@ -35,7 +35,7 @@ function MissionContent() {
   
   const { 
     gameMode, setGameMode, gameStarted, quitGame, score, targetScore, timeLeft, startGame, level, isWin, isWarping,
-    powerUps, setPowerUps, isGameOver, setIsGameOver, isReviving, setIsReviving, revive
+    powerUps, setPowerUps, isGameOver, setIsGameOver, isReviving, setIsReviving, revive, reviveCost
   } = useGameState();
 
   const [language, setLanguage] = useState<'en' | 'es' | 'fr'>('en');
@@ -111,8 +111,8 @@ function MissionContent() {
   };
 
   const handleRecoverLink = () => {
-    if (profile.coins >= 200) {
-      if (spendCoins(200)) {
+    if (profile.coins >= reviveCost) {
+      if (spendCoins(reviveCost)) {
         revive(20);
       }
     }
@@ -273,10 +273,10 @@ function MissionContent() {
             <div className="w-full flex flex-col gap-4">
                <button 
                  onClick={handleRecoverLink}
-                 disabled={profile.coins < 200}
+                 disabled={profile.coins < reviveCost}
                  className={cn(
                    "w-full h-16 rounded-2xl flex items-center justify-between px-8 font-black uppercase tracking-widest transition-all",
-                   profile.coins >= 200 
+                   profile.coins >= reviveCost 
                     ? "bg-primary text-white hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(168,85,247,0.5)]" 
                     : "bg-white/5 text-white/20 cursor-not-allowed grayscale"
                  )}
@@ -285,8 +285,8 @@ function MissionContent() {
                    Recover Link <span className="text-xs opacity-60 text-black font-black bg-white/40 px-2 py-0.5 rounded-md">+20s</span>
                  </span>
                  <div className="flex items-center gap-2">
-                    <Coins className="w-4 h-4" />
-                    200
+                    <Coins className={cn("w-4 h-4", reviveCost > 200 && "text-red-500 animate-pulse")} />
+                    {reviveCost}
                  </div>
                </button>
 
@@ -298,7 +298,7 @@ function MissionContent() {
                </button>
             </div>
             
-            {profile.coins < 200 && (
+            {profile.coins < reviveCost && (
               <p className="mt-6 text-[10px] text-red-400 uppercase font-black tracking-widest animate-pulse">
                 Insufficient Coins for Link Recovery
               </p>

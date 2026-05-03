@@ -44,6 +44,7 @@ export function useGameState() {
   const [isShaking, setIsShaking] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number>(0);
   const [isReviving, setIsReviving] = useState(false);
+  const [reviveCost, setReviveCost] = useState(200);
 
   // Power Up States
   const [powerUps, setPowerUps] = useState<PowerUpState>({
@@ -124,6 +125,7 @@ export function useGameState() {
     setIsFlashing(false);
     setIsShaking(false);
     setIsReviving(false);
+    setReviveCost(200); // Reset cost on new board init
   }, [getVariety, levelTimeLimit, powerUps.novaBlast]);
 
   // Handle Level Transition
@@ -136,6 +138,7 @@ export function useGameState() {
         setIsWin(false);
         setIsWarping(false);
         setPowerUps(prev => ({ ...prev, timeDilator: false, novaBlast: false }));
+        setReviveCost(200); // Reset cost on level clear
       }, 2500); 
       return () => clearTimeout(timeout);
     }
@@ -345,6 +348,7 @@ export function useGameState() {
     setSessionStartTime(Date.now());
     setLevel(1);
     setScore(0);
+    setReviveCost(200);
     initBoard();
   }, [initBoard]);
 
@@ -359,6 +363,7 @@ export function useGameState() {
     setIsWin(false);
     setIsWarping(false);
     setIsReviving(false);
+    setReviveCost(200);
     setSessionStartTime(0);
     setPowerUps({ timeDilator: false, novaBlast: false, colorNuke: 0 });
   }, []);
@@ -367,6 +372,7 @@ export function useGameState() {
     setTimeLeft(extraTime);
     setIsReviving(false);
     setIsGameOver(false);
+    setReviveCost(prev => prev * 2); // Double cost for next time in same level
     playUIClickSound();
   }, []);
 
@@ -377,6 +383,6 @@ export function useGameState() {
     gameStarted, startGame, quitGame, gameMode, setGameMode,
     isFlashing, isShaking, animationDuration,
     powerUps, setPowerUps, triggerColorNuke,
-    isReviving, setIsReviving, revive
+    isReviving, setIsReviving, revive, reviveCost
   };
 }
