@@ -104,7 +104,7 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
         "w-full h-full transition-all relative rounded-full animate-core-breath",
         bloomClass,
         isSelected && "brightness-150 ring-4 ring-white shadow-[0_0_40px_white]",
-        isSpecial && "ring-4 ring-white animate-pulse shadow-[0_0_20px_white] animate-energy-vibration"
+        isSpecial && "ring-4 ring-white shadow-[0_0_20px_white] animate-energy-vibration"
       )}>
         <div 
           key={sparkleKey} 
@@ -132,7 +132,10 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
           <div className="w-full h-full relative flex items-center justify-center overflow-hidden rounded-full border border-white/40">
              <div className={cn("absolute inset-0", NEON_CORE_MAP[entity.type % NEON_CORE_MAP.length])} />
              <div className="absolute inset-x-0 h-2 bg-white/60 blur-sm animate-pulse" />
-             <div className="absolute inset-x-0 h-0.5 bg-white z-10" />
+             <div className="absolute inset-x-0 h-0.5 bg-white z-10 shadow-[0_0_10px_white]" />
+             {/* Horizontal Stripes visual hint */}
+             <div className="absolute inset-x-4 h-0.5 top-1/4 bg-white/40" />
+             <div className="absolute inset-x-4 h-0.5 bottom-1/4 bg-white/40" />
              <div className="rim-light" />
              <div className="absolute inset-0 glossy-overlay opacity-40" />
           </div>
@@ -140,7 +143,10 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
           <div className="w-full h-full relative flex items-center justify-center overflow-hidden rounded-full border border-white/40">
              <div className={cn("absolute inset-0", NEON_CORE_MAP[entity.type % NEON_CORE_MAP.length])} />
              <div className="absolute inset-y-0 w-2 bg-white/60 blur-sm animate-pulse" />
-             <div className="absolute inset-y-0 w-0.5 bg-white z-10" />
+             <div className="absolute inset-y-0 w-0.5 bg-white z-10 shadow-[0_0_10px_white]" />
+             {/* Vertical Stripes visual hint */}
+             <div className="absolute inset-y-4 w-0.5 left-1/4 bg-white/40" />
+             <div className="absolute inset-y-4 w-0.5 right-1/4 bg-white/40" />
              <div className="rim-light" />
              <div className="absolute inset-0 glossy-overlay opacity-40" />
           </div>

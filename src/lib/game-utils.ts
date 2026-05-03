@@ -35,11 +35,11 @@ function generateStableId() {
 /**
  * Generates a random entity. 
  * 'variety' determines how many different types can spawn.
- * Includes a 5% "Luck" chance for a random special entity.
+ * Includes a 5% "Luck" chance for a random special entity drop.
  */
 export function generateRandomEntity(q: number, r: number, variety: number = 6): CelestialEntity {
   const luck = Math.random();
-  const isSpecial = luck < 0.05; // 5% Luck Chance
+  const isSpecial = luck < 0.05; // 5% Luck Chance as requested
   
   let special: SpecialType = null;
   if (isSpecial) {
@@ -165,11 +165,12 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
     const moved = entities.find(e => e.id === lastMoveId);
 
     if (moved) {
+      // 100% Guaranteed creation logic
       if ((hGroup && hGroup.length >= 5) || (vGroup && vGroup.length >= 5)) {
         // 5-match linear -> Rainbow Core
         specialToSpawn = { id: generateStableId(), type: 'rainbow-core', entityType: moved.type, q: moved.q, r: moved.r };
       } else if (hGroup && vGroup) {
-        // L or T shape intersection -> Rainbow Core (as per user request: "Matching 5 spheres in an 'L' or 'T' shape should create a Nova Core")
+        // L or T shape intersection -> Rainbow Core (Nova Core)
         specialToSpawn = { id: generateStableId(), type: 'rainbow-core', entityType: moved.type, q: moved.q, r: moved.r };
       } else if (hGroup && hGroup.length === 4) {
         // Horizontal 4-match -> Horizontal Beam

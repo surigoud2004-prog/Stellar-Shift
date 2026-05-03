@@ -49,7 +49,6 @@ export function useGameState() {
   const [gameMode, setGameMode] = useState<GameMode>('easy');
   const [isFlashing, setIsFlashing] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
-  const [sessionStartTime, setSessionStartTime] = useState<number>(0);
   const [isReviving, setIsReviving] = useState(false);
   const [reviveCost, setReviveCost] = useState(200);
 
@@ -61,8 +60,10 @@ export function useGameState() {
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Score target scales by level
   const targetScore = useMemo(() => level * 1500, [level]);
   
+  // Timer scaling: -2s per level, min 30s
   const levelTimeLimit = useMemo(() => {
     const base = Math.max(30, 60 - (level - 1) * 2);
     return powerUps.timeDilator ? base + 15 : base;
@@ -92,14 +93,12 @@ export function useGameState() {
   const submitHighScore = useCallback(async (finalScore: number, finalLevel: number) => {
     if (!db || !auth?.currentUser) return;
     try {
-      const userRef = doc(db, 'users', auth.currentUser.uid);
-      // We also update high score in a global leaderboard
       const scoreId = `${auth.currentUser.uid}_${Date.now()}`;
       const scoreRef = doc(db, 'leaderboard', scoreId);
       setDoc(scoreRef, {
         uid: auth.currentUser.uid,
         displayName: auth.currentUser.displayName || 'Pilot',
-        score: finalScore,
+        score: Math.floor(finalScore),
         level: finalLevel,
         timestamp: Date.now()
       });
@@ -119,7 +118,7 @@ export function useGameState() {
     const addExplosives = (id: string) => {
       const ent = currentEntities.find(e => e.id === id);
       if (!ent || activatedSpecialIds.has(id)) return;
-      if (ent.special) chainMultiplier *= 2;
+      if (ent.special) chainMultiplier *= 2; // Combo chain reward for special units
       activatedSpecialIds.add(id);
 
       if (ent.special === 'bomb') {
@@ -176,6 +175,7 @@ export function useGameState() {
         return newScore;
       });
 
+      // Refill logic
       const updated = currentEntities.filter(e => !allToDestroy.has(e.id));
       const newGrid: CelestialEntity[] = [];
       for (let q = 0; q < GRID_COLS; q++) {
@@ -205,13 +205,15 @@ export function useGameState() {
 
       setEntities(newGrid);
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000));
+      // Recursive match loop for cascades
       await handleMatch(newGrid, undefined, comboFactor * 1.5);
     } else {
       setIsProcessing(false);
     }
   }, [targetScore, getVariety, isWin, isWarping, level, archiveLore, submitHighScore, animationDuration]);
 
-  const initBoard = useCallback(async () => {
+  const initBoard = useCallback(async (startLevel?: number) => {
+    const targetLevel = startLevel !== undefined ? startLevel : level;
     const variety = getVariety();
     let initial: CelestialEntity[] = [];
     
@@ -241,8 +243,9 @@ export function useGameState() {
     setIsReviving(false);
     setReviveCost(200);
 
+    // Initial check for pre-existing matches
     await handleMatch(initial);
-  }, [getVariety, levelTimeLimit, powerUps.novaBlast, handleMatch]);
+  }, [getVariety, level, levelTimeLimit, powerUps.novaBlast, handleMatch]);
 
   useEffect(() => {
     if (isWin) {
@@ -284,7 +287,7 @@ export function useGameState() {
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          setIsReviving(true);
+          setIsReviving(true); // Trigger Revive System
           return 0;
         }
         return prev - 1;
@@ -309,6 +312,7 @@ export function useGameState() {
     const e1 = newEntities[idx1];
     const e2 = newEntities[idx2];
     
+    // Combo System: Swapping two special entities
     if (e1.special && e2.special) {
       const explosionIds = new Set<string>();
       
@@ -317,12 +321,9 @@ export function useGameState() {
       } else if (e1.special === 'rainbow-core' || e2.special === 'rainbow-core') {
         const rainbow = e1.special === 'rainbow-core' ? e1 : e2;
         const other = e1.special === 'rainbow-core' ? e2 : e1;
-        const targetType = other.type;
-        const targetSpecial = other.special;
-        
         newEntities.forEach(e => {
-          if (e.type === targetType) {
-            e.special = targetSpecial;
+          if (e.type === other.type) {
+            e.special = other.special;
             explosionIds.add(e.id);
           }
         });
@@ -347,18 +348,16 @@ export function useGameState() {
       return;
     }
 
+    // Rainbow Swap
     if (e1.special === 'rainbow-core' || e2.special === 'rainbow-core') {
       const rainbow = e1.special === 'rainbow-core' ? e1 : e2;
       const normal = e1.special === 'rainbow-core' ? e2 : e1;
-      const targetType = normal.type;
-      
       const explosionIds = new Set<string>();
       newEntities.forEach(e => {
-        if (e.type === targetType || e.id === rainbow.id) {
+        if (e.type === normal.type || e.id === rainbow.id) {
           explosionIds.add(e.id);
         }
       });
-      
       setEntities(newEntities);
       playBombSound();
       await handleMatch(newEntities, undefined, 1, explosionIds);
@@ -411,7 +410,6 @@ export function useGameState() {
   const startGame = useCallback((initialLevel: number = 1) => {
     playUIClickSound();
     setGameStarted(true);
-    setSessionStartTime(Date.now());
     setLevel(initialLevel);
     setScore(0);
     setReviveCost(200);
@@ -430,7 +428,6 @@ export function useGameState() {
     setIsWarping(false);
     setIsReviving(false);
     setReviveCost(200);
-    setSessionStartTime(0);
     setPowerUps({ timeDilator: false, novaBlast: false, colorNuke: 0 });
   }, []);
 
@@ -438,7 +435,7 @@ export function useGameState() {
     setTimeLeft(extraTime);
     setIsReviving(false);
     setIsGameOver(false);
-    setReviveCost(prev => prev * 2);
+    setReviveCost(prev => prev * 2); // Escalating revive cost
     playUIClickSound();
   }, []);
 
