@@ -1,4 +1,3 @@
-
 export type EntityType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 export type SpecialType = 'nova-h' | 'black-hole' | 'bomb' | 'comet' | null;
 
@@ -9,6 +8,7 @@ export interface CelestialEntity {
   r: number; // row
   special: SpecialType;
   isMatched?: boolean;
+  isExploding?: boolean;
 }
 
 export const GRID_SIZE = 8;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { Entity } from './Entity';
 import { areAdjacent, HEX_WIDTH, GRID_SIZE } from '@/lib/game-utils';
@@ -20,8 +20,8 @@ import {
   AlertDialogTitle 
 } from '@/components/ui/alert-dialog';
 import { 
-  Orbit, Shield, Trophy, 
-  Skull, Lock, Pause, Play, Timer, Cpu, X, Terminal, User
+  Orbit, Trophy, 
+  Skull, Lock, Pause, Play, Timer, X, Terminal, User
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HallOfFame } from './HallOfFame';
@@ -36,7 +36,7 @@ export function Board() {
     isGameOver, isWin, isPaused, setIsPaused, lore, loreLogs, selectedId, setSelectedId, 
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
     gameStarted, startGame, resetToMainMenu, isSettingsOpen, setIsSettingsOpen, isInputFrozen,
-    soundOn, handleToggleSound, language, cycleLanguage, t, profile
+    soundOn, handleToggleSound, language, cycleLanguage, t, profile, activeExplosions
   } = useGameState();
 
   const [showExitConfirm, setShowExitConfirm] = useState(false);
@@ -121,7 +121,6 @@ export function Board() {
       {/* Command Cluster */}
       <div className="fixed top-8 right-8 z-[70] flex flex-col items-end gap-4 pointer-events-none">
         <div className="flex items-center gap-4 pointer-events-auto">
-          {/* Dedicated Profile Button */}
           <button 
             onClick={() => profile.setShowProfile(true)}
             disabled={isProcessing}
@@ -315,6 +314,20 @@ export function Board() {
                 className={cn("relative transition-all duration-700", isInputFrozen && "opacity-50 grayscale contrast-125")} 
                 style={{ width: `${GRID_SIZE * HEX_WIDTH}px`, height: `${(GRID_SIZE - 1) * HEX_WIDTH}px`, marginLeft: `-${HEX_WIDTH/2}px` }}
               >
+                {/* Explosion Shockwaves Overlay */}
+                {activeExplosions.map((exp, i) => (
+                  <div 
+                    key={`exp-${i}-${exp.q}-${exp.r}`}
+                    className="animate-cosmic-shockwave"
+                    style={{
+                      left: `${exp.q * HEX_WIDTH}px`,
+                      top: `${exp.r * HEX_WIDTH}px`,
+                      width: `${HEX_WIDTH}px`,
+                      height: `${HEX_WIDTH}px`,
+                    }}
+                  />
+                ))}
+
                 {entities.map((entity) => (
                   <Entity 
                     key={entity.id} 

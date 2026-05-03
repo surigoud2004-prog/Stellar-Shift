@@ -29,7 +29,8 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
         "absolute cursor-pointer transition-all duration-300",
         isSelected && "z-30 scale-punch brightness-150 drop-shadow-[0_0_20px_rgba(187,112,255,0.8)]",
         disabled && "cursor-not-allowed",
-        entity.isMatched && "opacity-0 scale-0",
+        entity.isMatched && "ember-dissolve",
+        entity.isExploding && "animate-implode",
         "group"
       )}
       style={{

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -48,6 +47,7 @@ export function useGameState() {
   const [bestScore, setBestScore] = useState(0);
   const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
+  const [activeExplosions, setActiveExplosions] = useState<{q: number, r: number}[]>([]);
   
   const [soundOn, setSoundOn] = useState(true);
   const [language, setLanguage] = useState<Language>('en');
@@ -133,7 +133,6 @@ export function useGameState() {
       }
       localStorage.setItem('stellar_level', level.toString());
       
-      // Update persistent player stats
       profile.updateStats(score, 0, true);
     } catch (e) {
       // Auth or general failure
@@ -187,55 +186,57 @@ export function useGameState() {
         }
         return prev - 1;
       });
-      if (gameMode === 'hell' && Date.now() - lastMoveTime.current > 5000) {
-        setIsLocked(true);
-      }
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [isTimerFrozen, score, targetScore, gameMode]);
-
-  useEffect(() => {
-    if (isInputFrozen) return;
-    const interval = setInterval(() => {
-      if (Date.now() - lastMatchTime.current > 25000) {
-        setEntities(prev => {
-          const next = [...prev];
-          const randIdx = Math.floor(Math.random() * next.length);
-          next[randIdx] = { ...next[randIdx], special: 'comet' };
-          return next;
-        });
-        lastMatchTime.current = Date.now();
-        addLoreLog("CELESTIAL ANOMALY: A comet shard has appeared.");
-        playSpecialActivationSound();
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [isInputFrozen, addLoreLog]);
-
-  useEffect(() => {
-    if (gameStarted && score >= targetScore && !isWin) {
-      setIsWin(true);
-      syncHighScore();
-      setTimeout(() => setLevel(l => l + 1), 3000);
-    }
-  }, [score, targetScore, isWin, gameStarted]);
+  }, [isTimerFrozen, score, targetScore]);
 
   const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMoveId?: string, comboLevel: number = 0) => {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMoveId);
     
     if (matches.length > 0) {
-      if (comboLevel === 0) playMatchSound();
-      else playComboSound(comboLevel);
-      
       setIsProcessing(true);
       lastMatchTime.current = Date.now();
       
-      setEntities(prev => prev.map(e => matches.includes(e.id) ? { ...e, isMatched: true } : e));
-      
+      // Identify bombs in current matches
+      const bombMatches = currentEntities.filter(e => matches.includes(e.id) && e.special === 'bomb');
+      let finalMatchedIds = new Set(matches);
+
+      if (bombMatches.length > 0) {
+        // Implosion phase
+        setEntities(prev => prev.map(e => {
+          const isCore = bombMatches.some(b => b.id === e.id);
+          return isCore ? { ...e, isExploding: true } : e;
+        }));
+        await new Promise(resolve => setTimeout(resolve, 150));
+
+        // Explosion phase
+        const newExplosions: {q: number, r: number}[] = [];
+        bombMatches.forEach(bomb => {
+          newExplosions.push({ q: bomb.q, r: bomb.r });
+          // Clear 3x3 area
+          currentEntities.forEach(e => {
+            if (Math.abs(e.q - bomb.q) <= 1 && Math.abs(e.r - bomb.r) <= 1) {
+              finalMatchedIds.add(e.id);
+            }
+          });
+        });
+        
+        setActiveExplosions(newExplosions);
+        playSpecialActivationSound();
+        addLoreLog("COSMIC EVENT: Supernova Core triggered.");
+        
+        // Brief pause for shockwave visual
+        await new Promise(resolve => setTimeout(resolve, 200));
+        setActiveExplosions([]);
+      } else {
+        if (comboLevel === 0) playMatchSound();
+        else playComboSound(comboLevel);
+      }
+
+      setEntities(prev => prev.map(e => finalMatchedIds.has(e.id) ? { ...e, isMatched: true } : e));
       await new Promise(resolve => setTimeout(resolve, 400));
 
-      let matchedSet = new Set(matches);
-      let updated = currentEntities.filter(e => !matchedSet.has(e.id));
+      let updated = currentEntities.filter(e => !finalMatchedIds.has(e.id));
 
       if (specialToSpawn) {
         playSpecialActivationSound();
@@ -250,9 +251,9 @@ export function useGameState() {
         addLoreLog(loreRes.loreSnippet);
       }
 
-      const matchPoints = matches.length * 20 * (comboLevel + 1);
+      const matchPoints = finalMatchedIds.size * 20 * (comboLevel + 1);
       setScore(s => s + matchPoints);
-      profile.updateStats(matchPoints, matches.length);
+      profile.updateStats(matchPoints, finalMatchedIds.size);
 
       const variety = getColorVariety(level);
       const newGrid: CelestialEntity[] = [];
@@ -356,6 +357,6 @@ export function useGameState() {
     isSettingsOpen, setIsSettingsOpen, isInputFrozen,
     soundOn, handleToggleSound,
     language, cycleLanguage, t,
-    profile
+    profile, activeExplosions
   };
 }
