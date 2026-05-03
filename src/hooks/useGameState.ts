@@ -33,10 +33,8 @@ export interface PowerUpState {
 }
 
 export function useGameState() {
-  const firestoreState = useFirestore();
-  const authState = useAuth();
-  const firestore = firestoreState || null;
-  const auth = authState || null;
+  const db = useFirestore();
+  const auth = useAuth();
   
   const [entities, setEntities] = useState<CelestialEntity[]>([]);
   const [score, setScore] = useState(0);
@@ -78,10 +76,10 @@ export function useGameState() {
   }, [level]);
 
   const archiveLore = useCallback(async (event: string, context?: string) => {
-    if (!firestore || !auth?.currentUser) return;
+    if (!db || !auth?.currentUser) return;
     try {
       const lore = await generateDynamicLore({ gameEventDescription: event, gameContext: context });
-      const logRef = doc(collection(firestore, 'users', auth.currentUser.uid, 'logs'));
+      const logRef = doc(collection(db, 'users', auth.currentUser.uid, 'logs'));
       setDoc(logRef, {
         id: logRef.id,
         event,
@@ -89,7 +87,24 @@ export function useGameState() {
         timestamp: Date.now()
       });
     } catch (e) {}
-  }, [firestore, auth]);
+  }, [db, auth]);
+
+  const submitHighScore = useCallback(async (finalScore: number, finalLevel: number) => {
+    if (!db || !auth?.currentUser) return;
+    try {
+      const userRef = doc(db, 'users', auth.currentUser.uid);
+      // We also update high score in a global leaderboard
+      const scoreId = `${auth.currentUser.uid}_${Date.now()}`;
+      const scoreRef = doc(db, 'leaderboard', scoreId);
+      setDoc(scoreRef, {
+        uid: auth.currentUser.uid,
+        displayName: auth.currentUser.displayName || 'Pilot',
+        score: finalScore,
+        level: finalLevel,
+        timestamp: Date.now()
+      });
+    } catch (e) {}
+  }, [db, auth]);
 
   const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMovedId?: string, comboFactor: number = 1, forceExplosionIds?: Set<string>) => {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMovedId);
@@ -156,6 +171,7 @@ export function useGameState() {
            setIsWin(true);
            playVictoryFanfare(level);
            archiveLore("Sector Secured", `Level ${level} targets reached.`);
+           submitHighScore(newScore, level);
         }
         return newScore;
       });
@@ -189,18 +205,16 @@ export function useGameState() {
 
       setEntities(newGrid);
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000));
-      // Continuous Validation Loop: Keep checking for matches in the new state
       await handleMatch(newGrid, undefined, comboFactor * 1.5);
     } else {
       setIsProcessing(false);
     }
-  }, [targetScore, getVariety, isWin, isWarping, level, archiveLore, animationDuration]);
+  }, [targetScore, getVariety, isWin, isWarping, level, archiveLore, submitHighScore, animationDuration]);
 
   const initBoard = useCallback(async () => {
     const variety = getVariety();
     let initial: CelestialEntity[] = [];
     
-    // Generate board (allowing matches for bonus points at start)
     for (let r = 0; r < GRID_ROWS; r++) {
       for (let q = 0; q < GRID_COLS; q++) {
         initial.push(generateRandomEntity(q, r, variety));
@@ -221,13 +235,12 @@ export function useGameState() {
     setIsWarping(false);
     setTimeLeft(levelTimeLimit);
     setScore(0);
-    setIsProcessing(true); // Lock board during initial match scan
+    setIsProcessing(true);
     setIsFlashing(false);
     setIsShaking(false);
     setIsReviving(false);
     setReviveCost(200);
 
-    // Initial stability scan
     await handleMatch(initial);
   }, [getVariety, levelTimeLimit, powerUps.novaBlast, handleMatch]);
 

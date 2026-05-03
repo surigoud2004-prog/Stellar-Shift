@@ -3,8 +3,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { playLevelUpSound, playUIClickSound } from '@/lib/audio-system';
+import { useAuth, useFirestore } from '@/firebase';
+import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 
 export interface PlayerProfile {
+  uid?: string;
   name: string;
   avatarId: string;
   xp: number;
@@ -29,26 +32,50 @@ const DEFAULT_PROFILE: PlayerProfile = {
 };
 
 export function usePlayerProfile() {
+  const auth = useAuth();
+  const db = useFirestore();
   const [profile, setProfile] = useState<PlayerProfile>(DEFAULT_PROFILE);
   const [showProfile, setShowProfile] = useState(false);
 
+  // Sync with Firestore when auth state changes
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('stellar_player_profile');
-      if (saved) {
-        setProfile(JSON.parse(saved));
+    if (!auth.currentUser || !db) return;
+
+    const userRef = doc(db, 'users', auth.currentUser.uid);
+    
+    // Initial fetch
+    getDoc(userRef).then((snap) => {
+      if (snap.exists()) {
+        setProfile(snap.data() as PlayerProfile);
+      } else {
+        // Create initial profile if not exists
+        const initialProfile = { ...DEFAULT_PROFILE, uid: auth.currentUser!.uid };
+        setDoc(userRef, initialProfile);
+        setProfile(initialProfile);
       }
-    } catch (e) {
-      console.warn("Failed to load profile", e);
-    }
-  }, []);
+    });
+
+    // Subscribe to changes
+    const unsubscribe = onSnapshot(userRef, (snap) => {
+      if (snap.exists()) {
+        setProfile(snap.data() as PlayerProfile);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [auth.currentUser, db]);
 
   const saveProfile = useCallback((newProfile: PlayerProfile) => {
     setProfile(newProfile);
+    if (auth.currentUser && db) {
+      const userRef = doc(db, 'users', auth.currentUser.uid);
+      setDoc(userRef, newProfile, { merge: true });
+    }
+    // Backup to localStorage
     try {
       localStorage.setItem('stellar_player_profile', JSON.stringify(newProfile));
     } catch (e) {}
-  }, []);
+  }, [auth.currentUser, db]);
 
   const updateStats = useCallback((score: number, matches: number, isWin: boolean = false, coinsWon: number = 0, newLevel?: number) => {
     setProfile(prev => {
@@ -63,20 +90,21 @@ export function usePlayerProfile() {
       const next: PlayerProfile = {
         ...prev,
         xp: newXP,
-        totalMatches: prev.totalMatches + matches,
-        gamesWon: isWin ? prev.gamesWon + 1 : prev.gamesWon,
-        starsCollected: prev.starsCollected + Math.floor(score / 50),
-        allTimeHigh: Math.max(prev.allTimeHigh, score),
+        totalMatches: (prev.totalMatches || 0) + matches,
+        gamesWon: isWin ? (prev.gamesWon || 0) + 1 : (prev.gamesWon || 0),
+        starsCollected: (prev.starsCollected || 0) + Math.floor(score / 50),
+        allTimeHigh: Math.max(prev.allTimeHigh || 0, score),
         coins: (prev.coins || 0) + coinsWon,
         currentLevel: newLevel !== undefined ? newLevel : prev.currentLevel,
       };
       
-      try {
-        localStorage.setItem('stellar_player_profile', JSON.stringify(next));
-      } catch (e) {}
+      if (auth.currentUser && db) {
+        const userRef = doc(db, 'users', auth.currentUser.uid);
+        setDoc(userRef, next, { merge: true });
+      }
       return next;
     });
-  }, []);
+  }, [auth.currentUser, db]);
 
   const spendCoins = useCallback((amount: number): boolean => {
     if ((profile.coins || 0) < amount) return false;
@@ -105,7 +133,7 @@ export function usePlayerProfile() {
 
   const resetProfile = () => {
     saveProfile(DEFAULT_PROFILE);
-    window.location.reload(); // Hard reset to ensure all states clear
+    window.location.reload();
   };
 
   return {

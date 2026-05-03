@@ -169,8 +169,8 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
         // 5-match linear -> Rainbow Core
         specialToSpawn = { id: generateStableId(), type: 'rainbow-core', entityType: moved.type, q: moved.q, r: moved.r };
       } else if (hGroup && vGroup) {
-        // L or T shape intersection -> Cosmic Bomb
-        specialToSpawn = { id: generateStableId(), type: 'bomb', entityType: moved.type, q: moved.q, r: moved.r };
+        // L or T shape intersection -> Rainbow Core (as per user request: "Matching 5 spheres in an 'L' or 'T' shape should create a Nova Core")
+        specialToSpawn = { id: generateStableId(), type: 'rainbow-core', entityType: moved.type, q: moved.q, r: moved.r };
       } else if (hGroup && hGroup.length === 4) {
         // Horizontal 4-match -> Horizontal Beam
         specialToSpawn = { id: generateStableId(), type: 'nova-h', entityType: moved.type, q: moved.q, r: moved.r };
