@@ -53,10 +53,10 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-[#0a0512]">
       <ParallaxBackground disabled={isBatterySaver} />
       
-      {/* Global HUD Layer: Fixed and Topmost */}
+      {/* Global HUD Layer: Fixed and Topmost (Z-9999) */}
       <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
         
-        {/* Top-Center Anchor: Mission Telemetry */}
+        {/* Top-Center Anchor: Mission Telemetry Stack */}
         <div className="absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center">
           <h1 className="font-headline text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
             Stellar <span className="text-primary">Shift</span>
@@ -64,7 +64,7 @@ export default function Home() {
           
           {gameStarted && (
             <div className="mt-4 flex flex-col items-center space-y-2 pointer-events-auto">
-              <div className="text-white drop-shadow-[0_0_10px_rgba(168,85,247,0.8)] font-black uppercase tracking-widest text-sm md:text-xl flex items-center gap-4">
+              <div className="text-white drop-shadow-[0_0_15px_rgba(168,85,247,0.8)] font-black uppercase tracking-widest text-sm md:text-xl flex items-center gap-4">
                 <span className="bg-black/40 px-4 py-1 rounded-lg border border-primary/20">
                   {labels.score}: {score.toLocaleString()} / {targetScore.toLocaleString()}
                 </span>
@@ -79,7 +79,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* Top-Right Anchor: Tactical Cluster */}
+        {/* Top-Right Anchor: Command Cluster */}
         <div className="absolute top-[30px] right-[30px] flex items-center gap-4 pointer-events-auto">
           <button 
             onClick={() => setShowLogs(true)}
@@ -120,19 +120,21 @@ export default function Home() {
           />
         </div>
 
-        {/* Dynamic Rank/Best Display */}
+        {/* Dynamic Personal Best Anchor */}
         <div className="absolute top-[100px] right-[30px] pointer-events-none">
           <div className="flex items-center gap-2 glass-panel px-3 py-1 rounded-full border-primary/10 bg-black/40 backdrop-blur-md">
             <Trophy className="w-3 h-3 text-amber-400" />
-            <span className="text-[10px] font-black text-white tabular-nums tracking-widest uppercase">{labels.best}: {profile.allTimeHigh}</span>
+            <span className="text-[10px] font-black text-white tabular-nums tracking-widest uppercase">
+              {labels.best}: {profile.allTimeHigh}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Primary Mission Grid */}
+      {/* Primary Tactical Board */}
       <Board />
 
-      {/* Confirmation Overlays */}
+      {/* Confirmation Protocols */}
       <AlertDialog open={abortDialogOpen} onOpenChange={setAbortDialogOpen}>
         <AlertDialogContent className="glass-panel border-destructive/50 bg-black/95 text-white shadow-[0_0_50px_rgba(239,68,68,0.2)] z-[10000]">
           <AlertDialogHeader>
@@ -187,7 +189,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Footer Meta */}
+      {/* Footer Metadata */}
       <footer className="fixed bottom-0 w-full p-6 text-center z-10 pointer-events-none opacity-30">
         <div className="text-[8px] md:text-[10px] text-muted-foreground uppercase tracking-[0.4em] font-bold">
           &copy; 2024 STELLAR SHIFT | NEURAL LINK V0.9.9 | SECTOR CLEARANCE GRANTED

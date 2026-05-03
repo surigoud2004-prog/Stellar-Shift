@@ -58,6 +58,7 @@ export function SettingsDrawer({
     playUIClickSound();
   };
 
+  // Define the core mission controls
   const buttons = [
     { 
       icon: Trophy, 
@@ -94,17 +95,6 @@ export function SettingsDrawer({
     },
   ];
 
-  // Injected Emergency Abort Control
-  if (gameStarted) {
-    buttons.push({
-      icon: Power,
-      label: labels.abortMission,
-      onClick: onAbort,
-      active: true,
-      color: 'text-red-500'
-    });
-  }
-
   return (
     <div className="relative flex flex-col items-center">
       <button
@@ -132,14 +122,24 @@ export function SettingsDrawer({
               "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",
               btn.active === false ? "bg-black/40 text-muted-foreground" : "bg-white/5 text-white",
               btn.color,
-              "hover:bg-white/10 active:scale-90 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]",
-              btn.color === 'text-red-500' && "bg-red-500/10 border border-red-500/20 shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+              "hover:bg-white/10 active:scale-90 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]"
             )}
             title={btn.label}
           >
-            <btn.icon className={cn("w-6 h-6", btn.color === 'text-red-500' && "drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]")} />
+            <btn.icon className={cn("w-6 h-6", btn.color)} />
           </button>
         ))}
+
+        {/* HIGH PRIORITY EMERGENCY STOP CONTROL */}
+        {gameStarted && (
+          <button
+            onClick={() => { playUIClickSound(); onAbort(); }}
+            className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all bg-red-500/20 text-red-500 border border-red-500/30 hover:bg-red-500/30 active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+            title={labels.abortMission}
+          >
+            <Power className="w-6 h-6 drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+          </button>
+        )}
       </div>
     </div>
   );
