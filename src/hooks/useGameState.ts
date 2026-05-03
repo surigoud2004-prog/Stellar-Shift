@@ -181,10 +181,16 @@ export function useGameState() {
     initBoard();
   }, [initBoard]);
 
+  const quitGame = useCallback(() => {
+    playUIClickSound();
+    setGameStarted(false);
+    setEntities([]);
+  }, []);
+
   return {
     entities, score, targetScore, timeLeft, level,
     isGameOver, isWin, selectedId, setSelectedId,
     swapEntities, isProcessing, initBoard,
-    gameStarted, startGame, gameMode, setGameMode
+    gameStarted, startGame, quitGame, gameMode, setGameMode
   };
 }
