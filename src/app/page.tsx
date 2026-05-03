@@ -51,15 +51,15 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-[#0a0512]">
       <ParallaxBackground disabled={isBatterySaver} />
       
-      {/* Global_HUD Layer: Highest Priority Overlay */}
+      {/* Global_HUD Layer: Top-most tactical overlay */}
       <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
         
-        {/* Top-Left Anchor: Abort Control (Always Accessible) */}
-        <div className="absolute top-[30px] left-[30px] pointer-events-auto">
+        {/* Top-Left Anchor: Abort Control & UI Toggle */}
+        <div className="absolute top-[30px] left-[30px] flex items-center gap-4 pointer-events-auto">
           {gameStarted && (
             <button 
               onClick={() => setAbortDialogOpen(true)}
-              className="w-[50px] h-[50px] rounded-full glass-panel border-destructive/50 bg-black/60 flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.3)]"
+              className="w-[50px] h-[50px] rounded-full bg-destructive flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.5)] border-2 border-white/20"
               title={labels.abortMission}
             >
               <X className="w-6 h-6 text-white" />
@@ -68,20 +68,20 @@ export default function Home() {
           
           <button 
             onClick={() => setUiVisible(!uiVisible)}
-            className="mt-4 w-10 h-10 rounded-full glass-panel border-white/10 hover:border-primary/50 transition-all flex items-center justify-center group active:scale-90"
+            className="w-12 h-12 rounded-full glass-panel border-white/10 hover:border-primary/50 transition-all flex items-center justify-center group active:scale-90 bg-black/40 backdrop-blur-md"
             title={uiVisible ? "Hide UI" : "Show UI"}
           >
             {uiVisible ? (
-              <Eye className="w-5 h-5 text-white/70 group-hover:text-primary" />
+              <Eye className="w-6 h-6 text-white/70 group-hover:text-primary" />
             ) : (
-              <EyeOff className="w-5 h-5 text-primary" />
+              <EyeOff className="w-6 h-6 text-primary" />
             )}
           </button>
         </div>
 
-        {/* Top-Center Anchor: Title & Strict Score Stacking */}
+        {/* Top-Center Anchor: Logo & Telemetry */}
         <div className={cn(
-          "absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center transition-all duration-500 pointer-events-auto",
+          "absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center transition-all duration-500",
           !uiVisible && "opacity-0"
         )}>
           <h1 className="font-headline text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
@@ -89,32 +89,30 @@ export default function Home() {
           </h1>
           
           {gameStarted && (
-            <div className="mt-[40px] flex flex-col items-center animate-in fade-in slide-in-from-top-4">
-              <span className="text-[10px] uppercase tracking-[0.4em] text-primary font-bold mb-1">{labels.score}</span>
-              <div className="text-2xl md:text-4xl font-black text-white tabular-nums tracking-tighter bg-black/40 px-6 py-2 rounded-2xl border border-primary/20 backdrop-blur-sm">
-                SCORE: {score.toLocaleString()} <span className="text-white/30 mx-2">/</span> {targetScore.toLocaleString()}
+            <div className="mt-6 flex flex-col items-center space-y-2 pointer-events-auto">
+              <div className="text-white drop-shadow-[0_0_10px_rgba(168,85,247,0.8)] font-black uppercase tracking-widest text-sm md:text-xl flex items-center gap-4">
+                <span className="bg-black/40 px-4 py-1 rounded-lg border border-primary/20">
+                  SCORE: {score.toLocaleString()} / {targetScore.toLocaleString()}
+                </span>
+                <span className={cn(
+                  "bg-black/40 px-4 py-1 rounded-lg border border-primary/20 tabular-nums",
+                  timeLeft < 10 && "text-destructive animate-pulse"
+                )}>
+                  TIME: {timeLeft}s
+                </span>
               </div>
             </div>
           )}
         </div>
 
-        {/* Top-Right Anchor: Settings & Timer */}
+        {/* Top-Right Anchor: Profile & Settings */}
         <div className={cn(
           "absolute top-[30px] right-[30px] flex items-center gap-4 pointer-events-auto transition-all duration-500",
           !uiVisible && "opacity-0"
         )}>
-          {gameStarted && (
-            <div className="hidden sm:flex flex-col items-end glass-panel px-4 py-1.5 rounded-xl border-primary/20">
-              <span className="text-[8px] uppercase tracking-widest text-muted-foreground font-bold">{labels.time}</span>
-              <div className={cn("text-xl font-black tabular-nums", timeLeft < 10 ? "text-destructive animate-pulse" : "text-white")}>
-                {timeLeft}s
-              </div>
-            </div>
-          )}
-
           <button 
             onClick={() => setShowProfile(true)}
-            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-primary/30 hover:border-primary transition-all shadow-lg active:scale-90"
+            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-primary/30 hover:border-primary transition-all shadow-lg active:scale-90 bg-black/40 backdrop-blur-md"
           >
             <User className="w-6 h-6 text-primary" />
           </button>
@@ -140,19 +138,19 @@ export default function Home() {
           />
         </div>
 
-        {/* High Score HUD Meta */}
+        {/* High Score Badge */}
         <div className={cn(
-          "absolute top-[90px] right-[30px] transition-all duration-500",
+          "absolute top-[100px] right-[30px] transition-all duration-500",
           !uiVisible && "opacity-0"
         )}>
-          <div className="flex items-center gap-2 glass-panel px-3 py-1 rounded-full border-primary/10">
+          <div className="flex items-center gap-2 glass-panel px-3 py-1 rounded-full border-primary/10 bg-black/40 backdrop-blur-md">
             <Trophy className="w-3 h-3 text-amber-400" />
-            <span className="text-[10px] font-black text-white tabular-nums">{profile.allTimeHigh}</span>
+            <span className="text-[10px] font-black text-white tabular-nums tracking-widest uppercase">BEST: {profile.allTimeHigh}</span>
           </div>
         </div>
       </div>
 
-      {/* Main Game Interface - Centered Board */}
+      {/* Main Game Interface */}
       <Board />
 
       {/* Confirmation Overlays */}
@@ -208,7 +206,7 @@ export default function Home() {
       {/* Footer Meta */}
       <footer className="fixed bottom-0 w-full p-6 text-center z-10 pointer-events-none opacity-30">
         <div className="text-[8px] md:text-[10px] text-muted-foreground uppercase tracking-[0.4em] font-bold">
-          &copy; 2024 STELLAR SHIFT | NEURAL LINK V0.9.8 | SECTOR CLEARANCE GRANTED
+          &copy; 2024 STELLAR SHIFT | NEURAL LINK V0.9.9 | SECTOR CLEARANCE GRANTED
         </div>
       </footer>
     </main>
