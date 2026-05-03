@@ -35,19 +35,20 @@ export function usePlayerProfile() {
   const auth = useAuth();
   const db = useFirestore();
   
-  const [profile, setProfile] = useState<PlayerProfile>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('stellar_player_profile');
-        if (saved) return JSON.parse(saved);
-      } catch (e) {
-        return DEFAULT_PROFILE;
-      }
-    }
-    return DEFAULT_PROFILE;
-  });
-  
+  const [profile, setProfile] = useState<PlayerProfile>(DEFAULT_PROFILE);
   const [showProfile, setShowProfile] = useState(false);
+
+  // Handle Hydration: Load local data only after component mounts on client
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('stellar_player_profile');
+      if (saved) {
+        setProfile(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.error("Failed to load local profile", e);
+    }
+  }, []);
 
   useEffect(() => {
     if (!auth.currentUser || !db) return;
