@@ -55,6 +55,9 @@ function MissionContent() {
   const labels = LOCALIZATION[language];
   const sector = useMemo(() => getSectorInfo(level), [level]);
 
+  // Combined HUD visibility check
+  const isHudHidden = !uiVisible || showShop || showFame || showLogs || showProfile;
+
   useEffect(() => {
     if (isWin && level > lastProcessedLevel) {
       const coinsWon = Math.floor(100 + (timeLeft * 5));
@@ -129,7 +132,13 @@ function MissionContent() {
     } else {
       initBoard();
     }
-  }, [gameStarted, startGame, initBoard, profile.currentLevel, profile.coins]);
+  }, [gameStarted, startGame, initBoard, profile.currentLevel]);
+
+  const handleAwardShareCoins = () => {
+    updateStats(0, 0, false, 50);
+    setShowCoins(true);
+    setTimeout(() => setShowCoins(false), 2000);
+  };
 
   return (
     <main className="min-h-screen w-full flex flex-col items-center justify-center relative bg-black overflow-hidden">
@@ -151,7 +160,7 @@ function MissionContent() {
           
           <div className={cn(
             "flex items-center gap-3 bg-black/70 px-5 py-2.5 rounded-2xl border-2 border-yellow-500/40 backdrop-blur-xl shadow-[0_0_25px_rgba(234,179,8,0.2)] transition-all",
-            (!uiVisible || showShop) && "opacity-0"
+            isHudHidden && "opacity-0"
           )}>
             <div className="w-6 h-6 rounded-full bg-yellow-400 flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.6)] border-2 border-yellow-200">
                <Coins className="w-4 h-4 text-black stroke-[3px]" />
@@ -165,7 +174,7 @@ function MissionContent() {
             onClick={() => setUiVisible(!uiVisible)}
             className={cn(
               "w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md",
-              showShop && "opacity-0 pointer-events-none"
+              (showShop || showFame || showLogs || showProfile) && "opacity-0 pointer-events-none"
             )}
             title="Cloak UI"
           >
@@ -173,10 +182,10 @@ function MissionContent() {
           </button>
         </div>
 
-        {/* TOP-CENTER: MISSION STATUS & TELEMETRY (Hidden when Shop is open) */}
+        {/* TOP-CENTER: MISSION STATUS & TELEMETRY */}
         <div className={cn(
           "absolute top-[10px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center pointer-events-auto transition-all duration-500 w-full max-w-md",
-          (!uiVisible || showShop) && "opacity-0 translate-y-[-100px]"
+          isHudHidden && "opacity-0 translate-y-[-100px]"
         )}>
           <div className="flex items-center gap-3 mb-2">
              <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-xs md:text-lg bg-black/70 px-6 py-2 rounded-2xl border-2 border-primary/40 backdrop-blur-xl min-w-[240px] shadow-[0_0_40px_rgba(0,0,0,0.5)]">
@@ -197,7 +206,7 @@ function MissionContent() {
           <div className={cn(
             "text-white font-mono text-[10px] uppercase tracking-[0.2em] bg-black/60 px-4 py-1 rounded-full border border-white/20 backdrop-blur-md transition-all shadow-xl",
             timeLeft < 10 && "text-red-500 animate-pulse border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]",
-            (isWarping || showShop) && "opacity-0 scale-50"
+            (isWarping || showShop || showFame) && "opacity-0 scale-50"
           )}>
             {labels.time}: <span className={timeLeft < 10 ? "font-black" : ""}>{timeLeft}s</span>
           </div>
@@ -209,7 +218,7 @@ function MissionContent() {
             onClick={() => setShowLogs(true)}
             className={cn(
               "w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md",
-              showShop && "opacity-0 pointer-events-none"
+              (showShop || showFame) && "opacity-0 pointer-events-none"
             )}
             title={labels.archive}
           >
@@ -220,7 +229,7 @@ function MissionContent() {
             onClick={() => setShowProfile(true)}
             className={cn(
               "w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md",
-              showShop && "opacity-0 pointer-events-none"
+              (showShop || showFame) && "opacity-0 pointer-events-none"
             )}
             title={labels.profile}
           >
@@ -254,7 +263,7 @@ function MissionContent() {
 
       <div className={cn(
         "relative flex-1 w-full flex flex-col items-center justify-center z-10 pt-48 pb-20 transition-all duration-700",
-        showShop && "blur-xl opacity-20 scale-95"
+        (showShop || showFame) && "blur-xl opacity-20 scale-95"
       )}>
         {!gameStarted ? (
           <div className="flex flex-col items-center animate-in zoom-in duration-700">
@@ -362,22 +371,26 @@ function MissionContent() {
       />
 
       {showFame && (
-        <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="w-full max-w-2xl h-[80vh] relative">
+        <div className="fixed inset-0 z-[100020] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[60px] animate-in fade-in zoom-in duration-500">
+          <div className="w-full max-w-2xl h-[85vh] relative">
             <button 
               onClick={() => setShowFame(false)}
-              className="absolute -top-4 -right-4 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center z-10"
+              className="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center z-[100021] border-2 border-white/20 shadow-xl hover:scale-110 active:scale-90 transition-all"
             >
-              <XIcon />
+              <XIcon className="w-6 h-6" />
             </button>
-            <HallOfFame title={labels.hallOfFame} subtitle={labels.sector + " 7G-Alpha"} />
+            <HallOfFame 
+              title={labels.hallOfFame} 
+              subtitle={labels.sector + " 7G-Alpha"} 
+              onAwardShare={handleAwardShareCoins}
+            />
           </div>
         </div>
       )}
 
       <footer className={cn(
         "fixed bottom-0 w-full p-6 text-center z-10 opacity-20 pointer-events-none transition-opacity",
-        showShop && "opacity-0"
+        (showShop || showFame) && "opacity-0"
       )}>
         <div className="text-[10px] text-white uppercase tracking-[0.5em] font-bold">
           Neural Link V2.0 • Sector Clearance Confirmed
