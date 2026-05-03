@@ -1,10 +1,10 @@
-
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { 
   CelestialEntity, 
   generateRandomEntity, 
+  generateMatchFreeGrid,
   findMatches, 
   GRID_COLS,
   GRID_ROWS,
@@ -158,6 +158,7 @@ export function useGameState() {
         setTimeout(() => setIsShaking(false), 500);
       }
 
+      // Wait for "pop" animation
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000 * 1.3));
 
       const points = Math.floor(allToDestroy.size * 10 * comboFactor * chainMultiplier);
@@ -173,6 +174,7 @@ export function useGameState() {
         return newScore;
       });
 
+      // Refill the grid
       const updated = currentEntities.filter(e => !allToDestroy.has(e.id));
       const newGrid: CelestialEntity[] = [];
       for (let q = 0; q < GRID_COLS; q++) {
@@ -187,6 +189,7 @@ export function useGameState() {
         }
       }
 
+      // Handle special spawn from the move that triggered the cascade
       if (specialToSpawn) {
         const spawnedIdx = newGrid.findIndex(e => e.q === specialToSpawn.q && e.r === specialToSpawn.r);
         if (spawnedIdx !== -1) {
@@ -201,7 +204,9 @@ export function useGameState() {
       }
 
       setEntities(newGrid);
+      // Wait for entities to fall into place
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000));
+      // Recursive call to handle any new matches formed by the fall
       await handleMatch(newGrid, undefined, comboFactor * 1.5);
     } else {
       setIsProcessing(false);
@@ -211,13 +216,9 @@ export function useGameState() {
   const initBoard = useCallback(async (startLevel?: number) => {
     const targetLevel = startLevel !== undefined ? startLevel : level;
     const variety = getVariety();
-    let initial: CelestialEntity[] = [];
     
-    for (let r = 0; r < GRID_ROWS; r++) {
-      for (let q = 0; q < GRID_COLS; q++) {
-        initial.push(generateRandomEntity(q, r, variety));
-      }
-    }
+    // Generate a board with NO initial matches for a "Fair Start"
+    const initial = generateMatchFreeGrid(variety);
 
     if (powerUps.novaBlast) {
       for (let i = 0; i < 2; i++) {
@@ -239,6 +240,7 @@ export function useGameState() {
     setIsReviving(false);
     setReviveCost(200);
 
+    // Initial check for any matches (though generateMatchFreeGrid should prevent them)
     await handleMatch(initial);
   }, [getVariety, level, levelTimeLimit, powerUps.novaBlast, handleMatch]);
 
@@ -307,6 +309,7 @@ export function useGameState() {
     const e1 = newEntities[idx1];
     const e2 = newEntities[idx2];
     
+    // Handle Special Synergies
     if (e1.special && e2.special) {
       const explosionIds = new Set<string>();
       
@@ -342,6 +345,7 @@ export function useGameState() {
       return;
     }
 
+    // Handle Rainbow Core swap with normal shard
     if (e1.special === 'rainbow-core' || e2.special === 'rainbow-core') {
       const rainbow = e1.special === 'rainbow-core' ? e1 : e2;
       const normal = e1.special === 'rainbow-core' ? e2 : e1;
@@ -357,6 +361,7 @@ export function useGameState() {
       return;
     }
 
+    // Normal swap logic
     newEntities[idx1] = { ...e1, q: e2.q, r: e2.r };
     newEntities[idx2] = { ...e2, q: e1.q, r: e1.r };
     
@@ -367,6 +372,7 @@ export function useGameState() {
     const { matches } = findMatches(newEntities, id1);
     if (matches.length === 0) {
       playRejectSound();
+      // Revert if no match found
       const reverted = [...newEntities];
       reverted[idx1] = { ...newEntities[idx1], q: e1.q, r: e1.r };
       reverted[idx2] = { ...newEntities[idx2], q: e2.q, r: e2.r };

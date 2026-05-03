@@ -1,4 +1,3 @@
-
 export type EntityType = 0 | 1 | 2 | 3 | 4 | 5;
 export type SpecialType = 'nova-h' | 'nova-v' | 'bomb' | 'rainbow-core' | null;
 
@@ -48,6 +47,46 @@ export function generateRandomEntity(q: number, r: number, variety: number = 6):
     r,
     special: special
   };
+}
+
+/**
+ * Generates an initial board that contains no matches.
+ */
+export function generateMatchFreeGrid(variety: number = 6): CelestialEntity[] {
+  const grid: CelestialEntity[] = [];
+  const tempGrid: (CelestialEntity | null)[][] = Array.from({ length: GRID_ROWS }, () => Array(GRID_COLS).fill(null));
+
+  for (let r = 0; r < GRID_ROWS; r++) {
+    for (let q = 0; q < GRID_COLS; q++) {
+      let type: EntityType;
+      let attempts = 0;
+      do {
+        type = Math.floor(Math.random() * variety) as EntityType;
+        attempts++;
+        // Check if this type would create a match horizontally or vertically
+        const horizontalMatch = q >= 2 && 
+          tempGrid[r][q-1]?.type === type && 
+          tempGrid[r][q-2]?.type === type;
+        const verticalMatch = r >= 2 && 
+          tempGrid[r-1][q]?.type === type && 
+          tempGrid[r-2][q]?.type === type;
+        
+        if (!horizontalMatch && !verticalMatch) break;
+        if (attempts > 100) break; // Infinite loop safety
+      } while (true);
+
+      const entity: CelestialEntity = {
+        id: generateStableId(),
+        type,
+        q,
+        r,
+        special: null
+      };
+      tempGrid[r][q] = entity;
+      grid.push(entity);
+    }
+  }
+  return grid;
 }
 
 export function areAdjacent(a: CelestialEntity, b: CelestialEntity): boolean {
@@ -101,6 +140,7 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
   const horizontalGroups: { ids: string[], length: number, type: EntityType, q: number, r: number }[] = [];
   const verticalGroups: { ids: string[], length: number, type: EntityType, q: number, r: number }[] = [];
 
+  // Horizontal scan
   for (let r = 0; r < GRID_ROWS; r++) {
     let count = 1;
     for (let q = 1; q < GRID_COLS; q++) {
@@ -122,6 +162,7 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
     }
   }
 
+  // Vertical scan
   for (let q = 0; q < GRID_COLS; q++) {
     let count = 1;
     for (let r = 1; r < GRID_ROWS; r++) {
@@ -148,15 +189,15 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
 
   let specialToSpawn: MatchResult['specialToSpawn'] = undefined;
 
+  // Determine if a special entity should be spawned based on the last moved ID
   if (lastMoveId) {
     const hGroup = horizontalGroups.find(g => g.ids.includes(lastMoveId));
     const vGroup = verticalGroups.find(g => g.ids.includes(lastMoveId));
     const moved = entities.find(e => e.id === lastMoveId);
 
     if (moved) {
-      if ((hGroup && hGroup.length >= 5) || (vGroup && vGroup.length >= 5)) {
-        specialToSpawn = { id: generateStableId(), type: 'rainbow-core', entityType: moved.type, q: moved.q, r: moved.r };
-      } else if (hGroup && vGroup) {
+      // 5-match or L/T-match triggers Rainbow Core
+      if ((hGroup && hGroup.length >= 5) || (vGroup && vGroup.length >= 5) || (hGroup && vGroup)) {
         specialToSpawn = { id: generateStableId(), type: 'rainbow-core', entityType: moved.type, q: moved.q, r: moved.r };
       } else if (hGroup && hGroup.length === 4) {
         specialToSpawn = { id: generateStableId(), type: 'nova-h', entityType: moved.type, q: moved.q, r: moved.r };

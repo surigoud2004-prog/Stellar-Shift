@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Board } from '@/components/game/Board';
@@ -70,13 +69,6 @@ function MissionContent() {
     }
   }, [isWin, score, updateStats, level, lastProcessedLevel, timeLeft]);
 
-  // If game is over, we also want to route through the shop for retry
-  useEffect(() => {
-    if (isGameOver) {
-      // We don't auto-show shop on game over, let the user click retry in Board overlay
-    }
-  }, [isGameOver]);
-
   // Handle Revive Countdown
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -136,7 +128,6 @@ function MissionContent() {
     if (!gameStarted) {
       startGame(profile.currentLevel || 1);
     } else {
-      // If the game is already started, init board handles resetting score and board
       initBoard();
     }
   }, [gameStarted, startGame, initBoard, profile.currentLevel]);
@@ -146,7 +137,7 @@ function MissionContent() {
       
       <ParallaxBackground disabled={isBatterySaver} isWarping={isWarping} level={level} />
       
-      {/* GLOBAL HUD - PERSISTENT & ANCHORED AT TOP LAYER Z-10010 */}
+      {/* GLOBAL HUD - PERSISTENT & ANCHORED AT TOP LAYER */}
       <div id="Global_HUD" className="fixed inset-x-0 top-0 pointer-events-none z-[10010] h-32">
         
         {/* TOP-LEFT: UTILITY CLUSTER */}
