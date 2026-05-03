@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useCallback } from 'react';
-import { useGameState } from '@/hooks/useGameState';
+import { useGameState } from '@/context/GameStateContext';
 import { Entity } from './Entity';
 import { areAdjacent, HEX_WIDTH, GRID_COLS, GRID_ROWS } from '@/lib/game-utils';
 import { Button } from '@/components/ui/button';
@@ -42,7 +43,6 @@ export function Board() {
           style={{ 
             width: `${GRID_COLS * HEX_WIDTH}px`, 
             height: `${GRID_ROWS * HEX_WIDTH}px`,
-            transform: `scale(${Math.min(1, 350 / (GRID_ROWS * HEX_WIDTH))})`,
             transformOrigin: 'center center'
           }}
         >

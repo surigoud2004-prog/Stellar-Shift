@@ -8,10 +8,10 @@ import { SettingsDrawer } from '@/components/game/SettingsDrawer';
 import { ParallaxBackground } from '@/components/game/ParallaxBackground';
 import { HallOfFame } from '@/components/game/HallOfFame';
 import { MissionLogs } from '@/components/game/MissionLogs';
-import { useGameState } from '@/hooks/useGameState';
+import { GameStateProvider, useGameState } from '@/context/GameStateContext';
 import { useState } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
-import { User, Trophy, BookOpen, X as XIcon } from 'lucide-react';
+import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
 
-export default function Home() {
+function MissionContent() {
   const { 
     profile, showProfile, setShowProfile, setAvatar, setName, getRank 
   } = usePlayerProfile();
@@ -40,6 +40,7 @@ export default function Home() {
   const [showLogs, setShowLogs] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [abortDialogOpen, setAbortDialogOpen] = useState(false);
+  const [uiVisible, setUiVisible] = useState(true);
 
   const labels = LOCALIZATION[language];
 
@@ -50,7 +51,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen w-full flex flex-col items-center justify-center relative bg-black overflow-hidden selection:bg-primary/30">
+    <main className="min-h-screen w-full flex flex-col items-center justify-center relative bg-black overflow-hidden">
       
       {/* LAYER 1: COSMIC BACKGROUND */}
       <ParallaxBackground disabled={isBatterySaver} />
@@ -58,7 +59,7 @@ export default function Home() {
       {/* LAYER 2: GLOBAL HUD (TOP LAYER - Z:9999) */}
       <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
         
-        {/* TOP-LEFT ANCHOR: ABORT PROTOCOL */}
+        {/* TOP-LEFT ANCHOR: COMMAND CLUSTER */}
         <div className="absolute top-[30px] left-[30px] flex items-center gap-3 pointer-events-auto">
           <button 
             onClick={() => setAbortDialogOpen(true)}
@@ -67,10 +68,21 @@ export default function Home() {
           >
             <XIcon className="w-6 h-6 text-white stroke-[3px]" />
           </button>
+          
+          <button 
+            onClick={() => setUiVisible(!uiVisible)}
+            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/40 backdrop-blur-md"
+            title="Cloak UI"
+          >
+            {uiVisible ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-white/40" />}
+          </button>
         </div>
 
         {/* TOP-CENTER ANCHOR: MISSION STATUS */}
-        <div className="absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center pointer-events-auto">
+        <div className={cn(
+          "absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center pointer-events-auto transition-opacity duration-500",
+          !uiVisible && "opacity-0"
+        )}>
           <h1 className="font-headline text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
             Stellar <span className="text-primary">Shift</span>
           </h1>
@@ -209,5 +221,13 @@ export default function Home() {
         </div>
       </footer>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <GameStateProvider>
+      <MissionContent />
+    </GameStateProvider>
   );
 }
