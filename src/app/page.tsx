@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Board } from '@/components/game/Board';
@@ -10,7 +11,7 @@ import { MissionLogs } from '@/components/game/MissionLogs';
 import { useGameState } from '@/hooks/useGameState';
 import { useState } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
-import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff } from 'lucide-react';
+import { User, Trophy, BookOpen, X as XIcon } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,7 +40,6 @@ export default function Home() {
   const [showLogs, setShowLogs] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [abortDialogOpen, setAbortDialogOpen] = useState(false);
-  const [uiVisible, setUiVisible] = useState(true);
 
   const labels = LOCALIZATION[language];
 
@@ -55,10 +55,10 @@ export default function Home() {
       {/* LAYER 1: COSMIC BACKGROUND */}
       <ParallaxBackground disabled={isBatterySaver} />
       
-      {/* LAYER 2: GLOBAL HUD (TOP LAYER) */}
+      {/* LAYER 2: GLOBAL HUD (TOP LAYER - Z:9999) */}
       <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
         
-        {/* TOP-LEFT ANCHOR: ABORT + EYE */}
+        {/* TOP-LEFT ANCHOR: ABORT PROTOCOL */}
         <div className="absolute top-[30px] left-[30px] flex items-center gap-3 pointer-events-auto">
           <button 
             onClick={() => setAbortDialogOpen(true)}
@@ -67,21 +67,10 @@ export default function Home() {
           >
             <XIcon className="w-6 h-6 text-white stroke-[3px]" />
           </button>
-          
-          <button 
-            onClick={() => setUiVisible(!uiVisible)}
-            className="w-[50px] h-[50px] rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-white transition-all bg-black/40 backdrop-blur-md"
-            title="Toggle HUD"
-          >
-            {uiVisible ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-white/50" />}
-          </button>
         </div>
 
-        {/* TOP-CENTER ANCHOR: SCORE + TIMER */}
-        <div className={cn(
-          "absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center transition-all duration-500",
-          !uiVisible && "opacity-0 -translate-y-full"
-        )}>
+        {/* TOP-CENTER ANCHOR: MISSION STATUS */}
+        <div className="absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center pointer-events-auto">
           <h1 className="font-headline text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
             Stellar <span className="text-primary">Shift</span>
           </h1>
@@ -99,11 +88,12 @@ export default function Home() {
           </div>
         </div>
 
-        {/* TOP-RIGHT ANCHOR: PROFILE + SETTINGS */}
+        {/* TOP-RIGHT ANCHOR: COMMAND CLUSTER */}
         <div className="absolute top-[30px] right-[30px] flex items-center gap-4 pointer-events-auto">
           <button 
             onClick={() => setShowLogs(true)}
             className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/40 backdrop-blur-md"
+            title={labels.archive}
           >
             <BookOpen className="w-5 h-5 text-secondary" />
           </button>
@@ -111,6 +101,7 @@ export default function Home() {
           <button 
             onClick={() => setShowProfile(true)}
             className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/40 backdrop-blur-md"
+            title={labels.profile}
           >
             <User className="w-5 h-5 text-primary" />
           </button>

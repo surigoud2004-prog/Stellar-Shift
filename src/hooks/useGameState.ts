@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -6,8 +7,7 @@ import {
   generateRandomEntity, 
   findMatches, 
   GRID_COLS,
-  GRID_ROWS,
-  EntityType
+  GRID_ROWS
 } from '@/lib/game-utils';
 import { playSwapSound, playMatchSound, playRejectSound, playBombSound, playUIClickSound } from '@/lib/audio-system';
 import { collection, doc, setDoc } from 'firebase/firestore';
@@ -17,7 +17,11 @@ import { generateDynamicLore } from '@/ai/flows/dynamic-lore-generation';
 export type GameMode = 'easy' | 'hard' | 'hell';
 
 export function useGameState() {
-  const { auth, firestore } = useFirestore() ? { auth: useAuth(), firestore: useFirestore() } : { auth: null, firestore: null };
+  const firestoreState = useFirestore();
+  const authState = useAuth();
+  const firestore = firestoreState || null;
+  const auth = authState || null;
+  
   const [entities, setEntities] = useState<CelestialEntity[]>([]);
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
@@ -44,7 +48,7 @@ export function useGameState() {
         timestamp: Date.now()
       });
     } catch (e) {
-      console.error("Lore generation failed", e);
+      // Fail silently for lore generation
     }
   }, [firestore, auth]);
 
@@ -53,6 +57,7 @@ export function useGameState() {
     let hasMatches = true;
     let attempts = 0;
     
+    // Generate a board with no initial matches
     while (hasMatches && attempts < 100) {
       attempts++;
       initial = [];
@@ -100,9 +105,11 @@ export function useGameState() {
       setIsProcessing(true);
       playMatchSound();
       
+      // Phase 1: Highlight Matches
       setEntities(prev => prev.map(e => matches.includes(e.id) ? { ...e, isMatched: true } : e));
       await new Promise(resolve => setTimeout(resolve, 300));
 
+      // Phase 2: Handle Bomb Explosions
       const bombIds: string[] = [];
       matches.forEach(id => {
         const ent = currentEntities.find(e => e.id === id);
@@ -117,6 +124,8 @@ export function useGameState() {
 
       if (bombIds.length > 0) {
         playBombSound();
+        setEntities(prev => prev.map(e => bombIds.includes(e.id) ? { ...e, isExploding: true } : e));
+        await new Promise(resolve => setTimeout(resolve, 150));
       }
 
       const allToDelete = Array.from(new Set([...matches, ...bombIds]));
@@ -124,6 +133,7 @@ export function useGameState() {
       const points = allToDelete.length * 10 * (bombIds.length > 0 ? 5 : 1);
       setScore(s => s + points);
 
+      // Phase 3: Refill Grid
       const newGrid: CelestialEntity[] = [];
       for (let q = 0; q < GRID_COLS; q++) {
         const column = updated.filter(e => e.q === q).sort((a, b) => b.r - a.r);
@@ -137,18 +147,24 @@ export function useGameState() {
         }
       }
 
+      // Phase 4: Spawn Special Entities if created
       if (specialToSpawn) {
-        newGrid.push({
-          id: specialToSpawn.id,
-          type: specialToSpawn.entityType,
-          q: specialToSpawn.q,
-          r: specialToSpawn.r,
-          special: specialToSpawn.type
-        });
+        const spawnedIdx = newGrid.findIndex(e => e.q === specialToSpawn.q && e.r === specialToSpawn.r);
+        if (spawnedIdx !== -1) {
+          newGrid[spawnedIdx] = {
+            id: specialToSpawn.id,
+            type: specialToSpawn.entityType,
+            q: specialToSpawn.q,
+            r: specialToSpawn.r,
+            special: specialToSpawn.type
+          };
+        }
       }
 
       setEntities(newGrid);
       await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Phase 5: Recursive check for cascade matches
       await handleMatch(newGrid);
     } else {
       setIsProcessing(false);
@@ -172,21 +188,24 @@ export function useGameState() {
       return;
     }
 
-    const q1 = newEntities[idx1].q;
-    const r1 = newEntities[idx1].r;
-    newEntities[idx1] = { ...newEntities[idx1], q: newEntities[idx2].q, r: newEntities[idx2].r };
-    newEntities[idx2] = { ...newEntities[idx2], q: q1, r: r1 };
+    const e1 = newEntities[idx1];
+    const e2 = newEntities[idx2];
+    
+    // Swap logical positions
+    newEntities[idx1] = { ...e1, q: e2.q, r: e2.r };
+    newEntities[idx2] = { ...e2, q: e1.q, r: e1.r };
     
     setEntities(newEntities);
     playSwapSound();
-    await new Promise(resolve => setTimeout(resolve, 300)); // Smooth Swap 0.3s
+    await new Promise(resolve => setTimeout(resolve, 300)); 
 
     const { matches } = findMatches(newEntities);
     if (matches.length === 0) {
       playRejectSound();
+      // Swap back if no match
       const reverted = [...newEntities];
-      reverted[idx1] = { ...reverted[idx1], q: q1, r: r1 };
-      reverted[idx2] = { ...reverted[idx2], q: newEntities[idx1].q, r: newEntities[idx1].r };
+      reverted[idx1] = { ...newEntities[idx1], q: e1.q, r: e1.r };
+      reverted[idx2] = { ...newEntities[idx2], q: e2.q, r: e2.r };
       setEntities(reverted);
       await new Promise(resolve => setTimeout(resolve, 300));
       setIsProcessing(false);
