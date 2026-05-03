@@ -3,39 +3,39 @@
   "placeholderImages": [
     {
       "id": "planet-1",
-      "description": "A vibrant swirling violet and pink nebula with bright sparkling stars",
-      "imageUrl": "https://picsum.photos/seed/nebula-violet-pink/300/300",
-      "imageHint": "violet nebula"
+      "description": "High-vibrancy neon pink and violet swirling nebula with intense sparkling core",
+      "imageUrl": "https://picsum.photos/seed/vivid-nebula-pink/300/300",
+      "imageHint": "neon nebula"
     },
     {
       "id": "planet-2",
-      "description": "A deep azure blue galaxy spiral with a glowing white core",
-      "imageUrl": "https://picsum.photos/seed/galaxy-azure-blue/300/300",
-      "imageHint": "blue galaxy"
+      "description": "Electric blue galaxy spiral with a high-intensity glowing white singularity",
+      "imageUrl": "https://picsum.photos/seed/electric-galaxy-blue/300/300",
+      "imageHint": "electric galaxy"
     },
     {
       "id": "planet-3",
-      "description": "A fiery burning sun with glowing orange solar flares",
-      "imageUrl": "https://picsum.photos/seed/sun-fiery-orange/300/300",
+      "description": "Sun-fire orange burning star with hyper-saturated solar flares",
+      "imageUrl": "https://picsum.photos/seed/sun-fire-orange/300/300",
       "imageHint": "burning sun"
     },
     {
       "id": "planet-4",
-      "description": "A lime-green aurora space cloud with neon streaks",
-      "imageUrl": "https://picsum.photos/seed/aurora-lime-green/300/300",
-      "imageHint": "green aurora"
+      "description": "Deep emerald green aurora space cloud with neon radioactive streaks",
+      "imageUrl": "https://picsum.photos/seed/emerald-aurora-green/300/300",
+      "imageHint": "emerald aurora"
     },
     {
       "id": "planet-5",
-      "description": "A blood-red supernova explosion with high-contrast light rays",
-      "imageUrl": "https://picsum.photos/seed/supernova-blood-red/300/300",
+      "description": "High-contrast blood-red supernova with intense light rays and glowing edges",
+      "imageUrl": "https://picsum.photos/seed/vivid-supernova-red/300/300",
       "imageHint": "red supernova"
     },
     {
       "id": "planet-6",
-      "description": "A golden ringed planet glowing against a pitch-black void",
-      "imageUrl": "https://picsum.photos/seed/planet-golden-rings/300/300",
-      "imageHint": "ringed planet"
+      "description": "Glistening golden ringed planet with a high-saturation celestial glow",
+      "imageUrl": "https://picsum.photos/seed/vivid-planet-gold/300/300",
+      "imageHint": "golden planet"
     },
     {
       "id": "avatar-1",
