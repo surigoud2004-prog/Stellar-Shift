@@ -1,6 +1,8 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 interface ParallaxBackgroundProps {
   disabled?: boolean;
@@ -15,15 +17,7 @@ interface Star {
   opacity: number;
 }
 
-interface DustMote {
-  size: string;
-  left: string;
-  top: string;
-  duration: string;
-  delay: string;
-}
-
-interface Ember {
+interface DustParticle {
   left: string;
   size: string;
   duration: string;
@@ -32,66 +26,49 @@ interface Ember {
 
 export function ParallaxBackground({ disabled }: ParallaxBackgroundProps) {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [stars, setStars] = useState<Star[]>([]);
-  const [heroStars, setHeroStars] = useState<Star[]>([]);
-  const [dustMotes, setDustMotes] = useState<DustMote[]>([]);
-  const [embers, setEmbers] = useState<Ember[]>([]);
+  const [starsFar, setStarsFar] = useState<Star[]>([]);
+  const [starsMid, setStarsMid] = useState<Star[]>([]);
+  const [starsNear, setStarsNear] = useState<Star[]>([]);
+  const [dustParticles, setDustParticles] = useState<DustParticle[]>([]);
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
-    // Generate stable cosmic data once after hydration
-    const generatedStars = [...Array(50)].map(() => ({
-      width: Math.random() * 1.5 + 0.5 + 'px',
-      height: Math.random() * 1.5 + 0.5 + 'px',
-      left: Math.random() * 100 + '%',
-      top: Math.random() * 100 + '%',
-      delay: Math.random() * 5 + 's',
-      opacity: Math.random() * 0.5 + 0.2
-    }));
-    setStars(generatedStars);
+    // Generate stable cosmic data once after hydration to avoid mismatches
+    const generateStars = (count: number, sizeMin: number, sizeMax: number) => 
+      [...Array(count)].map(() => ({
+        width: (Math.random() * (sizeMax - sizeMin) + sizeMin) + 'px',
+        height: (Math.random() * (sizeMax - sizeMin) + sizeMin) + 'px',
+        left: Math.random() * 100 + '%',
+        top: Math.random() * 100 + '%',
+        delay: Math.random() * 5 + 's',
+        opacity: Math.random() * 0.5 + 0.3
+      }));
 
-    const generatedHeroStars = [...Array(6)].map(() => ({
-      width: Math.random() * 3 + 2 + 'px',
-      height: Math.random() * 3 + 2 + 'px',
-      left: Math.random() * 100 + '%',
-      top: Math.random() * 100 + '%',
-      delay: Math.random() * 3 + 's',
-      opacity: Math.random() * 0.4 + 0.6
-    }));
-    setHeroStars(generatedHeroStars);
+    setStarsFar(generateStars(60, 0.5, 1));
+    setStarsMid(generateStars(30, 1.2, 2));
+    setStarsNear(generateStars(10, 2.5, 4));
 
-    const generatedDust = [...Array(8)].map(() => ({
-      size: Math.random() * 200 + 100 + 'px',
+    setDustParticles([...Array(20)].map(() => ({
       left: Math.random() * 100 + '%',
-      top: Math.random() * 100 + '%',
-      duration: Math.random() * 30 + 30 + 's',
-      delay: Math.random() * -30 + 's',
-    }));
-    setDustMotes(generatedDust);
-
-    const generatedEmbers = [...Array(15)].map(() => ({
-      left: Math.random() * 100 + '%',
-      size: Math.random() * 3 + 1 + 'px',
-      duration: Math.random() * 4 + 3 + 's',
-      delay: Math.random() * -10 + 's',
-    }));
-    setEmbers(generatedEmbers);
+      size: (Math.random() * 2 + 1) + 'px',
+      duration: (Math.random() * 10 + 15) + 's',
+      delay: (Math.random() * -20) + 's',
+    })));
 
     setHasMounted(true);
 
     if (disabled) return;
 
-    // INTERACTIVE TILT: Desktop (Mouse) & Mobile (Orientation)
     const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX - window.innerWidth / 2) / 80;
-      const y = (e.clientY - window.innerHeight / 2) / 80;
+      const x = (e.clientX - window.innerWidth / 2) / 50;
+      const y = (e.clientY - window.innerHeight / 2) / 50;
       setOffset({ x, y });
     };
 
     const handleOrientation = (e: DeviceOrientationEvent) => {
       if (e.beta !== null && e.gamma !== null) {
-        const x = e.gamma / 3;
-        const y = (e.beta - 45) / 3; 
+        const x = e.gamma / 2;
+        const y = (e.beta - 45) / 2; 
         setOffset({ x, y });
       }
     };
@@ -109,38 +86,37 @@ export function ParallaxBackground({ disabled }: ParallaxBackgroundProps) {
 
   return (
     <div className="fixed inset-0 z-[-10] pointer-events-none bg-black overflow-hidden select-none">
-      {/* LAYER 1: DEEPEST VOID & GALAXY CLUSTERS */}
+      {/* LAYER 1: HIGH-CONTRAST DEEP VOID */}
       <div 
-        className="absolute inset-[-200px] transition-transform duration-1000 ease-out bg-[#020108] blur-[4px]"
+        className="absolute inset-[-100px] bg-[#020108]"
         style={{
-          backgroundImage: 'radial-gradient(circle at 50% 50%, #0c081a 0%, #020108 100%)',
-          transform: `translate3d(${offset.x * 0.3}px, ${offset.y * 0.3}px, 0)`
+          backgroundImage: 'radial-gradient(circle at 50% 50%, #050212 0%, #010005 100%)',
         }}
       />
 
-      {/* LAYER 2: PULSING NEBULA */}
+      {/* LAYER 2: NEBULA FLOW (PURPLE/BLUE) */}
       <div 
-        className="absolute inset-[-250px] opacity-20 mix-blend-screen transition-transform duration-700 ease-out animate-slow-drift-nebula blur-[3px]"
+        className="absolute inset-[-200px] opacity-25 mix-blend-screen transition-transform duration-1000 ease-out animate-slow-drift-nebula blur-[50px]"
         style={{ 
           background: `
-            radial-gradient(circle at 20% 30%, #4c1d95 0%, transparent 40%),
-            radial-gradient(circle at 80% 70%, #1e3a8a 0%, transparent 40%),
-            radial-gradient(circle at 40% 60%, #581c87 0%, transparent 50%)
+            radial-gradient(circle at 30% 40%, #4c1d95 0%, transparent 50%),
+            radial-gradient(circle at 70% 60%, #1e3a8a 0%, transparent 50%)
           `,
-          transform: `translate3d(${offset.x * 0.8}px, ${offset.y * 0.8}px, 0)` 
+          transform: `translate3d(${offset.x * 0.5}px, ${offset.y * 0.5}px, 0)` 
         }}
       >
-        <div className="absolute inset-0 bg-primary/5 animate-nebula-breath" />
+        <div className="absolute inset-0 animate-nebula-breath bg-primary/5" />
       </div>
       
-      {/* LAYER 3: STARFIELD */}
+      {/* LAYER 3: 3-SPEED STARFIELD */}
+      {/* Stars Far (Smallest, Slowest) */}
       <div 
-        className="absolute inset-[-100px] transition-transform duration-500 ease-out animate-slow-drift-stars"
-        style={{ transform: `translate3d(${offset.x * 1.5}px, ${offset.y * 1.5}px, 0)` }}
+        className="absolute inset-[-50px] transition-transform duration-700 ease-out animate-slow-drift-stars"
+        style={{ transform: `translate3d(${offset.x * 0.3}px, ${offset.y * 0.3}px, 0)` }}
       >
-        {stars.map((star, i) => (
+        {starsFar.map((star, i) => (
           <div 
-            key={`star-${i}`}
+            key={`star-far-${i}`}
             className="absolute bg-white rounded-full animate-pulse"
             style={{
               width: star.width,
@@ -154,55 +130,59 @@ export function ParallaxBackground({ disabled }: ParallaxBackgroundProps) {
         ))}
       </div>
 
-      {/* LAYER 4: HERO STARS, DUST & EMBERS */}
+      {/* Stars Mid (Medium, Mid-Speed) */}
       <div 
-        className="absolute inset-[-150px] transition-transform duration-300 ease-out"
-        style={{ transform: `translate3d(${offset.x * 2.5}px, ${offset.y * 2.5}px, 0)` }}
+        className="absolute inset-[-70px] transition-transform duration-500 ease-out"
+        style={{ transform: `translate3d(${offset.x * 0.8}px, ${offset.y * 0.8}px, 0)` }}
       >
-        {/* Dust Motes */}
-        {dustMotes.map((mote, i) => (
+        {starsMid.map((star, i) => (
           <div 
-            key={`dust-${i}`}
-            className="absolute bg-white/5 rounded-full blur-[60px]"
-            style={{
-              width: mote.size,
-              height: mote.size,
-              left: mote.left,
-              top: mote.top,
-              animation: `orbitalFloat ${mote.duration} infinite linear`,
-              animationDelay: mote.delay
-            }}
-          />
-        ))}
-
-        {/* Hero Stars */}
-        {heroStars.map((star, i) => (
-          <div 
-            key={`hero-${i}`}
-            className="absolute bg-white rounded-full shadow-[0_0_25px_rgba(255,255,255,0.7)]"
+            key={`star-mid-${i}`}
+            className="absolute bg-white rounded-full opacity-80"
             style={{
               width: star.width,
               height: star.height,
               left: star.left,
               top: star.top,
-              opacity: star.opacity,
-              animation: `animate-pulse ${star.delay} infinite alternate`
+              boxShadow: '0 0 5px rgba(255,255,255,0.3)'
             }}
           />
         ))}
+      </div>
 
-        {/* Upward Drifting Embers */}
-        {embers.map((ember, i) => (
+      {/* Stars Near (Large, Fastest) */}
+      <div 
+        className="absolute inset-[-100px] transition-transform duration-300 ease-out"
+        style={{ transform: `translate3d(${offset.x * 1.5}px, ${offset.y * 1.5}px, 0)` }}
+      >
+        {starsNear.map((star, i) => (
           <div 
-            key={`ember-${i}`}
-            className="absolute bg-primary/40 rounded-full blur-[2px] animate-ember-rise"
+            key={`star-near-${i}`}
+            className="absolute bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]"
             style={{
-              left: ember.left,
-              bottom: '10%',
-              width: ember.size,
-              height: ember.size,
-              '--ember-duration': ember.duration,
-              animationDelay: ember.delay
+              width: star.width,
+              height: star.height,
+              left: star.left,
+              top: star.top,
+              opacity: 1
+            }}
+          />
+        ))}
+      </div>
+
+      {/* LAYER 4: STELLAR DUST (UPWARD FLOATING) */}
+      <div className="absolute inset-0">
+        {dustParticles.map((particle, i) => (
+          <div 
+            key={`dust-${i}`}
+            className="absolute bg-white/40 rounded-full blur-[1px] animate-ember-rise"
+            style={{
+              left: particle.left,
+              bottom: '-5%',
+              width: particle.size,
+              height: particle.size,
+              '--ember-duration': particle.duration,
+              animationDelay: particle.delay
             } as any}
           />
         ))}
