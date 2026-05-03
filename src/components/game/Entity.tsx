@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import Image from 'next/image';
 import { CelestialEntity, HEX_WIDTH } from '@/lib/game-utils';
 import { PLANET_IMAGES } from '@/lib/placeholder-images';
@@ -14,27 +13,44 @@ interface EntityProps {
   disabled?: boolean;
 }
 
-const GLOW_MAP = [
-  "shadow-[0_0_20px_rgba(249,115,22,0.6)] border-orange-500/30", // Type 0: Orange Orb
-  "shadow-[0_0_20px_rgba(59,130,246,0.6)] border-blue-500/30",   // Type 1: Sapphire Crystal
-  "shadow-[0_0_20px_rgba(168,85,247,0.6)] border-purple-500/30", // Type 2: Violet Nebula
-  "shadow-[0_0_20px_rgba(34,197,94,0.6)] border-green-500/30",   // Type 3: Green Radioactive
-  "shadow-[0_0_20px_rgba(234,179,8,0.6)] border-yellow-500/30"   // Type 4: Golden Ring
+const BLOOM_MAP = [
+  "bloom-orange border-orange-400/50",
+  "bloom-blue border-blue-400/50",
+  "bloom-violet border-purple-400/50",
+  "bloom-green border-green-400/50",
+  "bloom-gold border-yellow-400/50"
+];
+
+const ROTATION_MAP = [
+  "animate-orbital-float",
+  "animate-orbital-float-reverse",
+  "animate-orbital-float",
+  "animate-orbital-float-reverse",
+  "animate-orbital-float"
 ];
 
 export const Entity = memo(function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) {
+  const [sparkleKey, setSparkleKey] = useState(0);
+  
   const x = entity.q * HEX_WIDTH;
   const y = entity.r * HEX_WIDTH;
   
   const placeholder = PLANET_IMAGES[entity.type % PLANET_IMAGES.length] || PLANET_IMAGES[0];
-  const glowClass = GLOW_MAP[entity.type % GLOW_MAP.length];
+  const bloomClass = BLOOM_MAP[entity.type % BLOOM_MAP.length];
+  const rotationClass = ROTATION_MAP[entity.type % ROTATION_MAP.length];
+
+  const handleInteraction = () => {
+    if (disabled) return;
+    setSparkleKey(prev => prev + 1);
+    onSelect(entity.id);
+  };
 
   return (
     <div
-      onClick={() => !disabled && onSelect(entity.id)}
+      onClick={handleInteraction}
       className={cn(
-        "absolute cursor-pointer transition-all duration-300 p-1",
-        isSelected && "z-10 scale-125 brightness-125",
+        "absolute cursor-pointer transition-all duration-300 p-2",
+        isSelected && "z-10 scale-110 brightness-125",
         entity.isMatched && "shard-match",
         !entity.isMatched && "shard-enter",
         entity.isExploding && "animate-implode"
@@ -47,32 +63,35 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
       }}
     >
       <div className={cn(
-        "w-full h-full rounded-full overflow-hidden border-2 transition-all relative flex items-center justify-center",
-        isSelected ? "border-white shadow-[0_0_25px_#fff]" : glowClass,
-        "bg-black/60 backdrop-blur-sm"
+        "w-full h-full rounded-full overflow-hidden border-2 transition-all relative flex items-center justify-center animate-core-breath",
+        isSelected ? "border-white shadow-[0_0_30px_#fff]" : bloomClass,
+        "bg-black/40 backdrop-blur-sm"
       )}>
+        {/* Star-Dust Burst Layer */}
+        <div key={sparkleKey} className={cn("sparkle-effect", sparkleKey > 0 && "animate-sparkle")} />
+
         {entity.special === 'bomb' ? (
           <div className="w-full h-full bg-black relative flex items-center justify-center overflow-hidden rounded-full">
              <div className="absolute inset-0 bg-gradient-to-tr from-amber-600 via-white to-red-400 animate-pulse opacity-90" />
-             <div className="relative w-10 h-10 rounded-full bg-white shadow-[0_0_30px_#fff] animate-core-pulse">
-                <div className="absolute inset-[-12px] border-2 border-primary rounded-full animate-spin duration-[1500ms]" />
-                <div className="absolute inset-[-6px] border border-white/60 rounded-full animate-spin-reverse duration-[2000ms]" />
+             <div className="relative w-10 h-10 rounded-full bg-white shadow-[0_0_30px_#fff]">
+                <div className="absolute inset-[-15px] border-2 border-primary rounded-full animate-spin duration-[1500ms]" />
+                <div className="absolute inset-[-8px] border border-white/60 rounded-full animate-orbital-float-reverse duration-[2000ms]" />
              </div>
           </div>
         ) : (
-          <div className="relative w-full h-full">
+          <div className={cn("relative w-full h-full", rotationClass)}>
             <Image
               src={placeholder.imageUrl}
               alt={placeholder.description}
               width={HEX_WIDTH}
               height={HEX_WIDTH}
               data-ai-hint={placeholder.imageHint}
-              className="object-cover w-full h-full opacity-90"
+              className="object-cover w-full h-full opacity-100 scale-110"
             />
             {/* 3D Glossy Sphere Layers */}
             <div className="absolute inset-0 glossy-overlay pointer-events-none rounded-full" />
-            <div className="absolute inset-0 lens-flare pointer-events-none rounded-full opacity-60" />
-            <div className="absolute inset-0 border-[3px] border-white/10 rounded-full pointer-events-none" />
+            <div className="absolute inset-0 lens-flare pointer-events-none rounded-full opacity-80" />
+            <div className="absolute inset-0 border-[4px] border-white/20 rounded-full pointer-events-none shadow-inner" />
           </div>
         )}
       </div>
