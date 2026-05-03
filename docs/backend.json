@@ -50,15 +50,15 @@
   "firestore": {
     "/leaderboard/{scoreId}": {
       "schema": "#/entities/HighScore",
-      "description": "Collection of global high scores."
+      "description": "Collection of global high scores. Rules: Allow read/list to all authenticated pilots."
     },
     "/users/{userId}": {
       "schema": "#/entities/UserProfile",
-      "description": "Private user profile data."
+      "description": "Private user profile data. Rules: Owner-only access."
     },
     "/users/{userId}/logs/{logId}": {
       "schema": "#/entities/LoreLog",
-      "description": "Personal mission lore archive."
+      "description": "Personal mission lore archive. Rules: Owner-only access."
     }
   }
 }

@@ -3,13 +3,13 @@
 
 import { useEffect, useState } from 'react';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
-import { signInAnonymously } from 'firebase/auth';
+import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { useFirestore, useAuth } from '@/firebase';
 import { Card } from '@/components/ui/card';
 import { Trophy, User, Calendar, Star, Share2, Coins } from 'lucide-react';
 import { format } from 'date-fns';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 import { Button } from '@/components/ui/button';
 import { playUIClickSound } from '@/lib/audio-system';
 
@@ -34,26 +34,41 @@ export function HallOfFame({ title, subtitle, onAwardShare }: HallOfFameProps) {
   const auth = useAuth();
 
   useEffect(() => {
+    // Ensure pilot is authenticated before attempting to query the global archive
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        try {
+          await signInAnonymously(auth);
+        } catch (authError) {
+          console.warn("Auth initialization failed", authError);
+          setLoading(false);
+          return;
+        }
+      } else {
+        fetchLeaderboard();
+      }
+    });
+
     const fetchLeaderboard = async () => {
       try {
-        if (!auth.currentUser) await signInAnonymously(auth);
-        
-        // Fetch top 5 high scores from global Firestore archive
         const q = query(collection(db, 'leaderboard'), orderBy('score', 'desc'), limit(5));
         const querySnapshot = await getDocs(q);
         const results = querySnapshot.docs.map(doc => doc.data() as LeaderboardEntry);
         setEntries(results);
-      } catch (e) {
+      } catch (e: any) {
+        // Construct contextual error for better debugging loops
         const permissionError = new FirestorePermissionError({
           path: 'leaderboard',
           operation: 'list',
-        });
+        } satisfies SecurityRuleContext);
+        
         errorEmitter.emit('permission-error', permissionError);
       } finally {
         setLoading(false);
       }
     };
-    fetchLeaderboard();
+
+    return () => unsubscribeAuth();
   }, [db, auth]);
 
   const handleShare = () => {
