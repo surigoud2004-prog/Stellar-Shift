@@ -55,12 +55,12 @@ export default function Home() {
       {/* Global_HUD Layer */}
       <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
         
-        {/* Top-Left Anchor: Primary Emergency Command */}
+        {/* Top-Left Anchor: Primary Emergency Command (Red Abort) */}
         <div className="absolute top-[30px] left-[30px] flex items-center gap-4 pointer-events-auto">
           {gameStarted && (
             <button 
               onClick={() => setAbortDialogOpen(true)}
-              className="w-12 h-12 rounded-full bg-destructive flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.5)] border-2 border-white/20"
+              className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-[0_0_20px_rgba(220,38,38,0.6)] border-2 border-white/20"
               title={labels.abortMission}
             >
               <X className="w-6 h-6 text-white" />
