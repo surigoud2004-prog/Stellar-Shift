@@ -32,6 +32,12 @@ export interface PowerUpState {
   colorNuke: number;
 }
 
+export interface LaserEffect {
+  id: string;
+  type: 'h' | 'v';
+  pos: number;
+}
+
 export function useGameState() {
   const db = useFirestore();
   const auth = useAuth();
@@ -52,6 +58,7 @@ export function useGameState() {
   const [isReviving, setIsReviving] = useState(false);
   const [reviveCost, setReviveCost] = useState(200);
   const [firstMatchMade, setFirstMatchMade] = useState(false);
+  const [lasers, setLasers] = useState<LaserEffect[]>([]);
 
   const [powerUps, setPowerUps] = useState<PowerUpState>({
     timeDilator: false,
@@ -106,50 +113,69 @@ export function useGameState() {
 
   const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMovedId?: string, comboFactor: number = 1, forceExplosionIds?: Set<string>, silent: boolean = false) => {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMovedId);
-    const variety = getVariety();
     
+    // Process matches AND potential chain reactions
+    const idsToProcess = new Set<string>([...matches, ...(forceExplosionIds || [])]);
+    const allToDestroy = new Set<string>();
     const activatedSpecialIds = new Set<string>();
-    const explosiveIds = new Set<string>(forceExplosionIds || []);
+    
     let triggeredFlash = false;
     let triggeredShake = false;
     let chainMultiplier = 1;
+    const currentLasers: LaserEffect[] = [];
 
-    const addExplosives = (id: string) => {
+    // Recursive special processing loop for chain reactions
+    while (idsToProcess.size > 0) {
+      const id = idsToProcess.values().next().value;
+      idsToProcess.delete(id);
+      
       const ent = currentEntities.find(e => e.id === id);
-      if (!ent || activatedSpecialIds.has(id)) return;
-      if (ent.special) chainMultiplier *= 1.5; 
-      activatedSpecialIds.add(id);
+      if (!ent || allToDestroy.has(id)) continue;
 
-      if (ent.special === 'bomb') {
-        triggeredFlash = true;
-        triggeredShake = true;
-        currentEntities.forEach(e => {
-          if (Math.abs(e.q - ent.q) <= 1 && Math.abs(e.r - ent.r) <= 1) explosiveIds.add(e.id);
-        });
-      } else if (ent.special === 'nova-h') {
-        currentEntities.forEach(e => {
-          if (e.r === ent.r) explosiveIds.add(e.id);
-        });
-      } else if (ent.special === 'nova-v') {
-        currentEntities.forEach(e => {
-          if (e.q === ent.q) explosiveIds.add(e.id);
-        });
-      } else if (ent.special === 'rainbow-core') {
-         explosiveIds.add(ent.id);
+      allToDestroy.add(id);
+
+      // If it's a special entity, activate its effect and add targeted entities to processing queue
+      if (ent.special && !activatedSpecialIds.has(id)) {
+        activatedSpecialIds.add(id);
+        chainMultiplier *= 1.25;
+
+        if (ent.special === 'bomb') {
+          triggeredFlash = true;
+          triggeredShake = true;
+          currentEntities.forEach(e => {
+            if (Math.abs(e.q - ent.q) <= 1 && Math.abs(e.r - ent.r) <= 1) {
+              if (!allToDestroy.has(e.id)) idsToProcess.add(e.id);
+            }
+          });
+        } else if (ent.special === 'nova-h') {
+          currentLasers.push({ id: `laser-${ent.id}`, type: 'h', pos: ent.r });
+          currentEntities.forEach(e => {
+            if (e.r === ent.r) {
+              if (!allToDestroy.has(e.id)) idsToProcess.add(e.id);
+            }
+          });
+        } else if (ent.special === 'nova-v') {
+          currentLasers.push({ id: `laser-${ent.id}`, type: 'v', pos: ent.q });
+          currentEntities.forEach(e => {
+            if (e.q === ent.q) {
+              if (!allToDestroy.has(e.id)) idsToProcess.add(e.id);
+            }
+          });
+        } else if (ent.special === 'rainbow-core') {
+           // Rainbow cores currently handled via swap, but if matched:
+           triggeredFlash = true;
+        }
       }
-    };
+    }
 
-    matches.forEach(addExplosives);
-    if (forceExplosionIds) forceExplosionIds.forEach(addExplosives);
-
-    if (matches.length > 0 || explosiveIds.size > 0) {
+    if (allToDestroy.size > 0) {
       if (!silent) {
         setIsProcessing(true);
         playMatchSound();
         setFirstMatchMade(true);
+        if (currentLasers.length > 0) setLasers(currentLasers);
       }
       
-      const allToDestroy = new Set([...matches, ...Array.from(explosiveIds)]);
       setEntities(prev => prev.map(e => allToDestroy.has(e.id) ? { ...e, isMatched: true } : e));
       
       if (!silent) {
@@ -161,6 +187,9 @@ export function useGameState() {
         if (triggeredShake) {
           setIsShaking(true);
           setTimeout(() => setIsShaking(false), 500);
+        }
+        if (currentLasers.length > 0) {
+          setTimeout(() => setLasers([]), 600);
         }
       }
 
@@ -180,6 +209,7 @@ export function useGameState() {
         });
       }
 
+      const variety = getVariety();
       const updated = currentEntities.filter(e => !allToDestroy.has(e.id));
       const newGrid: CelestialEntity[] = [];
       for (let q = 0; q < GRID_COLS; q++) {
@@ -219,8 +249,8 @@ export function useGameState() {
   const initBoard = useCallback(async () => {
     const variety = getVariety();
     setIsProcessing(true);
-    setScore(0); // STRICT: Explicitly set score to 0
-    setFirstMatchMade(false); // Timer frozen until first manual match
+    setScore(0);
+    setFirstMatchMade(false);
     
     const initial = generateMatchFreeGrid(variety);
 
@@ -359,7 +389,7 @@ export function useGameState() {
     playUIClickSound();
     setGameStarted(true);
     setLevel(initialLevel);
-    setScore(0); // STRICT: Force 0 on start mission
+    setScore(0);
     setReviveCost(200);
     setFirstMatchMade(false);
     setEntities([]); 
@@ -396,6 +426,6 @@ export function useGameState() {
     gameStarted, startGame, quitGame, gameMode, setGameMode,
     isFlashing, isShaking, animationDuration,
     powerUps, setPowerUps, triggerColorNuke,
-    isReviving, setIsReviving, revive, reviveCost
+    isReviving, setIsReviving, revive, reviveCost, lasers
   };
 }

@@ -135,7 +135,7 @@ function MissionContent() {
       
       <ParallaxBackground disabled={isBatterySaver} isWarping={isWarping} level={level} />
       
-      {/* GLOBAL HUD - PINNED AT TOP-MOST LAYER */}
+      {/* GLOBAL HUD - PINNED AT TOP-MOST LAYER Z-10010 */}
       <div id="Global_HUD" className="fixed inset-x-0 top-0 pointer-events-none z-[10010] h-40">
         
         {/* TOP-LEFT: ABORT MISSION (X) */}
@@ -159,7 +159,7 @@ function MissionContent() {
 
         {/* TOP-CENTER: MISSION STATUS & TELEMETRY */}
         <div className={cn(
-          "absolute top-[15px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center pointer-events-auto transition-all duration-500 w-full max-w-md",
+          "absolute top-[10px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center pointer-events-auto transition-all duration-500 w-full max-w-md",
           !uiVisible && "opacity-0 translate-y-[-100px]"
         )}>
           <div className="flex items-center gap-3 mb-2">
@@ -174,7 +174,7 @@ function MissionContent() {
             </div>
           </div>
 
-          <h1 className="font-headline text-xl md:text-2xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_20px_rgba(168,85,247,0.7)] mb-2 mt-4">
+          <h1 className="font-headline text-lg md:text-xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_20px_rgba(168,85,247,0.7)] mb-1 mt-6">
             Stellar <span className="text-primary">Shift</span>
           </h1>
           

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useCallback, useMemo } from 'react';
@@ -17,7 +16,7 @@ export function Board({ onShowShop }: BoardProps) {
   const { 
     entities, isGameOver, isWin, isWarping, selectedId, setSelectedId, 
     swapEntities, isProcessing, initBoard, isFlashing, isShaking, level, 
-    powerUps, triggerColorNuke, quitGame
+    powerUps, triggerColorNuke, quitGame, lasers
   } = useGameState();
 
   const handleSelect = useCallback((id: string) => {
@@ -40,7 +39,7 @@ export function Board({ onShowShop }: BoardProps) {
     }
   }, [selectedId, entities, isProcessing, isGameOver, isWin, isWarping, setSelectedId, swapEntities]);
 
-  // Electrical Arc Visuals
+  // Electrical Arc Visuals for specials
   const electricalArc = useMemo(() => {
     if (!selectedId) return null;
     const sEnt = entities.find(e => e.id === selectedId);
@@ -112,6 +111,23 @@ export function Board({ onShowShop }: BoardProps) {
           }}
         >
           {electricalArc}
+          
+          {/* Stellar Beam Laser Overlays */}
+          {lasers.map((laser) => (
+             <div 
+               key={laser.id}
+               className={cn(
+                 "absolute z-[60] bg-white shadow-[0_0_20px_white,0_0_40px_white] animate-laser",
+                 laser.type === 'h' 
+                   ? "inset-x-[-100px] h-4 top-[var(--laser-pos)]" 
+                   : "inset-y-[-100px] w-4 left-[var(--laser-pos)]"
+               )}
+               style={{ 
+                 ['--laser-pos' as any]: `${laser.pos * HEX_WIDTH + HEX_WIDTH / 2 - 8}px`
+               }}
+             />
+          ))}
+
           {entities.map((entity) => (
             <Entity 
               key={entity.id} 
