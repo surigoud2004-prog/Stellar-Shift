@@ -55,7 +55,6 @@ export function useGameState() {
   const [isReviving, setIsReviving] = useState(false);
   const [reviveCost, setReviveCost] = useState(200);
 
-  // Power Up States
   const [powerUps, setPowerUps] = useState<PowerUpState>({
     timeDilator: false,
     novaBlast: false,
@@ -64,7 +63,6 @@ export function useGameState() {
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // INFINITE LEVELING MATH - Level * 1500
   const targetScore = useMemo(() => level * 1500, [level]);
   
   const levelTimeLimit = useMemo(() => {
@@ -72,14 +70,12 @@ export function useGameState() {
     return powerUps.timeDilator ? base + 15 : base;
   }, [level, powerUps.timeDilator]);
   
-  // 5% speed increase per level
   const animationDuration = useMemo(() => 0.3 * Math.pow(0.95, level - 1), [level]);
 
   const getVariety = useCallback(() => {
-    if (!sessionStartTime) return 6;
     if (level <= 5) return 4;
     return 6;
-  }, [sessionStartTime, level]);
+  }, [level]);
 
   const archiveLore = useCallback(async (event: string, context?: string) => {
     if (!firestore || !auth?.currentUser) return;
@@ -95,95 +91,6 @@ export function useGameState() {
     } catch (e) {}
   }, [firestore, auth]);
 
-  const initBoard = useCallback(() => {
-    const variety = getVariety();
-    let initial: CelestialEntity[] = [];
-    let hasMatches = true;
-    let attempts = 0;
-    
-    while (hasMatches && attempts < 100) {
-      attempts++;
-      initial = [];
-      for (let r = 0; r < GRID_ROWS; r++) {
-        for (let q = 0; q < GRID_COLS; q++) {
-          initial.push(generateRandomEntity(q, r, variety));
-        }
-      }
-      const { matches } = findMatches(initial);
-      if (matches.length === 0) hasMatches = false;
-    }
-
-    if (powerUps.novaBlast) {
-      for (let i = 0; i < 2; i++) {
-        const randIdx = Math.floor(Math.random() * initial.length);
-        initial[randIdx].special = 'bomb';
-      }
-    }
-    
-    setEntities(initial);
-    setSelectedId(null);
-    setIsGameOver(false);
-    setIsWin(false);
-    setIsWarping(false);
-    setTimeLeft(levelTimeLimit);
-    setScore(0);
-    setIsProcessing(false);
-    setIsFlashing(false);
-    setIsShaking(false);
-    setIsReviving(false);
-    setReviveCost(200);
-  }, [getVariety, levelTimeLimit, powerUps.novaBlast]);
-
-  useEffect(() => {
-    if (isWin) {
-      // Wait 1 second before starting the warp so players see the win message
-      const warpStartTimeout = setTimeout(() => {
-        setIsWarping(true);
-        setEntities([]);
-        playWarpSound();
-        
-        const nextLevelTimeout = setTimeout(() => {
-          setLevel(prev => prev + 1);
-          setScore(0);
-          setIsWin(false);
-          setIsWarping(false);
-          setPowerUps(prev => ({ ...prev, timeDilator: false, novaBlast: false }));
-          setReviveCost(200);
-        }, 2500);
-        
-        return () => clearTimeout(nextLevelTimeout);
-      }, 1000);
-      
-      return () => clearTimeout(warpStartTimeout);
-    }
-  }, [isWin]);
-
-  useEffect(() => {
-    if (gameStarted && !isWin && !isGameOver && !isWarping && !isReviving) {
-      if (entities.length === 0) {
-        initBoard();
-      }
-    }
-  }, [level, gameStarted, initBoard, isWin, isGameOver, entities.length, isReviving, isWarping]);
-
-  useEffect(() => {
-    if (!gameStarted || isGameOver || isWin || isWarping || isReviving || entities.length === 0) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      return;
-    }
-    
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          setIsReviving(true);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timerRef.current!);
-  }, [gameStarted, isGameOver, isWin, isWarping, isReviving, entities.length]);
-
   const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMovedId?: string, comboFactor: number = 1, forceExplosionIds?: Set<string>) => {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMovedId);
     const variety = getVariety();
@@ -197,11 +104,7 @@ export function useGameState() {
     const addExplosives = (id: string) => {
       const ent = currentEntities.find(e => e.id === id);
       if (!ent || activatedSpecialIds.has(id)) return;
-      
-      if (ent.special) {
-        chainMultiplier *= 2;
-      }
-      
+      if (ent.special) chainMultiplier *= 2;
       activatedSpecialIds.add(id);
 
       if (ent.special === 'bomb') {
@@ -286,11 +189,96 @@ export function useGameState() {
 
       setEntities(newGrid);
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000));
+      // Continuous Validation Loop: Keep checking for matches in the new state
       await handleMatch(newGrid, undefined, comboFactor * 1.5);
     } else {
       setIsProcessing(false);
     }
   }, [targetScore, getVariety, isWin, isWarping, level, archiveLore, animationDuration]);
+
+  const initBoard = useCallback(async () => {
+    const variety = getVariety();
+    let initial: CelestialEntity[] = [];
+    
+    // Generate board (allowing matches for bonus points at start)
+    for (let r = 0; r < GRID_ROWS; r++) {
+      for (let q = 0; q < GRID_COLS; q++) {
+        initial.push(generateRandomEntity(q, r, variety));
+      }
+    }
+
+    if (powerUps.novaBlast) {
+      for (let i = 0; i < 2; i++) {
+        const randIdx = Math.floor(Math.random() * initial.length);
+        initial[randIdx].special = 'bomb';
+      }
+    }
+    
+    setEntities(initial);
+    setSelectedId(null);
+    setIsGameOver(false);
+    setIsWin(false);
+    setIsWarping(false);
+    setTimeLeft(levelTimeLimit);
+    setScore(0);
+    setIsProcessing(true); // Lock board during initial match scan
+    setIsFlashing(false);
+    setIsShaking(false);
+    setIsReviving(false);
+    setReviveCost(200);
+
+    // Initial stability scan
+    await handleMatch(initial);
+  }, [getVariety, levelTimeLimit, powerUps.novaBlast, handleMatch]);
+
+  useEffect(() => {
+    if (isWin) {
+      const warpStartTimeout = setTimeout(() => {
+        setIsWarping(true);
+        setEntities([]);
+        playWarpSound();
+        
+        const nextLevelTimeout = setTimeout(() => {
+          setLevel(prev => prev + 1);
+          setScore(0);
+          setIsWin(false);
+          setIsWarping(false);
+          setPowerUps(prev => ({ ...prev, timeDilator: false, novaBlast: false }));
+          setReviveCost(200);
+        }, 2500);
+        
+        return () => clearTimeout(nextLevelTimeout);
+      }, 1000);
+      
+      return () => clearTimeout(warpStartTimeout);
+    }
+  }, [isWin]);
+
+  useEffect(() => {
+    if (gameStarted && !isWin && !isGameOver && !isWarping && !isReviving) {
+      if (entities.length === 0) {
+        initBoard();
+      }
+    }
+  }, [level, gameStarted, initBoard, isWin, isGameOver, entities.length, isReviving, isWarping]);
+
+  useEffect(() => {
+    if (!gameStarted || isGameOver || isWin || isWarping || isReviving || entities.length === 0) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      return;
+    }
+    
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          setIsReviving(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timerRef.current!);
+  }, [gameStarted, isGameOver, isWin, isWarping, isReviving, entities.length]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
     if (isProcessing || isWin || isGameOver || isWarping || isReviving) return;
