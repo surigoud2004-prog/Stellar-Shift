@@ -132,16 +132,11 @@
   100% { transform: scale(3.5); opacity: 0; }
 }
 
-@keyframes emberRise {
-  0% { transform: translate(0, 0); opacity: 0; }
-  10% { opacity: 0.6; }
-  90% { opacity: 0.6; }
-  100% { transform: translate(40px, -250px); opacity: 0; }
-}
-
-@keyframes twinkle {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.2); }
+@keyframes energyVibration {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(1px, -1px); }
+  50% { transform: translate(-1px, 1px); }
+  75% { transform: translate(1px, 1px); }
 }
 
 @keyframes coinFly {
@@ -158,8 +153,7 @@
 .animate-negative-flash { animation: negativeFlash 0.4s ease-out forwards; }
 .animate-implode { animation: implodeToStar 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
 .animate-sparkle { animation: sparkleBurst 0.7s ease-out forwards; }
-.animate-ember-rise { animation: emberRise var(--ember-duration) infinite linear; }
-.animate-twinkle { animation: twinkle var(--twinkle-duration) infinite ease-in-out; }
+.animate-energy-vibration { animation: energyVibration 0.1s infinite linear; }
 .animate-coin-fly { animation: coinFly 0.8s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards; }
 
 .sparkle-effect {

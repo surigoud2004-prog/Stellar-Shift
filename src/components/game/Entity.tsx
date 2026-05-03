@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { memo, useState, useEffect, useMemo } from 'react';
@@ -105,7 +104,7 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
         "w-full h-full transition-all relative rounded-full animate-core-breath",
         bloomClass,
         isSelected && "brightness-150 ring-4 ring-white shadow-[0_0_40px_white]",
-        isSpecial && "ring-2 ring-white animate-pulse shadow-[0_0_15px_white]"
+        isSpecial && "ring-4 ring-white animate-pulse shadow-[0_0_20px_white] animate-energy-vibration"
       )}>
         {/* Color-Matched Sparkle Burst Layer */}
         <div 
@@ -130,6 +129,14 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
              <div className="rim-light" />
              <div className="absolute inset-0 glossy-overlay opacity-40" />
           </div>
+        ) : entity.special === 'nova-core' ? (
+          <div className="w-full h-full relative flex items-center justify-center overflow-hidden rounded-full border-4 border-white shadow-[0_0_20px_white]">
+             <div className={cn("absolute inset-0", NEON_CORE_MAP[entity.type % NEON_CORE_MAP.length])} />
+             <div className="absolute inset-0 bg-white/30 animate-pulse" />
+             <div className="relative z-10 text-white font-black text-xl italic uppercase">★</div>
+             <div className="rim-light" />
+             <div className="absolute inset-0 glossy-overlay opacity-60" />
+          </div>
         ) : (
           <div className="relative w-full h-full rounded-full overflow-hidden border border-white/10 group">
             
@@ -148,10 +155,8 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
               <div className={cn("absolute inset-0 void-core", VOID_OUTLINE_MAP[entity.type % VOID_OUTLINE_MAP.length])} />
             )}
             
-            {/* Pulsing Inner Singularity Glow (for Neon/Gilded) */}
-            {sector.id !== 'void' && (
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,white_0%,transparent_40%)] opacity-70 animate-pulse" />
-            )}
+            {/* Pulsing Inner Singularity Glow */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,white_0%,transparent_40%)] opacity-70 animate-pulse" />
             
             {/* 3D Glass Marble Elements */}
             <div className="absolute inset-0 specular-highlight pointer-events-none" />

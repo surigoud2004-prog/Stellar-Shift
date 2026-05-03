@@ -1,6 +1,5 @@
-
 export type EntityType = 0 | 1 | 2 | 3 | 4 | 5;
-export type SpecialType = 'nova-h' | 'bomb' | null;
+export type SpecialType = 'nova-h' | 'bomb' | 'nova-core' | null;
 
 export interface CelestialEntity {
   id: string;
@@ -35,14 +34,16 @@ function generateStableId() {
 /**
  * Generates a random entity. 
  * 'variety' determines how many different types can spawn.
+ * Includes a 2% chance for a random special entity.
  */
 export function generateRandomEntity(q: number, r: number, variety: number = 6): CelestialEntity {
+  const isSpecial = Math.random() < 0.02;
   return {
     id: generateStableId(),
     type: Math.floor(Math.random() * variety) as EntityType,
     q,
     r,
-    special: null
+    special: isSpecial ? 'nova-h' : null
   };
 }
 
@@ -146,16 +147,21 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
 
   let specialToSpawn: MatchResult['specialToSpawn'] = undefined;
 
-  // Decide special spawn based on last move
+  // Decide special spawn based on patterns
   if (lastMoveId) {
     const hGroup = horizontalGroups.find(g => g.ids.includes(lastMoveId));
     const vGroup = verticalGroups.find(g => g.ids.includes(lastMoveId));
     const moved = entities.find(e => e.id === lastMoveId);
 
     if (moved) {
-      if ((hGroup && hGroup.length >= 5) || (vGroup && vGroup.length >= 5)) {
+      if (hGroup && vGroup) {
+        // L or T shape intersection
+        specialToSpawn = { id: generateStableId(), type: 'nova-core', entityType: moved.type, q: moved.q, r: moved.r };
+      } else if ((hGroup && hGroup.length >= 5) || (vGroup && vGroup.length >= 5)) {
+        // 5-match linear
         specialToSpawn = { id: generateStableId(), type: 'bomb', entityType: moved.type, q: moved.q, r: moved.r };
       } else if ((hGroup && hGroup.length === 4) || (vGroup && vGroup.length === 4)) {
+        // 4-match linear
         specialToSpawn = { id: generateStableId(), type: 'nova-h', entityType: moved.type, q: moved.q, r: moved.r };
       }
     }

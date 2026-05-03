@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -112,7 +111,7 @@ export function useGameState() {
     setIsWin(false);
     setIsWarping(false);
     setTimeLeft(levelTimeLimit);
-    setScore(0); // Ensure score resets on retry/init
+    setScore(0);
     setIsProcessing(false);
     setIsFlashing(false);
   }, [getVariety, levelTimeLimit, powerUps.novaBlast]);
@@ -160,10 +159,17 @@ export function useGameState() {
     const activatedSpecialIds = new Set<string>();
     const explosiveIds = new Set<string>();
     let triggeredFlash = false;
+    let chainMultiplier = 1;
 
     const addExplosives = (id: string) => {
       const ent = currentEntities.find(e => e.id === id);
       if (!ent || activatedSpecialIds.has(id)) return;
+      
+      // If a special triggers another special, double multiplier
+      if (ent.special) {
+        chainMultiplier *= 2;
+      }
+      
       activatedSpecialIds.add(id);
 
       if (ent.special === 'bomb') {
@@ -174,6 +180,11 @@ export function useGameState() {
       } else if (ent.special === 'nova-h') {
         currentEntities.forEach(e => {
           if (e.r === ent.r) explosiveIds.add(e.id);
+        });
+      } else if (ent.special === 'nova-core') {
+        // Vaporize all entities of the same color
+        currentEntities.forEach(e => {
+          if (e.type === ent.type) explosiveIds.add(e.id);
         });
       }
     };
@@ -194,7 +205,7 @@ export function useGameState() {
       }
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000 * 1.3));
 
-      const points = allToDestroy.size * 10 * comboFactor;
+      const points = allToDestroy.size * 10 * comboFactor * chainMultiplier;
       setScore(s => {
         const newScore = s + points;
         if (newScore >= targetScore && !isWin) {
@@ -233,7 +244,7 @@ export function useGameState() {
 
       setEntities(newGrid);
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000));
-      await handleMatch(newGrid, undefined, comboFactor * 2);
+      await handleMatch(newGrid, undefined, comboFactor * 1.5);
     } else {
       setIsProcessing(false);
     }
