@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -52,6 +51,7 @@ export function useGameState() {
   const [isShaking, setIsShaking] = useState(false);
   const [isReviving, setIsReviving] = useState(false);
   const [reviveCost, setReviveCost] = useState(200);
+  const [firstMatchMade, setFirstMatchMade] = useState(false);
 
   const [powerUps, setPowerUps] = useState<PowerUpState>({
     timeDilator: false,
@@ -104,7 +104,7 @@ export function useGameState() {
     } catch (e) {}
   }, [db, auth]);
 
-  const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMovedId?: string, comboFactor: number = 1, forceExplosionIds?: Set<string>) => {
+  const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMovedId?: string, comboFactor: number = 1, forceExplosionIds?: Set<string>, silent: boolean = false) => {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMovedId);
     const variety = getVariety();
     
@@ -143,36 +143,42 @@ export function useGameState() {
     if (forceExplosionIds) forceExplosionIds.forEach(addExplosives);
 
     if (matches.length > 0 || explosiveIds.size > 0) {
-      setIsProcessing(true);
-      playMatchSound();
+      if (!silent) {
+        setIsProcessing(true);
+        playMatchSound();
+        setFirstMatchMade(true);
+      }
       
       const allToDestroy = new Set([...matches, ...Array.from(explosiveIds)]);
       setEntities(prev => prev.map(e => allToDestroy.has(e.id) ? { ...e, isMatched: true } : e));
       
-      if (triggeredFlash) {
-        setIsFlashing(true);
-        playBombSound();
-        setTimeout(() => setIsFlashing(false), 400);
-      }
-      if (triggeredShake) {
-        setIsShaking(true);
-        setTimeout(() => setIsShaking(false), 500);
+      if (!silent) {
+        if (triggeredFlash) {
+          setIsFlashing(true);
+          playBombSound();
+          setTimeout(() => setIsFlashing(false), 400);
+        }
+        if (triggeredShake) {
+          setIsShaking(true);
+          setTimeout(() => setIsShaking(false), 500);
+        }
       }
 
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000 * 1.3));
 
-      const points = Math.floor(allToDestroy.size * 10 * comboFactor * chainMultiplier);
-      
-      setScore(s => {
-        const newScore = Math.floor(s + points);
-        if (newScore >= targetScore && !isWin && !isWarping) {
-           setIsWin(true);
-           playVictoryFanfare(level);
-           archiveLore("Sector Secured", `Level ${level} targets reached.`);
-           submitHighScore(newScore, level);
-        }
-        return newScore;
-      });
+      if (!silent) {
+        const points = Math.floor(allToDestroy.size * 10 * comboFactor * chainMultiplier);
+        setScore(s => {
+          const newScore = Math.floor(s + points);
+          if (newScore >= targetScore && !isWin && !isWarping) {
+            setIsWin(true);
+            playVictoryFanfare(level);
+            archiveLore("Sector Secured", `Level ${level} targets reached.`);
+            submitHighScore(newScore, level);
+          }
+          return newScore;
+        });
+      }
 
       const updated = currentEntities.filter(e => !allToDestroy.has(e.id));
       const newGrid: CelestialEntity[] = [];
@@ -203,23 +209,20 @@ export function useGameState() {
 
       setEntities(newGrid);
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000));
-      await handleMatch(newGrid, undefined, comboFactor * 1.5);
+      await handleMatch(newGrid, undefined, comboFactor * 1.5, undefined, silent);
     } else {
-      setIsProcessing(false);
+      if (!silent) setIsProcessing(false);
     }
   }, [targetScore, getVariety, isWin, isWarping, level, archiveLore, submitHighScore, animationDuration]);
 
   const initBoard = useCallback(async (startLevel?: number) => {
     const variety = getVariety();
     setIsProcessing(true);
+    setScore(0); // STRICT: Explicitly set score to 0
+    setFirstMatchMade(false); // STRICT: Timer stays frozen until first match
     
-    // Generate a completely random grid to allow for Satisfaction Cascades
-    const initial: CelestialEntity[] = [];
-    for (let q = 0; q < GRID_COLS; q++) {
-      for (let r = 0; r < GRID_ROWS; r++) {
-        initial.push(generateRandomEntity(q, r, variety));
-      }
-    }
+    // STRICT: Use look-back match-free generator
+    const initial = generateMatchFreeGrid(variety);
 
     if (powerUps.novaBlast) {
       for (let i = 0; i < 2; i++) {
@@ -234,14 +237,14 @@ export function useGameState() {
     setIsWin(false);
     setIsWarping(false);
     setTimeLeft(levelTimeLimit);
-    setScore(0);
     setIsFlashing(false);
     setIsShaking(false);
     setIsReviving(false);
     setReviveCost(200);
 
-    // Immediate check to clear initial matches for "Auto-Clear on Spawn"
-    await handleMatch(initial);
+    // Safety Loop: Clear any matches silently (no score) before interaction
+    await handleMatch(initial, undefined, 1, undefined, true);
+    setIsProcessing(false);
   }, [getVariety, levelTimeLimit, powerUps.novaBlast, handleMatch]);
 
   useEffect(() => {
@@ -276,7 +279,8 @@ export function useGameState() {
   }, [gameStarted, initBoard, isWin, isGameOver, entities.length, isReviving, isWarping]);
 
   useEffect(() => {
-    if (!gameStarted || isGameOver || isWin || isWarping || isReviving || entities.length === 0) {
+    // STRICT: Timer only runs if game started AND first match is made
+    if (!gameStarted || isGameOver || isWin || isWarping || isReviving || entities.length === 0 || !firstMatchMade) {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
@@ -291,7 +295,7 @@ export function useGameState() {
       });
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [gameStarted, isGameOver, isWin, isWarping, isReviving, entities.length]);
+  }, [gameStarted, isGameOver, isWin, isWarping, isReviving, entities.length, firstMatchMade]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
     if (isProcessing || isWin || isGameOver || isWarping || isReviving) return;
@@ -408,6 +412,7 @@ export function useGameState() {
     setLevel(initialLevel);
     setScore(0);
     setReviveCost(200);
+    setFirstMatchMade(false);
     setEntities([]); 
   }, []);
 
@@ -423,6 +428,7 @@ export function useGameState() {
     setIsWarping(false);
     setIsReviving(false);
     setReviveCost(200);
+    setFirstMatchMade(false);
     setPowerUps({ timeDilator: false, novaBlast: false, colorNuke: 0 });
   }, []);
 

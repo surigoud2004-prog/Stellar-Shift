@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Board } from '@/components/game/Board';
@@ -55,7 +54,6 @@ function MissionContent() {
   const labels = LOCALIZATION[language];
   const sector = useMemo(() => getSectorInfo(level), [level]);
 
-  // Handle Rewards on Level Clear
   useEffect(() => {
     if (isWin && level > lastProcessedLevel) {
       const coinsWon = Math.floor(100 + (timeLeft * 5));
@@ -70,7 +68,6 @@ function MissionContent() {
     }
   }, [isWin, score, updateStats, level, lastProcessedLevel, timeLeft]);
 
-  // Handle Revive Countdown
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (isReviving) {
@@ -138,7 +135,7 @@ function MissionContent() {
       
       <ParallaxBackground disabled={isBatterySaver} isWarping={isWarping} level={level} />
       
-      {/* GLOBAL HUD - PERSISTENT & ANCHORED AT TOP LAYER */}
+      {/* GLOBAL HUD - PINNED AT TOP-MOST LAYER */}
       <div id="Global_HUD" className="fixed inset-x-0 top-0 pointer-events-none z-[10010] h-40">
         
         {/* TOP-LEFT: ABORT MISSION (X) */}
@@ -165,7 +162,6 @@ function MissionContent() {
           "absolute top-[15px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center pointer-events-auto transition-all duration-500 w-full max-w-md",
           !uiVisible && "opacity-0 translate-y-[-100px]"
         )}>
-          {/* PRIMARY PANELS */}
           <div className="flex items-center gap-3 mb-2">
              <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-xs md:text-lg bg-black/70 px-6 py-2 rounded-2xl border-2 border-primary/40 backdrop-blur-xl min-w-[180px] shadow-[0_0_40px_rgba(0,0,0,0.5)]">
               {labels.score}: <span className="text-primary">{Math.floor(score).toLocaleString()}</span>
@@ -178,12 +174,10 @@ function MissionContent() {
             </div>
           </div>
 
-          {/* STELLAR SHIFT LOGO (SAFE ZONE - MOVED DOWN) */}
-          <h1 className="font-headline text-xl md:text-2xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_20px_rgba(168,85,247,0.7)] mb-2">
+          <h1 className="font-headline text-xl md:text-2xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_20px_rgba(168,85,247,0.7)] mb-2 mt-4">
             Stellar <span className="text-primary">Shift</span>
           </h1>
           
-          {/* TIME HUD */}
           <div className={cn(
             "text-white font-mono text-[10px] uppercase tracking-[0.2em] bg-black/60 px-4 py-1 rounded-full border border-white/20 backdrop-blur-md transition-all shadow-xl",
             timeLeft < 10 && "text-red-500 animate-pulse border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]",
@@ -267,7 +261,6 @@ function MissionContent() {
         )}
       </div>
 
-      {/* MISSION CRITICAL REVIVE POPUP */}
       {isReviving && (
         <div className="fixed inset-0 z-[10005] flex items-center justify-center bg-black/60 backdrop-blur-sm p-6 animate-in fade-in duration-300">
           <div className="w-full max-w-md bg-black/80 border-2 border-primary/50 rounded-[3rem] p-10 backdrop-blur-xl shadow-[0_0_100px_rgba(168,85,247,0.4)] flex flex-col items-center text-center">
@@ -302,12 +295,6 @@ function MissionContent() {
                  Abort Mission
                </button>
             </div>
-            
-            {profile.coins < reviveCost && (
-              <p className="mt-6 text-[10px] text-red-400 uppercase font-black tracking-widest animate-pulse">
-                Insufficient Coins for Link Recovery
-              </p>
-            )}
           </div>
         </div>
       )}

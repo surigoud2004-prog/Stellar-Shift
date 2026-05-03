@@ -50,40 +50,44 @@ export function generateRandomEntity(q: number, r: number, variety: number = 6):
 }
 
 /**
- * Generates an initial board that contains no matches.
+ * Generates an initial board that contains NO matches.
+ * Uses a look-back check (left and down) to prevent 3-in-a-row.
  */
 export function generateMatchFreeGrid(variety: number = 6): CelestialEntity[] {
   const grid: CelestialEntity[] = [];
-  const tempGrid: (CelestialEntity | null)[][] = Array.from({ length: GRID_ROWS }, () => Array(GRID_COLS).fill(null));
+  const tempGrid: (EntityType | null)[][] = Array.from({ length: GRID_ROWS }, () => Array(GRID_COLS).fill(null));
 
   for (let r = 0; r < GRID_ROWS; r++) {
     for (let q = 0; q < GRID_COLS; q++) {
       let type: EntityType;
       let attempts = 0;
+      
       do {
         type = Math.floor(Math.random() * variety) as EntityType;
         attempts++;
-        // Check if this type would create a match horizontally or vertically
+        
+        // Check horizontally (left)
         const horizontalMatch = q >= 2 && 
-          tempGrid[r][q-1]?.type === type && 
-          tempGrid[r][q-2]?.type === type;
+          tempGrid[r][q-1] === type && 
+          tempGrid[r][q-2] === type;
+          
+        // Check vertically (down/below in visual terms)
         const verticalMatch = r >= 2 && 
-          tempGrid[r-1][q]?.type === type && 
-          tempGrid[r-2][q]?.type === type;
+          tempGrid[r-1][q] === type && 
+          tempGrid[r-2][q] === type;
         
         if (!horizontalMatch && !verticalMatch) break;
-        if (attempts > 100) break; // Infinite loop safety
+        if (attempts > 50) break; // Safety break
       } while (true);
 
-      const entity: CelestialEntity = {
+      tempGrid[r][q] = type;
+      grid.push({
         id: generateStableId(),
         type,
         q,
         r,
         special: null
-      };
-      tempGrid[r][q] = entity;
-      grid.push(entity);
+      });
     }
   }
   return grid;
@@ -189,14 +193,12 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
 
   let specialToSpawn: MatchResult['specialToSpawn'] = undefined;
 
-  // Determine if a special entity should be spawned based on the last moved ID
   if (lastMoveId) {
     const hGroup = horizontalGroups.find(g => g.ids.includes(lastMoveId));
     const vGroup = verticalGroups.find(g => g.ids.includes(lastMoveId));
     const moved = entities.find(e => e.id === lastMoveId);
 
     if (moved) {
-      // 5-match or L/T-match triggers Rainbow Core
       if ((hGroup && hGroup.length >= 5) || (vGroup && vGroup.length >= 5) || (hGroup && vGroup)) {
         specialToSpawn = { id: generateStableId(), type: 'rainbow-core', entityType: moved.type, q: moved.q, r: moved.r };
       } else if (hGroup && hGroup.length === 4) {
