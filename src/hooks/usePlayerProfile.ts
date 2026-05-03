@@ -35,7 +35,6 @@ export function usePlayerProfile() {
   const auth = useAuth();
   const db = useFirestore();
   
-  // Initialize from localStorage for instant loading on start
   const [profile, setProfile] = useState<PlayerProfile>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -50,20 +49,17 @@ export function usePlayerProfile() {
   
   const [showProfile, setShowProfile] = useState(false);
 
-  // Sync with Firestore when auth state changes
   useEffect(() => {
     if (!auth.currentUser || !db) return;
 
     const userRef = doc(db, 'users', auth.currentUser.uid);
     
-    // Initial fetch from cloud
     getDoc(userRef).then((snap) => {
       if (snap.exists()) {
         const cloudData = snap.data() as PlayerProfile;
         setProfile(cloudData);
         localStorage.setItem('stellar_player_profile', JSON.stringify(cloudData));
       } else {
-        // Create initial cloud profile if not exists
         const initialProfile = { ...DEFAULT_PROFILE, uid: auth.currentUser!.uid };
         setDoc(userRef, initialProfile);
         setProfile(initialProfile);
@@ -71,7 +67,6 @@ export function usePlayerProfile() {
       }
     });
 
-    // Subscribe to cloud changes
     const unsubscribe = onSnapshot(userRef, (snap) => {
       if (snap.exists()) {
         const updated = snap.data() as PlayerProfile;
@@ -89,7 +84,6 @@ export function usePlayerProfile() {
       const userRef = doc(db, 'users', auth.currentUser.uid);
       setDoc(userRef, newProfile, { merge: true });
     }
-    // Backup to localStorage
     try {
       localStorage.setItem('stellar_player_profile', JSON.stringify(newProfile));
     } catch (e) {}

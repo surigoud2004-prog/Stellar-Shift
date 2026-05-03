@@ -60,10 +60,8 @@ export function useGameState() {
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Score target scales by level
   const targetScore = useMemo(() => level * 1500, [level]);
   
-  // Timer scaling: -2s per level, min 30s
   const levelTimeLimit = useMemo(() => {
     const base = Math.max(30, 60 - (level - 1) * 2);
     return powerUps.timeDilator ? base + 15 : base;
@@ -118,7 +116,7 @@ export function useGameState() {
     const addExplosives = (id: string) => {
       const ent = currentEntities.find(e => e.id === id);
       if (!ent || activatedSpecialIds.has(id)) return;
-      if (ent.special) chainMultiplier *= 2; 
+      if (ent.special) chainMultiplier *= 1.5; 
       activatedSpecialIds.add(id);
 
       if (ent.special === 'bomb') {
@@ -249,7 +247,7 @@ export function useGameState() {
       const warpStartTimeout = setTimeout(() => {
         setIsWarping(true);
         setEntities([]);
-        setScore(0); // Reset score immediately when warp starts for HUD clarity
+        setScore(0); 
         playWarpSound();
         
         const nextLevelTimeout = setTimeout(() => {
@@ -408,7 +406,7 @@ export function useGameState() {
     setLevel(initialLevel);
     setScore(0);
     setReviveCost(200);
-    setEntities([]); // Trigger board init
+    setEntities([]); 
   }, []);
 
   const quitGame = useCallback(() => {

@@ -18,9 +18,6 @@ export interface SectorInfo {
   nebulaColors: string[];
 }
 
-/**
- * High-Density 9x7 Sector Grid
- */
 export const GRID_COLS = 9;
 export const GRID_ROWS = 7;
 export const HEX_WIDTH = 70;
@@ -32,14 +29,9 @@ function generateStableId() {
   return `shard-${Math.random().toString(36).substring(2, 11)}-${Date.now()}`;
 }
 
-/**
- * Generates a random entity. 
- * 'variety' determines how many different types can spawn.
- * Includes a 5% "Luck" chance for a random special entity drop.
- */
 export function generateRandomEntity(q: number, r: number, variety: number = 6): CelestialEntity {
   const luck = Math.random();
-  const isSpecial = luck < 0.05; // 5% Luck Chance as requested
+  const isSpecial = luck < 0.05; 
   
   let special: SpecialType = null;
   if (isSpecial) {
@@ -109,7 +101,6 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
   const horizontalGroups: { ids: string[], length: number, type: EntityType, q: number, r: number }[] = [];
   const verticalGroups: { ids: string[], length: number, type: EntityType, q: number, r: number }[] = [];
 
-  // Horizontal detection
   for (let r = 0; r < GRID_ROWS; r++) {
     let count = 1;
     for (let q = 1; q < GRID_COLS; q++) {
@@ -131,7 +122,6 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
     }
   }
 
-  // Vertical detection
   for (let q = 0; q < GRID_COLS; q++) {
     let count = 1;
     for (let r = 1; r < GRID_ROWS; r++) {
@@ -158,25 +148,19 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
 
   let specialToSpawn: MatchResult['specialToSpawn'] = undefined;
 
-  // Decide special spawn based on patterns
   if (lastMoveId) {
     const hGroup = horizontalGroups.find(g => g.ids.includes(lastMoveId));
     const vGroup = verticalGroups.find(g => g.ids.includes(lastMoveId));
     const moved = entities.find(e => e.id === lastMoveId);
 
     if (moved) {
-      // 100% Guaranteed creation logic
       if ((hGroup && hGroup.length >= 5) || (vGroup && vGroup.length >= 5)) {
-        // 5-match linear -> Rainbow Core
         specialToSpawn = { id: generateStableId(), type: 'rainbow-core', entityType: moved.type, q: moved.q, r: moved.r };
       } else if (hGroup && vGroup) {
-        // L or T shape intersection -> Rainbow Core (Nova Core)
         specialToSpawn = { id: generateStableId(), type: 'rainbow-core', entityType: moved.type, q: moved.q, r: moved.r };
       } else if (hGroup && hGroup.length === 4) {
-        // Horizontal 4-match -> Horizontal Beam
         specialToSpawn = { id: generateStableId(), type: 'nova-h', entityType: moved.type, q: moved.q, r: moved.r };
       } else if (vGroup && vGroup.length === 4) {
-        // Vertical 4-match -> Vertical Beam
         specialToSpawn = { id: generateStableId(), type: 'nova-v', entityType: moved.type, q: moved.q, r: moved.r };
       }
     }
