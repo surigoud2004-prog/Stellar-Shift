@@ -45,7 +45,7 @@ export function Board() {
     <div className="relative flex flex-col items-center justify-center p-4 w-full h-full min-h-[600px]">
       <div className="nebula-bg" />
       
-      {/* Header Stats - Hidden until game starts and entities load */}
+      {/* Header Stats - Only visible after game starts and entities load */}
       <div className={cn(
         "w-full max-w-[500px] flex justify-between items-end mb-6 transition-all duration-500",
         gameStarted && isLoaded ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-8 pointer-events-none"
@@ -66,15 +66,19 @@ export function Board() {
       {/* Grid Container */}
       <div className="stellar-grid-frame p-6 flex items-center justify-center relative min-w-[320px] min-h-[320px]">
         {!gameStarted ? (
-          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm p-8 text-center">
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm p-8 text-center transition-all">
             <h1 className="text-4xl md:text-5xl font-black text-white mb-4 italic uppercase tracking-tighter">Stellar Shift</h1>
             <p className="text-[10px] uppercase tracking-[0.3em] text-primary mb-8 font-bold animate-pulse">Neural Link Ready</p>
-            <Button size="lg" onClick={startGame} className="bg-primary hover:bg-primary/80 h-16 px-12 text-xl font-black uppercase tracking-widest rounded-full shadow-[0_0_30px_rgba(168,85,247,0.4)]">
+            <Button 
+              size="lg" 
+              onClick={startGame} 
+              className="bg-primary hover:bg-primary/80 active:scale-95 transition-all h-16 px-12 text-xl font-black uppercase tracking-widest rounded-full shadow-[0_0_30px_rgba(168,85,247,0.4)]"
+            >
               <Play className="w-6 h-6 mr-2 fill-white" /> Start Mission
             </Button>
           </div>
         ) : !isLoaded ? (
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-4 animate-in fade-in duration-500">
              <Loader2 className="w-12 h-12 text-primary animate-spin" />
              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Initializing Sector...</p>
           </div>
@@ -111,7 +115,7 @@ export function Board() {
                     <h2 className="text-4xl font-black text-white mb-6 uppercase">Failed</h2>
                   </>
                 )}
-                <Button onClick={initBoard} size="lg" className="bg-white text-black hover:bg-white/80 font-bold uppercase tracking-widest">
+                <Button onClick={initBoard} size="lg" className="bg-white text-black hover:bg-white/80 active:scale-95 transition-transform font-bold uppercase tracking-widest">
                   <RotateCcw className="w-4 h-4 mr-2" /> Restart
                 </Button>
               </div>

@@ -11,7 +11,7 @@ import {
   SpecialType,
   EntityType
 } from '@/lib/game-utils';
-import { playSwapSound, playMatchSound, playRejectSound, playBombSound } from '@/lib/audio-system';
+import { playSwapSound, playMatchSound, playRejectSound, playBombSound, playUIClickSound } from '@/lib/audio-system';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 
@@ -35,7 +35,11 @@ export function useGameState() {
   const initBoard = useCallback(() => {
     let initial: CelestialEntity[] = [];
     let hasMatches = true;
-    while (hasMatches) {
+    let attempts = 0;
+    
+    // Safety break to prevent infinite loops in non-ideal grid seeds
+    while (hasMatches && attempts < 100) {
+      attempts++;
       initial = [];
       for (let r = 0; r < GRID_SIZE; r++) {
         for (let q = 0; q < GRID_SIZE; q++) {
@@ -45,6 +49,7 @@ export function useGameState() {
       const { matches } = findMatches(initial);
       if (matches.length === 0) hasMatches = false;
     }
+    
     setEntities(initial);
     setSelectedId(null);
     setIsGameOver(false);
@@ -54,7 +59,6 @@ export function useGameState() {
     setIsProcessing(false);
   }, []);
 
-  // Timer only starts if board is ready and game started
   useEffect(() => {
     if (!gameStarted || isGameOver || isWin || entities.length === 0) {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -81,16 +85,13 @@ export function useGameState() {
       setIsProcessing(true);
       playMatchSound();
       
-      // Mark matches for animation
       setEntities(prev => prev.map(e => matches.includes(e.id) ? { ...e, isMatched: true } : e));
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      // Check for Bomb/AoE triggers
       const bombIds: string[] = [];
       matches.forEach(id => {
         const ent = currentEntities.find(e => e.id === id);
         if (ent?.special === 'bomb') {
-          // Identify 3x3 area
           const neighbors = currentEntities.filter(e => 
             Math.abs(e.q - ent.q) <= 1 && Math.abs(e.r - ent.r) <= 1
           ).map(e => e.id);
@@ -118,7 +119,6 @@ export function useGameState() {
         }
       }
 
-      // If we spawned a special entity
       if (specialToSpawn) {
         newGrid.push({
           id: specialToSpawn.id,
@@ -176,6 +176,7 @@ export function useGameState() {
   }, [entities, handleMatch, isProcessing]);
 
   const startGame = useCallback(() => {
+    playUIClickSound();
     setGameStarted(true);
     initBoard();
   }, [initBoard]);

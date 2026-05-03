@@ -1,3 +1,4 @@
+
 'use client';
 
 let audioCtx: AudioContext | null = null;
@@ -95,7 +96,7 @@ export function playBombSound() {
   if (typeof window === 'undefined') return;
   const ctx = getAudioContext();
   
-  // Implosion (vacuum shuck)
+  // Implosion (shuck)
   const shuck = ctx.createOscillator();
   const shuckGain = ctx.createGain();
   shuck.type = 'sine';
