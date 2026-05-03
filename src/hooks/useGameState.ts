@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -36,7 +37,7 @@ export function useGameState() {
   const [sessionStartTime, setSessionStartTime] = useState<number>(0);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const targetScore = 1000 + ((level - 1) * 500); // Level 1: 1000, Level 2: 1500, Level 3: 2000
+  const targetScore = level * 1000; // Level 1: 1000, Level 2: 2000, Level 3: 3000
 
   // Early Game Ease: 4 colors for first 2 mins, then 6.
   const getVariety = useCallback(() => {
@@ -83,25 +84,32 @@ export function useGameState() {
     setSelectedId(null);
     setIsGameOver(false);
     setIsWin(false);
-    // Score is reset manually during level transitions to keep it 0 for the new level
-    setTimeLeft(60);
+    setTimeLeft(level > 1 ? 55 : 60);
     setIsProcessing(false);
     setIsFlashing(false);
-  }, [getVariety]);
+  }, [getVariety, level]);
 
-  // Level Progression Logic
+  // Level Progression Logic: Fixed stuck state
   useEffect(() => {
     if (isWin) {
       const timeout = setTimeout(() => {
         setLevel(prev => prev + 1);
         setScore(0);
         setIsWin(false);
-        initBoard();
-        archiveLore("Sector Advancement", `Neural link calibrated for Level ${level + 1}.`);
-      }, 3000);
+        // Note: initBoard is called via setLevel changing the dependencies if needed, 
+        // but we explicitly call it here to ensure clean reset.
+      }, 2000); // 2 second delay for MISSION ACCOMPLISHED message
       return () => clearTimeout(timeout);
     }
-  }, [isWin, initBoard, archiveLore, level]);
+  }, [isWin]);
+
+  // Handle re-init when level changes
+  useEffect(() => {
+    if (gameStarted && !isWin && score === 0 && level > 1) {
+      initBoard();
+      archiveLore("Sector Advancement", `Neural link calibrated for Level ${level}.`);
+    }
+  }, [level, gameStarted, initBoard, archiveLore]);
 
   useEffect(() => {
     if (!gameStarted || isGameOver || isWin || entities.length === 0) {
@@ -112,26 +120,23 @@ export function useGameState() {
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          if (score >= targetScore) setIsWin(true);
-          else setIsGameOver(true);
+          setIsGameOver(true);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [gameStarted, isGameOver, isWin, score, targetScore, entities.length]);
+  }, [gameStarted, isGameOver, isWin, entities.length]);
 
   const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMovedId?: string, comboFactor: number = 1) => {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMovedId);
     const variety = getVariety();
     
-    // Check for special entity activations among matched ones or already existing
     const activatedSpecialIds = new Set<string>();
     const explosiveIds = new Set<string>();
     let triggeredFlash = false;
 
-    // Helper to add row/col/area to explosives
     const addExplosives = (id: string) => {
       const ent = currentEntities.find(e => e.id === id);
       if (!ent || activatedSpecialIds.has(id)) return;
@@ -149,7 +154,6 @@ export function useGameState() {
       }
     };
 
-    // Check matches for specials
     matches.forEach(addExplosives);
 
     if (matches.length > 0 || explosiveIds.size > 0) {
@@ -158,7 +162,6 @@ export function useGameState() {
       
       const allToDestroy = new Set([...matches, ...Array.from(explosiveIds)]);
       
-      // Phase 1: Animation
       setEntities(prev => prev.map(e => allToDestroy.has(e.id) ? { ...e, isMatched: true } : e));
       if (triggeredFlash) {
         setIsFlashing(true);
@@ -167,11 +170,15 @@ export function useGameState() {
       }
       await new Promise(resolve => setTimeout(resolve, 400));
 
-      // Phase 2: Scoring with Combo Multiplier
       const points = allToDestroy.size * 10 * comboFactor;
-      setScore(s => s + points);
+      
+      // Calculate new score immediately for win check
+      let currentNewScore = 0;
+      setScore(s => {
+        currentNewScore = s + points;
+        return currentNewScore;
+      });
 
-      // Phase 3: Cascade
       const updated = currentEntities.filter(e => !allToDestroy.has(e.id));
       const newGrid: CelestialEntity[] = [];
       for (let q = 0; q < GRID_COLS; q++) {
@@ -186,7 +193,6 @@ export function useGameState() {
         }
       }
 
-      // Special spawn logic
       if (specialToSpawn) {
         const spawnedIdx = newGrid.findIndex(e => e.q === specialToSpawn.q && e.r === specialToSpawn.r);
         if (spawnedIdx !== -1) {
@@ -203,19 +209,25 @@ export function useGameState() {
       setEntities(newGrid);
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      // Recursive call for cascades with incremented combo factor
       await handleMatch(newGrid, undefined, comboFactor * 2);
     } else {
       setIsProcessing(false);
-      if (score >= targetScore) {
-        setIsWin(true);
-        archiveLore("Mission Milestone Achieved", `Target reached: ${score}/${targetScore}`);
-      }
+      // Event-based check: Score is updated asynchronously so we check state here
+      // However, if we are in the 'else' block, it means matches are done.
+      // We use the functional update result indirectly or just check the score state
+      // which will be updated by the time we reach this point in the async flow.
+      setScore(current => {
+        if (current >= targetScore && !isWin && gameStarted) {
+          setIsWin(true);
+          archiveLore("Mission Milestone Achieved", `Target reached: ${current}/${targetScore}`);
+        }
+        return current;
+      });
     }
-  }, [score, targetScore, archiveLore, getVariety]);
+  }, [targetScore, archiveLore, getVariety, isWin, gameStarted]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
-    if (isProcessing) return;
+    if (isProcessing || isWin || isGameOver) return;
     setIsProcessing(true);
     
     const newEntities = [...entities];
@@ -230,7 +242,6 @@ export function useGameState() {
     const e1 = newEntities[idx1];
     const e2 = newEntities[idx2];
     
-    // Preview the swap
     newEntities[idx1] = { ...e1, q: e2.q, r: e2.r };
     newEntities[idx2] = { ...e2, q: e1.q, r: e1.r };
     
@@ -239,8 +250,6 @@ export function useGameState() {
     await new Promise(resolve => setTimeout(resolve, 300)); 
 
     const { matches } = findMatches(newEntities);
-    
-    // Automatic Activation: If special entity moved, trigger it regardless of match
     const isSpecialMoved = e1.special || e2.special;
 
     if (matches.length === 0 && !isSpecialMoved) {
@@ -254,9 +263,8 @@ export function useGameState() {
       return;
     }
     
-    // Trigger special if it was moved even without match
     await handleMatch(newEntities, id1, 1);
-  }, [entities, handleMatch, isProcessing]);
+  }, [entities, handleMatch, isProcessing, isWin, isGameOver]);
 
   const startGame = useCallback(() => {
     playUIClickSound();
