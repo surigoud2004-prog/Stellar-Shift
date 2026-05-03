@@ -11,7 +11,7 @@ import { MissionLogs } from '@/components/game/MissionLogs';
 import { useGameState } from '@/hooks/useGameState';
 import { useState } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
-import { User, X, Trophy, BookOpen } from 'lucide-react';
+import { User, Trophy, BookOpen } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +46,7 @@ export default function Home() {
   const handleAbort = () => {
     quitGame();
     setAbortDialogOpen(false);
+    setSettingsOpen(false);
   };
 
   return (
@@ -55,19 +56,6 @@ export default function Home() {
       {/* Global_HUD Layer */}
       <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
         
-        {/* Top-Left Anchor: Primary Emergency Command (Red Abort) */}
-        <div className="absolute top-[30px] left-[30px] flex items-center gap-4 pointer-events-auto">
-          {gameStarted && (
-            <button 
-              onClick={() => setAbortDialogOpen(true)}
-              className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-[0_0_20px_rgba(220,38,38,0.6)] border-2 border-white/20"
-              title={labels.abortMission}
-            >
-              <X className="w-6 h-6 text-white" />
-            </button>
-          )}
-        </div>
-
         {/* Top-Center Anchor: Mission Telemetry */}
         <div className="absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center">
           <h1 className="font-headline text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
@@ -125,6 +113,8 @@ export default function Home() {
             gameMode={gameMode}
             onSetGameMode={setGameMode}
             onShowFame={() => setShowFame(true)}
+            onAbort={() => setAbortDialogOpen(true)}
+            gameStarted={gameStarted}
             labels={labels}
             anchor="bottom"
           />
