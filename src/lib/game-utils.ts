@@ -23,7 +23,11 @@ export function getColorVariety(level: number): number {
 }
 
 function generateStableId() {
-  return `shard-${crypto.randomUUID()}`;
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return `shard-${crypto.randomUUID()}`;
+  }
+  // Fallback for non-secure contexts
+  return `shard-${Math.random().toString(36).substring(2, 11)}-${Date.now()}`;
 }
 
 export function generateRandomEntity(q: number, r: number, variety: number = 6): CelestialEntity {

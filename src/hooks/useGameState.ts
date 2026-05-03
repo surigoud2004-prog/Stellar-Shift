@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -49,7 +48,7 @@ export function useGameState() {
   const [bestScore, setBestScore] = useState(0);
   const [showHallOfFame, setShowHallOfFame] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
-  const [activeExplosions, setActiveExplosions] = useState<{q: number, r: number}[]>([]);
+  const [activeExplosions, setActiveExplosions] = useState<{q: number, r: number, id: string}[]>([]);
   
   const [soundOn, setSoundOn] = useState(true);
   const [isBatterySaver, setIsBatterySaver] = useState(false);
@@ -66,7 +65,46 @@ export function useGameState() {
   const isInputFrozen = isProcessing || isGameOver || isWin || isLocked || isPaused || isSettingsOpen || profile.showProfile;
   const isTimerFrozen = !gameStarted || isGameOver || isWin || isPaused || isSettingsOpen || profile.showProfile;
 
+  // Persistence Logic
+  const syncHighScore = useCallback(async () => {
+    try {
+      const { db, auth } = initializeFirebase();
+      if (!auth.currentUser) await signInAnonymously(auth);
+      
+      const payload = {
+        uid: auth.currentUser?.uid || 'anon',
+        displayName: profile.profile.name,
+        score,
+        level,
+        timestamp: Date.now()
+      };
+
+      addDoc(collection(db, 'leaderboard'), payload)
+        .catch(async () => {
+          const permissionError = new FirestorePermissionError({
+            path: 'leaderboard',
+            operation: 'create',
+            requestResourceData: payload,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        });
+
+      if (score > bestScore) {
+        setBestScore(score);
+        localStorage.setItem('stellar_best_score', score.toString());
+      }
+      localStorage.setItem('stellar_level', level.toString());
+      
+      profile.updateStats(score, 0, isWin);
+    } catch (e) {
+      // Silence background telemetry failures
+    }
+  }, [score, level, bestScore, profile, isWin]);
+
   useEffect(() => {
+    const { auth } = initializeFirebase();
+    if (!auth.currentUser) signInAnonymously(auth).catch(() => {});
+
     const savedBest = localStorage.getItem('stellar_best_score');
     const savedLevel = localStorage.getItem('stellar_level');
     const savedSound = localStorage.getItem('stellar_sound_on');
@@ -84,6 +122,12 @@ export function useGameState() {
       toggleSFX(isSound);
     }
   }, []);
+
+  useEffect(() => {
+    if (isGameOver || isWin) {
+      syncHighScore();
+    }
+  }, [isGameOver, isWin, syncHighScore]);
 
   const handleToggleSound = useCallback(() => {
     const newState = !soundOn;
@@ -113,41 +157,6 @@ export function useGameState() {
     setLore(msg);
     setLoreLogs(prev => [msg, ...prev].slice(0, 30));
   }, []);
-
-  const syncHighScore = async () => {
-    try {
-      const { db, auth } = initializeFirebase();
-      if (!auth.currentUser) await signInAnonymously(auth);
-      
-      const payload = {
-        uid: auth.currentUser?.uid || 'anon',
-        displayName: profile.profile.name,
-        score,
-        level,
-        timestamp: Date.now()
-      };
-
-      addDoc(collection(db, 'leaderboard'), payload)
-        .catch(async () => {
-          const permissionError = new FirestorePermissionError({
-            path: 'leaderboard',
-            operation: 'create',
-            requestResourceData: payload,
-          });
-          errorEmitter.emit('permission-error', permissionError);
-        });
-
-      if (score > bestScore) {
-        setBestScore(score);
-        localStorage.setItem('stellar_best_score', score.toString());
-      }
-      localStorage.setItem('stellar_level', level.toString());
-      
-      profile.updateStats(score, 0, true);
-    } catch (e) {
-      // Auth or general failure
-    }
-  };
 
   const initBoard = useCallback(() => {
     const variety = getColorVariety(level);
@@ -190,7 +199,8 @@ export function useGameState() {
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          if (score < targetScore) setIsGameOver(true);
+          if (score >= targetScore) setIsWin(true);
+          else setIsGameOver(true);
           return 0;
         }
         return prev - 1;
@@ -218,9 +228,9 @@ export function useGameState() {
         playCosmicBombSound();
         await new Promise(resolve => setTimeout(resolve, 100));
 
-        const newExplosions: {q: number, r: number}[] = [];
+        const newExplosions: {q: number, r: number, id: string}[] = [];
         bombMatches.forEach(bomb => {
-          newExplosions.push({ q: bomb.q, r: bomb.r });
+          newExplosions.push({ q: bomb.q, r: bomb.r, id: `exp-${bomb.id}` });
           currentEntities.forEach(e => {
             if (Math.abs(e.q - bomb.q) <= 1 && Math.abs(e.r - bomb.r) <= 1) {
               if (!finalMatchedIds.has(e.id)) {
@@ -255,8 +265,9 @@ export function useGameState() {
           r: specialToSpawn.r,
           special: specialToSpawn.type
         });
-        const loreRes = await generateDynamicLore({ gameEventDescription: `Created a ${specialToSpawn.type}` });
-        addLoreLog(loreRes.loreSnippet);
+        generateDynamicLore({ gameEventDescription: `Created a ${specialToSpawn.type}` }).then(loreRes => {
+          addLoreLog(loreRes.loreSnippet);
+        });
       }
 
       const regularPoints = matches.length * 20;
@@ -298,6 +309,11 @@ export function useGameState() {
     const newEntities = [...entities];
     const idx1 = newEntities.findIndex(e => e.id === id1);
     const idx2 = newEntities.findIndex(e => e.id === id2);
+
+    if (idx1 === -1 || idx2 === -1) {
+      setIsProcessing(false);
+      return;
+    }
 
     const q1 = newEntities[idx1].q;
     const r1 = newEntities[idx1].r;

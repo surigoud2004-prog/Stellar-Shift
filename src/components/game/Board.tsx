@@ -1,15 +1,11 @@
-
 "use client";
 
 import { useEffect, useState } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { Entity } from './Entity';
 import { areAdjacent, HEX_WIDTH, GRID_SIZE } from '@/lib/game-utils';
-import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -21,8 +17,7 @@ import {
   AlertDialogTitle 
 } from '@/components/ui/alert-dialog';
 import { 
-  Orbit, Trophy, 
-  Skull, Lock, Pause, Play, Timer, X, Terminal, User
+  Trophy, Skull, Play, X, User, Terminal
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HallOfFame } from './HallOfFame';
@@ -41,14 +36,13 @@ export function Board() {
   } = useGameState();
 
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [isFading, setIsFading] = useState(false);
   const [flashColor, setFlashColor] = useState<'cyan' | 'gold' | null>(null);
   const [isWarping, setIsWarping] = useState(false);
 
   useEffect(() => {
     if (lore) {
       if (lore.includes('ANOMALY')) setFlashColor('cyan');
-      else if (lore.includes('Supernova') || lore.includes('Black Hole') || lore.includes('Aligned')) {
+      else if (lore.includes('SUPERNOVA') || lore.includes('Black Hole') || lore.includes('Aligned')) {
         setFlashColor('gold');
         setIsWarping(true);
         setTimeout(() => setIsWarping(false), 500);
@@ -134,6 +128,24 @@ export function Board() {
         </button>
       </div>
 
+      {/* Center Left: Archive Logs */}
+      <div className="fixed left-safe top-1/2 -translate-y-1/2 p-4 z-[70] hidden lg:block w-64 pointer-events-none">
+        <div className="glass-morphism rounded-2xl p-4 border-primary/20 pointer-events-auto max-h-[400px] overflow-hidden flex flex-col">
+          <div className="flex items-center gap-2 mb-3">
+            <Terminal className="w-3 h-3 text-primary" />
+            <h3 className="text-[10px] uppercase font-black tracking-widest text-primary">{t.archive}</h3>
+          </div>
+          <div className="flex-1 overflow-y-auto space-y-1 pr-2 custom-scrollbar">
+            {loreLogs.map((log, i) => (
+              <div key={i} className="cli-line text-white/60">
+                <span className="text-primary/40 mr-2">[{Math.max(0, timeLeft)}s]</span>
+                {log}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Bottom Left: Abort Mission */}
       <div className="fixed bottom-safe left-safe p-4 z-[70]">
         <button 
@@ -191,21 +203,30 @@ export function Board() {
           <HallOfFame title={t.hallOfFame} subtitle={t.highest} />
         ) : (
           <div className="relative z-10 flex flex-col h-full">
-            {isGameOver && (
+            {(isGameOver || isWin) && (
               <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center animate-in zoom-in">
-                <Skull className="w-16 h-16 text-destructive mb-6" />
-                <h2 className="text-4xl font-headline font-black text-white mb-6 uppercase italic">{t.missionTerminated}</h2>
-                <Button onClick={initBoard} size="lg" className="bg-destructive hover:bg-destructive/80 font-black uppercase tracking-widest">{t.reboot}</Button>
+                {isGameOver ? (
+                  <>
+                    <Skull className="w-16 h-16 text-destructive mb-6" />
+                    <h2 className="text-4xl font-headline font-black text-white mb-6 uppercase italic">{t.missionTerminated}</h2>
+                  </>
+                ) : (
+                  <>
+                    <Trophy className="w-16 h-16 text-primary mb-6" />
+                    <h2 className="text-4xl font-headline font-black text-white mb-6 uppercase italic">{t.victory}</h2>
+                  </>
+                )}
+                <Button onClick={initBoard} size="lg" className="bg-primary hover:bg-primary/80 font-black uppercase tracking-widest">{t.reboot}</Button>
               </div>
             )}
             
             <div className="flex-1 relative p-8 overflow-hidden flex items-center justify-center">
               <div 
-                className={cn("relative transition-all duration-300", isInputFrozen && "opacity-40 grayscale")} 
+                className={cn("relative transition-all duration-300", isInputFrozen && !isGameOver && !isWin && "opacity-40 grayscale")} 
                 style={{ width: `${GRID_SIZE * HEX_WIDTH}px`, height: `${GRID_SIZE * HEX_WIDTH}px`, transform: `scale(${Math.min(1, 400 / (GRID_SIZE * HEX_WIDTH))})` }}
               >
-                {activeExplosions.map((exp, i) => (
-                  <div key={`${i}-${exp.q}-${exp.r}`} className="animate-cosmic-shockwave" style={{ left: exp.q * HEX_WIDTH, top: exp.r * HEX_WIDTH, width: HEX_WIDTH, height: HEX_WIDTH }} />
+                {activeExplosions.map((exp) => (
+                  <div key={exp.id} className="animate-cosmic-shockwave" style={{ left: exp.q * HEX_WIDTH, top: exp.r * HEX_WIDTH, width: HEX_WIDTH, height: HEX_WIDTH }} />
                 ))}
                 {entities.map((entity) => (
                   <Entity key={entity.id} entity={entity} isSelected={selectedId === entity.id} onSelect={handleSelect} disabled={isInputFrozen} />
