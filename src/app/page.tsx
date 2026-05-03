@@ -128,7 +128,7 @@ function MissionContent() {
     } else {
       initBoard();
     }
-  }, [gameStarted, startGame, initBoard, profile.currentLevel]);
+  }, [gameStarted, startGame, initBoard, profile.currentLevel, profile.coins]);
 
   return (
     <main className="min-h-screen w-full flex flex-col items-center justify-center relative bg-black overflow-hidden">
@@ -163,8 +163,8 @@ function MissionContent() {
           !uiVisible && "opacity-0 translate-y-[-100px]"
         )}>
           <div className="flex items-center gap-3 mb-2">
-             <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-xs md:text-lg bg-black/70 px-6 py-2 rounded-2xl border-2 border-primary/40 backdrop-blur-xl min-w-[180px] shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-              {labels.score}: <span className="text-primary">{Math.floor(score).toLocaleString()}</span>
+             <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-xs md:text-lg bg-black/70 px-6 py-2 rounded-2xl border-2 border-primary/40 backdrop-blur-xl min-w-[240px] shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+              {labels.score}: <span className="text-primary">{Math.floor(score).toLocaleString()} / {targetScore.toLocaleString()}</span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="bg-primary/30 border border-primary/50 rounded-xl px-3 py-1 flex items-center gap-2 backdrop-blur-md shadow-lg">

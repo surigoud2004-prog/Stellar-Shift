@@ -51,7 +51,7 @@ export function generateRandomEntity(q: number, r: number, variety: number = 6):
 
 /**
  * Generates an initial board that contains NO matches.
- * Uses a look-back check (left and down) to prevent 3-in-a-row.
+ * Uses a look-back check (left and down) to prevent 3-in-a-row during generation.
  */
 export function generateMatchFreeGrid(variety: number = 6): CelestialEntity[] {
   const grid: CelestialEntity[] = [];
@@ -77,7 +77,7 @@ export function generateMatchFreeGrid(variety: number = 6): CelestialEntity[] {
           tempGrid[r-2][q] === type;
         
         if (!horizontalMatch && !verticalMatch) break;
-        if (attempts > 50) break; // Safety break
+        if (attempts > 100) break; // Safety break
       } while (true);
 
       tempGrid[r][q] = type;
@@ -199,6 +199,7 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
     const moved = entities.find(e => e.id === lastMoveId);
 
     if (moved) {
+      // Special logic: 5 in a row or cross match = rainbow-core
       if ((hGroup && hGroup.length >= 5) || (vGroup && vGroup.length >= 5) || (hGroup && vGroup)) {
         specialToSpawn = { id: generateStableId(), type: 'rainbow-core', entityType: moved.type, q: moved.q, r: moved.r };
       } else if (hGroup && hGroup.length === 4) {

@@ -209,19 +209,19 @@ export function useGameState() {
 
       setEntities(newGrid);
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000));
+      // Recursive call for cascades
       await handleMatch(newGrid, undefined, comboFactor * 1.5, undefined, silent);
     } else {
       if (!silent) setIsProcessing(false);
     }
   }, [targetScore, getVariety, isWin, isWarping, level, archiveLore, submitHighScore, animationDuration]);
 
-  const initBoard = useCallback(async (startLevel?: number) => {
+  const initBoard = useCallback(async () => {
     const variety = getVariety();
     setIsProcessing(true);
     setScore(0); // STRICT: Explicitly set score to 0
-    setFirstMatchMade(false); // STRICT: Timer stays frozen until first match
+    setFirstMatchMade(false); // Timer frozen until first manual match
     
-    // STRICT: Use look-back match-free generator
     const initial = generateMatchFreeGrid(variety);
 
     if (powerUps.novaBlast) {
@@ -242,7 +242,7 @@ export function useGameState() {
     setIsReviving(false);
     setReviveCost(200);
 
-    // Safety Loop: Clear any matches silently (no score) before interaction
+    // Silent check to ensure board stability
     await handleMatch(initial, undefined, 1, undefined, true);
     setIsProcessing(false);
   }, [getVariety, levelTimeLimit, powerUps.novaBlast, handleMatch]);
@@ -279,7 +279,6 @@ export function useGameState() {
   }, [gameStarted, initBoard, isWin, isGameOver, entities.length, isReviving, isWarping]);
 
   useEffect(() => {
-    // STRICT: Timer only runs if game started AND first match is made
     if (!gameStarted || isGameOver || isWin || isWarping || isReviving || entities.length === 0 || !firstMatchMade) {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
@@ -313,56 +312,6 @@ export function useGameState() {
     const e1 = newEntities[idx1];
     const e2 = newEntities[idx2];
     
-    if (e1.special && e2.special) {
-      const explosionIds = new Set<string>();
-      
-      if (e1.special === 'rainbow-core' && e2.special === 'rainbow-core') {
-        newEntities.forEach(e => explosionIds.add(e.id));
-      } else if (e1.special === 'rainbow-core' || e2.special === 'rainbow-core') {
-        const rainbow = e1.special === 'rainbow-core' ? e1 : e2;
-        const other = e1.special === 'rainbow-core' ? e2 : e1;
-        newEntities.forEach(e => {
-          if (e.type === other.type) {
-            e.special = other.special;
-            explosionIds.add(e.id);
-          }
-        });
-        explosionIds.add(rainbow.id);
-      } else if ((e1.special === 'nova-h' || e1.special === 'nova-v') && (e2.special === 'nova-h' || e2.special === 'nova-v')) {
-        newEntities.forEach(e => {
-          if (e.q === e1.q || e.r === e1.r) explosionIds.add(e.id);
-        });
-      } else if (((e1.special === 'nova-h' || e1.special === 'nova-v') && e2.special === 'bomb') || (e1.special === 'bomb' && (e2.special === 'nova-h' || e2.special === 'nova-v'))) {
-        newEntities.forEach(e => {
-          if (Math.abs(e.q - e1.q) <= 1 || Math.abs(e.r - e1.r) <= 1) explosionIds.add(e.id);
-        });
-      } else if (e1.special === 'bomb' && e2.special === 'bomb') {
-        newEntities.forEach(e => {
-          if (Math.abs(e.q - e1.q) <= 3 && Math.abs(e.r - e1.r) <= 3) explosionIds.add(e.id);
-        });
-      }
-
-      setEntities(newEntities);
-      playBombSound();
-      await handleMatch(newEntities, undefined, 2, explosionIds);
-      return;
-    }
-
-    if (e1.special === 'rainbow-core' || e2.special === 'rainbow-core') {
-      const rainbow = e1.special === 'rainbow-core' ? e1 : e2;
-      const normal = e1.special === 'rainbow-core' ? e2 : e1;
-      const explosionIds = new Set<string>();
-      newEntities.forEach(e => {
-        if (e.type === normal.type || e.id === rainbow.id) {
-          explosionIds.add(e.id);
-        }
-      });
-      setEntities(newEntities);
-      playBombSound();
-      await handleMatch(newEntities, undefined, 1, explosionIds);
-      return;
-    }
-
     newEntities[idx1] = { ...e1, q: e2.q, r: e2.r };
     newEntities[idx2] = { ...e2, q: e1.q, r: e1.r };
     
@@ -410,7 +359,7 @@ export function useGameState() {
     playUIClickSound();
     setGameStarted(true);
     setLevel(initialLevel);
-    setScore(0);
+    setScore(0); // STRICT: Force 0 on start mission
     setReviveCost(200);
     setFirstMatchMade(false);
     setEntities([]); 
