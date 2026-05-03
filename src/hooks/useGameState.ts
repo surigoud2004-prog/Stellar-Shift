@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -7,7 +6,8 @@ import {
   generateRandomEntity, 
   findMatches, 
   GRID_COLS,
-  GRID_ROWS
+  GRID_ROWS,
+  SpecialType
 } from '@/lib/game-utils';
 import { playSwapSound, playMatchSound, playRejectSound, playBombSound, playUIClickSound } from '@/lib/audio-system';
 import { collection, doc, setDoc } from 'firebase/firestore';
@@ -33,9 +33,17 @@ export function useGameState() {
   const [gameStarted, setGameStarted] = useState(false);
   const [gameMode, setGameMode] = useState<GameMode>('easy');
   const [isFlashing, setIsFlashing] = useState(false);
+  const [sessionStartTime, setSessionStartTime] = useState<number>(0);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const targetScore = 1000 * level;
+
+  // Early Game Ease: 4 colors for first 2 mins, then 6.
+  const getVariety = useCallback(() => {
+    if (!sessionStartTime) return 6;
+    const elapsed = (Date.now() - sessionStartTime) / 1000;
+    return elapsed < 120 ? 4 : 6;
+  }, [sessionStartTime]);
 
   const archiveLore = useCallback(async (event: string, context?: string) => {
     if (!firestore || !auth?.currentUser) return;
@@ -54,6 +62,7 @@ export function useGameState() {
   }, [firestore, auth]);
 
   const initBoard = useCallback(() => {
+    const variety = getVariety();
     let initial: CelestialEntity[] = [];
     let hasMatches = true;
     let attempts = 0;
@@ -63,7 +72,7 @@ export function useGameState() {
       initial = [];
       for (let r = 0; r < GRID_ROWS; r++) {
         for (let q = 0; q < GRID_COLS; q++) {
-          initial.push(generateRandomEntity(q, r));
+          initial.push(generateRandomEntity(q, r, variety));
         }
       }
       const { matches } = findMatches(initial);
@@ -78,7 +87,7 @@ export function useGameState() {
     setTimeLeft(60);
     setIsProcessing(false);
     setIsFlashing(false);
-  }, []);
+  }, [getVariety]);
 
   useEffect(() => {
     if (!gameStarted || isGameOver || isWin || entities.length === 0) {
@@ -99,46 +108,57 @@ export function useGameState() {
     return () => clearInterval(timerRef.current!);
   }, [gameStarted, isGameOver, isWin, score, targetScore, entities.length]);
 
-  const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMovedId?: string) => {
+  const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMovedId?: string, comboFactor: number = 1) => {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMovedId);
+    const variety = getVariety();
     
-    if (matches.length > 0) {
+    // Check for special entity activations among matched ones or already existing
+    const activatedSpecialIds = new Set<string>();
+    const explosiveIds = new Set<string>();
+    let triggeredFlash = false;
+
+    // Helper to add row/col/area to explosives
+    const addExplosives = (id: string) => {
+      const ent = currentEntities.find(e => e.id === id);
+      if (!ent || activatedSpecialIds.has(id)) return;
+      activatedSpecialIds.add(id);
+
+      if (ent.special === 'bomb') {
+        triggeredFlash = true;
+        currentEntities.forEach(e => {
+          if (Math.abs(e.q - ent.q) <= 1 && Math.abs(e.r - ent.r) <= 1) explosiveIds.add(e.id);
+        });
+      } else if (ent.special === 'nova-h') {
+        currentEntities.forEach(e => {
+          if (e.r === ent.r) explosiveIds.add(e.id);
+        });
+      }
+    };
+
+    // Check matches for specials
+    matches.forEach(addExplosives);
+
+    if (matches.length > 0 || explosiveIds.size > 0) {
       setIsProcessing(true);
       playMatchSound();
       
-      // Phase 1: Neural Implosion Trigger
-      setEntities(prev => prev.map(e => matches.includes(e.id) ? { ...e, isMatched: true } : e));
-      await new Promise(resolve => setTimeout(resolve, 400)); // Match the CSS animation duration
-
-      // Phase 2: Handle Black Hole/Singularity Explosions
-      const bombIds: string[] = [];
-      let hasBombDetonated = false;
-
-      matches.forEach(id => {
-        const ent = currentEntities.find(e => e.id === id);
-        if (ent?.special === 'bomb') {
-          hasBombDetonated = true;
-          const neighbors = currentEntities.filter(e => 
-            Math.abs(e.q - ent.q) <= 1 && Math.abs(e.r - ent.r) <= 1
-          ).map(e => e.id);
-          bombIds.push(...neighbors);
-        }
-      });
-
-      if (hasBombDetonated) {
+      const allToDestroy = new Set([...matches, ...Array.from(explosiveIds)]);
+      
+      // Phase 1: Animation
+      setEntities(prev => prev.map(e => allToDestroy.has(e.id) ? { ...e, isMatched: true } : e));
+      if (triggeredFlash) {
         setIsFlashing(true);
         playBombSound();
-        setEntities(prev => prev.map(e => bombIds.includes(e.id) ? { ...e, isExploding: true } : e));
         setTimeout(() => setIsFlashing(false), 400);
-        await new Promise(resolve => setTimeout(resolve, 150));
       }
+      await new Promise(resolve => setTimeout(resolve, 400));
 
-      const allToDelete = Array.from(new Set([...matches, ...bombIds]));
-      const updated = currentEntities.filter(e => !allToDelete.includes(e.id));
-      const points = allToDelete.length * 10 * (bombIds.length > 0 ? 5 : 1);
+      // Phase 2: Scoring with Combo Multiplier
+      const points = allToDestroy.size * 10 * comboFactor;
       setScore(s => s + points);
 
-      // Phase 3: Cascade Refill
+      // Phase 3: Cascade
+      const updated = currentEntities.filter(e => !allToDestroy.has(e.id));
       const newGrid: CelestialEntity[] = [];
       for (let q = 0; q < GRID_COLS; q++) {
         const column = updated.filter(e => e.q === q).sort((a, b) => b.r - a.r);
@@ -147,11 +167,12 @@ export function useGameState() {
           if (existing) {
             newGrid.push({ ...existing, r });
           } else {
-            newGrid.push(generateRandomEntity(q, r));
+            newGrid.push(generateRandomEntity(q, r, variety));
           }
         }
       }
 
+      // Special spawn logic
       if (specialToSpawn) {
         const spawnedIdx = newGrid.findIndex(e => e.q === specialToSpawn.q && e.r === specialToSpawn.r);
         if (spawnedIdx !== -1) {
@@ -168,8 +189,8 @@ export function useGameState() {
       setEntities(newGrid);
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      // Cascade check
-      await handleMatch(newGrid);
+      // Recursive call for cascades with incremented combo factor
+      await handleMatch(newGrid, undefined, comboFactor * 2);
     } else {
       setIsProcessing(false);
       if (score >= targetScore) {
@@ -177,7 +198,7 @@ export function useGameState() {
         archiveLore("Mission Victory", `Link stabilized at score ${score}`);
       }
     }
-  }, [score, targetScore, archiveLore]);
+  }, [score, targetScore, archiveLore, getVariety]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
     if (isProcessing) return;
@@ -195,6 +216,7 @@ export function useGameState() {
     const e1 = newEntities[idx1];
     const e2 = newEntities[idx2];
     
+    // Preview the swap
     newEntities[idx1] = { ...e1, q: e2.q, r: e2.r };
     newEntities[idx2] = { ...e2, q: e1.q, r: e1.r };
     
@@ -203,7 +225,11 @@ export function useGameState() {
     await new Promise(resolve => setTimeout(resolve, 300)); 
 
     const { matches } = findMatches(newEntities);
-    if (matches.length === 0) {
+    
+    // Automatic Activation: If special entity moved, trigger it regardless of match
+    const isSpecialMoved = e1.special || e2.special;
+
+    if (matches.length === 0 && !isSpecialMoved) {
       playRejectSound();
       const reverted = [...newEntities];
       reverted[idx1] = { ...newEntities[idx1], q: e1.q, r: e1.r };
@@ -214,12 +240,19 @@ export function useGameState() {
       return;
     }
     
-    await handleMatch(newEntities, id1);
+    // Trigger special if it was moved even without match
+    if (matches.length === 0 && isSpecialMoved) {
+      // If we move a special and there's no match, we still process it
+      await handleMatch(newEntities, id1, 1);
+    } else {
+      await handleMatch(newEntities, id1, 1);
+    }
   }, [entities, handleMatch, isProcessing]);
 
   const startGame = useCallback(() => {
     playUIClickSound();
     setGameStarted(true);
+    setSessionStartTime(Date.now());
     initBoard();
     archiveLore("Mission Started", "Neural link established.");
   }, [initBoard, archiveLore]);
@@ -230,6 +263,7 @@ export function useGameState() {
     setEntities([]);
     setScore(0);
     setTimeLeft(60);
+    setSessionStartTime(0);
   }, []);
 
   return {

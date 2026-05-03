@@ -60,6 +60,8 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
     onSelect(entity.id);
   };
 
+  const isSpecial = !!entity.special;
+
   return (
     <div
       onClick={handleInteraction}
@@ -80,7 +82,8 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
       <div className={cn(
         "w-full h-full transition-all relative rounded-full animate-core-breath",
         bloomClass,
-        isSelected && "brightness-150 ring-4 ring-white shadow-[0_0_40px_white]"
+        isSelected && "brightness-150 ring-4 ring-white shadow-[0_0_40px_white]",
+        isSpecial && "ring-2 ring-white animate-pulse shadow-[0_0_15px_white]"
       )}>
         {/* Color-Matched Sparkle Burst Layer */}
         <div 
@@ -96,6 +99,14 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
              <div className="relative w-8 h-8 rounded-full bg-black shadow-[inset_0_0_25px_white]" />
              <div className="absolute inset-0 glossy-overlay opacity-60" />
              <div className="rim-light" />
+          </div>
+        ) : entity.special === 'nova-h' ? (
+          <div className="w-full h-full relative flex items-center justify-center overflow-hidden rounded-full border border-white/40">
+             <div className={cn("absolute inset-0", coreClass)} />
+             <div className="absolute inset-x-0 h-2 bg-white blur-sm animate-pulse" />
+             <div className="absolute inset-x-0 h-0.5 bg-white z-10" />
+             <div className="rim-light" />
+             <div className="absolute inset-0 glossy-overlay opacity-40" />
           </div>
         ) : (
           <div className="relative w-full h-full rounded-full overflow-hidden border border-white/10 group">

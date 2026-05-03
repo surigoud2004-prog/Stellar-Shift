@@ -1,6 +1,5 @@
-
 export type EntityType = 0 | 1 | 2 | 3 | 4 | 5;
-export type SpecialType = 'nova-h' | 'black-hole' | 'bomb' | 'comet' | null;
+export type SpecialType = 'nova-h' | 'bomb' | null;
 
 export interface CelestialEntity {
   id: string;
@@ -26,6 +25,10 @@ function generateStableId() {
   return `shard-${Math.random().toString(36).substring(2, 11)}-${Date.now()}`;
 }
 
+/**
+ * Generates a random entity. 
+ * 'variety' determines how many different types can spawn.
+ */
 export function generateRandomEntity(q: number, r: number, variety: number = 6): CelestialEntity {
   return {
     id: generateStableId(),
@@ -62,10 +65,10 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
   });
 
   const matchedIds = new Set<string>();
-  const horizontalGroups: Set<string>[] = [];
-  const verticalGroups: Set<string>[] = [];
+  const horizontalGroups: { ids: string[], length: number, type: EntityType, q: number, r: number }[] = [];
+  const verticalGroups: { ids: string[], length: number, type: EntityType, q: number, r: number }[] = [];
 
-  // Horizontal matches
+  // Horizontal detection
   for (let r = 0; r < GRID_ROWS; r++) {
     let count = 1;
     for (let q = 1; q < GRID_COLS; q++) {
@@ -73,21 +76,21 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
         count++;
       } else {
         if (count >= 3) {
-          const group = new Set<string>();
-          for (let i = 0; i < count; i++) group.add(grid[r][q - 1 - i]!.id);
-          horizontalGroups.push(group);
+          const ids = [];
+          for (let i = 0; i < count; i++) ids.push(grid[r][q - 1 - i]!.id);
+          horizontalGroups.push({ ids, length: count, type: grid[r][q-1]!.type, q: grid[r][q-count]!.q, r: r });
         }
         count = 1;
       }
     }
     if (count >= 3) {
-      const group = new Set<string>();
-      for (let i = 0; i < count; i++) group.add(grid[r][GRID_COLS - 1 - i]!.id);
-      horizontalGroups.push(group);
+      const ids = [];
+      for (let i = 0; i < count; i++) ids.push(grid[r][GRID_COLS - 1 - i]!.id);
+      horizontalGroups.push({ ids, length: count, type: grid[r][GRID_COLS-1]!.type, q: grid[r][GRID_COLS-count]!.q, r: r });
     }
   }
 
-  // Vertical matches
+  // Vertical detection
   for (let q = 0; q < GRID_COLS; q++) {
     let count = 1;
     for (let r = 1; r < GRID_ROWS; r++) {
@@ -95,31 +98,36 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
         count++;
       } else {
         if (count >= 3) {
-          const group = new Set<string>();
-          for (let i = 0; i < count; i++) group.add(grid[r - 1 - i][q]!.id);
-          verticalGroups.push(group);
+          const ids = [];
+          for (let i = 0; i < count; i++) ids.push(grid[r - 1 - i][q]!.id);
+          verticalGroups.push({ ids, length: count, type: grid[r-1][q]!.type, q: q, r: grid[r-count][q]!.r });
         }
         count = 1;
       }
     }
     if (count >= 3) {
-      const group = new Set<string>();
-      for (let i = 0; i < count; i++) group.add(grid[GRID_ROWS - 1 - i][q]!.id);
-      verticalGroups.push(group);
+      const ids = [];
+      for (let i = 0; i < count; i++) ids.push(grid[GRID_ROWS - 1 - i][q]!.id);
+      verticalGroups.push({ ids, length: count, type: grid[GRID_ROWS-1][q]!.type, q: q, r: grid[GRID_ROWS-count][q]!.r });
     }
   }
 
-  horizontalGroups.forEach(g => g.forEach(id => matchedIds.add(id)));
-  verticalGroups.forEach(g => g.forEach(id => matchedIds.add(id)));
+  horizontalGroups.forEach(g => g.ids.forEach(id => matchedIds.add(id)));
+  verticalGroups.forEach(g => g.ids.forEach(id => matchedIds.add(id)));
 
   let specialToSpawn: MatchResult['specialToSpawn'] = undefined;
+
+  // Decide special spawn based on last move
   if (lastMoveId) {
+    const hGroup = horizontalGroups.find(g => g.ids.includes(lastMoveId));
+    const vGroup = verticalGroups.find(g => g.ids.includes(lastMoveId));
     const moved = entities.find(e => e.id === lastMoveId);
+
     if (moved) {
-      const hGroup = horizontalGroups.find(g => g.has(lastMoveId));
-      const vGroup = verticalGroups.find(g => g.has(lastMoveId));
-      if ((hGroup && hGroup.size >= 4) || (vGroup && vGroup.size >= 4)) {
+      if ((hGroup && hGroup.length >= 5) || (vGroup && vGroup.length >= 5)) {
         specialToSpawn = { id: generateStableId(), type: 'bomb', entityType: moved.type, q: moved.q, r: moved.r };
+      } else if ((hGroup && hGroup.length === 4) || (vGroup && vGroup.length === 4)) {
+        specialToSpawn = { id: generateStableId(), type: 'nova-h', entityType: moved.type, q: moved.q, r: moved.r };
       }
     }
   }
