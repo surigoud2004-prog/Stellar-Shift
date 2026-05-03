@@ -7,10 +7,11 @@ import { ProfileDashboard } from '@/components/game/ProfileDashboard';
 import { SettingsDrawer } from '@/components/game/SettingsDrawer';
 import { ParallaxBackground } from '@/components/game/ParallaxBackground';
 import { HallOfFame } from '@/components/game/HallOfFame';
+import { MissionLogs } from '@/components/game/MissionLogs';
 import { useGameState } from '@/hooks/useGameState';
 import { useState } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
-import { User, X, Trophy, Eye, EyeOff } from 'lucide-react';
+import { User, X, Trophy, Eye, EyeOff, BookOpen } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +37,7 @@ export default function Home() {
   const [soundOn, setSoundOn] = useState(true);
   const [isBatterySaver, setIsBatterySaver] = useState(false);
   const [showFame, setShowFame] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [abortDialogOpen, setAbortDialogOpen] = useState(false);
   const [uiVisible, setUiVisible] = useState(true);
@@ -51,10 +53,10 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-[#0a0512]">
       <ParallaxBackground disabled={isBatterySaver} />
       
-      {/* Global_HUD Layer: Top-most tactical overlay */}
+      {/* Global_HUD Layer */}
       <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
         
-        {/* Top-Left Anchor: Eye Toggle */}
+        {/* Top-Left Anchor */}
         <div className="absolute top-[30px] left-[30px] flex items-center gap-4 pointer-events-auto">
           <button 
             onClick={() => setUiVisible(!uiVisible)}
@@ -69,7 +71,7 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Top-Center Anchor: Logo & Telemetry */}
+        {/* Top-Center Anchor */}
         <div className={cn(
           "absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center transition-all duration-500",
           !uiVisible && "opacity-0"
@@ -95,12 +97,11 @@ export default function Home() {
           )}
         </div>
 
-        {/* Top-Right Anchor: Abort, Profile & Settings */}
+        {/* Top-Right Anchor */}
         <div className={cn(
           "absolute top-[30px] right-[30px] flex items-center gap-4 pointer-events-auto transition-all duration-500",
           !uiVisible && "opacity-0"
         )}>
-          {/* Abort Button relocated here next to Profile */}
           {gameStarted && (
             <button 
               onClick={() => setAbortDialogOpen(true)}
@@ -110,6 +111,14 @@ export default function Home() {
               <X className="w-5 h-5 text-white" />
             </button>
           )}
+
+          <button 
+            onClick={() => setShowLogs(true)}
+            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-primary/30 hover:border-primary transition-all shadow-lg active:scale-90 bg-black/40 backdrop-blur-md"
+            title={labels.archive}
+          >
+            <BookOpen className="w-6 h-6 text-secondary" />
+          </button>
 
           <button 
             onClick={() => setShowProfile(true)}
@@ -139,7 +148,7 @@ export default function Home() {
           />
         </div>
 
-        {/* High Score Badge */}
+        {/* Best Score Badge */}
         <div className={cn(
           "absolute top-[100px] right-[30px] transition-all duration-500",
           !uiVisible && "opacity-0"
@@ -154,7 +163,7 @@ export default function Home() {
       {/* Main Game Interface */}
       <Board />
 
-      {/* Confirmation Overlays */}
+      {/* Overlays */}
       <AlertDialog open={abortDialogOpen} onOpenChange={setAbortDialogOpen}>
         <AlertDialogContent className="glass-panel border-destructive/50 bg-black/95 text-white shadow-[0_0_50px_rgba(239,68,68,0.2)] z-[10000]">
           <AlertDialogHeader>
@@ -179,7 +188,6 @@ export default function Home() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Dashboard Overlays */}
       <ProfileDashboard 
         profile={profile}
         isOpen={showProfile}
@@ -187,6 +195,12 @@ export default function Home() {
         onUpdateName={setName}
         onUpdateAvatar={setAvatar}
         getRankLabel={getRank}
+        labels={labels}
+      />
+
+      <MissionLogs 
+        isOpen={showLogs}
+        onClose={() => setShowLogs(false)}
         labels={labels}
       />
 

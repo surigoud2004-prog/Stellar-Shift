@@ -29,6 +29,18 @@
         "allTimeHigh": { "type": "number" }
       },
       "required": ["uid", "name", "avatarId", "xp"]
+    },
+    "LoreLog": {
+      "title": "Lore Log",
+      "description": "A generated lore snippet linked to a game event.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "event": { "type": "string" },
+        "snippet": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "event", "snippet", "timestamp"]
     }
   },
   "auth": {
@@ -42,6 +54,10 @@
     "/users/{userId}": {
       "schema": "#/entities/UserProfile",
       "description": "Private user profile data."
+    },
+    "/users/{userId}/logs/{logId}": {
+      "schema": "#/entities/LoreLog",
+      "description": "Personal mission lore archive."
     }
   }
 }

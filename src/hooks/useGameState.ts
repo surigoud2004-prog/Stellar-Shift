@@ -12,12 +12,14 @@ import {
   EntityType
 } from '@/lib/game-utils';
 import { playSwapSound, playMatchSound, playRejectSound, playBombSound, playUIClickSound } from '@/lib/audio-system';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { collection, addDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth, useFirestore } from '@/firebase';
+import { generateDynamicLore } from '@/ai/flows/dynamic-lore-generation';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
 
 export function useGameState() {
+  const { auth, firestore } = useFirestore() ? { auth: useAuth(), firestore: useFirestore() } : { auth: null, firestore: null };
   const [entities, setEntities] = useState<CelestialEntity[]>([]);
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
@@ -32,12 +34,27 @@ export function useGameState() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const targetScore = 1000 * level;
 
+  const archiveLore = useCallback(async (event: string, context?: string) => {
+    if (!firestore || !auth?.currentUser) return;
+    try {
+      const lore = await generateDynamicLore({ gameEventDescription: event, gameContext: context });
+      const logRef = doc(collection(firestore, 'users', auth.currentUser.uid, 'logs'));
+      setDoc(logRef, {
+        id: logRef.id,
+        event,
+        snippet: lore.loreSnippet,
+        timestamp: Date.now()
+      });
+    } catch (e) {
+      console.error("Lore generation failed", e);
+    }
+  }, [firestore, auth]);
+
   const initBoard = useCallback(() => {
     let initial: CelestialEntity[] = [];
     let hasMatches = true;
     let attempts = 0;
     
-    // Safety break to prevent infinite loops in non-ideal grid seeds
     while (hasMatches && attempts < 100) {
       attempts++;
       initial = [];
@@ -58,6 +75,14 @@ export function useGameState() {
     setTimeLeft(60);
     setIsProcessing(false);
   }, []);
+
+  useEffect(() => {
+    if (isWin) {
+      archiveLore("Mission Victory", `Reached score ${score} on level ${level}`);
+    } else if (isGameOver) {
+      archiveLore("Mission Failed", `Time expired at score ${score}`);
+    }
+  }, [isWin, isGameOver, score, level, archiveLore]);
 
   useEffect(() => {
     if (!gameStarted || isGameOver || isWin || entities.length === 0) {
@@ -99,9 +124,12 @@ export function useGameState() {
         }
       });
 
-      const allToDelete = Array.from(new Set([...matches, ...bombIds]));
-      if (bombIds.length > 0) playBombSound();
+      if (bombIds.length > 0) {
+        playBombSound();
+        archiveLore("Supernova Triggered", `A bomb match cleared ${bombIds.length} shards`);
+      }
 
+      const allToDelete = Array.from(new Set([...matches, ...bombIds]));
       const updated = currentEntities.filter(e => !allToDelete.includes(e.id));
       const points = allToDelete.length * 10 * (bombIds.length > 0 ? 5 : 1);
       setScore(s => s + points);
@@ -136,7 +164,7 @@ export function useGameState() {
       setIsProcessing(false);
       if (score >= targetScore) setIsWin(true);
     }
-  }, [score, targetScore]);
+  }, [score, targetScore, archiveLore]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
     if (isProcessing) return;
@@ -179,7 +207,8 @@ export function useGameState() {
     playUIClickSound();
     setGameStarted(true);
     initBoard();
-  }, [initBoard]);
+    archiveLore("Mission Started", "Neural link established for sector stabilization.");
+  }, [initBoard, archiveLore]);
 
   const quitGame = useCallback(() => {
     playUIClickSound();
