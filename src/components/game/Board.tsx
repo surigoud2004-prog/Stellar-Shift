@@ -42,18 +42,9 @@ export function Board() {
   const isLoaded = entities.length > 0;
 
   return (
-    <div className="relative flex flex-col items-center justify-center p-4 w-full h-full min-h-[600px] mt-20">
-      <div className="nebula-bg" />
+    <div className="relative flex flex-col items-center justify-center p-4 w-full flex-1 mt-32 mb-20 z-10">
       
-      {/* HUD Progress Bar (Minimal) */}
-      <div className={cn(
-        "w-full max-w-[400px] mb-8 transition-all duration-500",
-        gameStarted && isLoaded ? "opacity-100" : "opacity-0 pointer-events-none"
-      )}>
-        <Progress value={progress} className="h-1.5 w-full bg-white/10" />
-      </div>
-
-      {/* Grid Container */}
+      {/* Board Container */}
       <div className="stellar-grid-frame p-6 flex items-center justify-center relative min-w-[320px] min-h-[320px]">
         {!gameStarted ? (
           <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm p-8 text-center transition-all">
@@ -78,7 +69,7 @@ export function Board() {
             style={{ 
               width: `${GRID_SIZE * HEX_WIDTH}px`, 
               height: `${GRID_SIZE * HEX_WIDTH}px`,
-              transform: `scale(${Math.min(1, 380 / (GRID_SIZE * HEX_WIDTH))})`,
+              transform: `scale(${Math.min(1, 400 / (GRID_SIZE * HEX_WIDTH))})`,
               transformOrigin: 'center center'
             }}
           >
@@ -114,12 +105,14 @@ export function Board() {
         )}
       </div>
 
-      <div className={cn(
-        "mt-8 text-[10px] text-muted-foreground uppercase tracking-[0.4em] font-bold transition-opacity",
-        gameStarted ? "opacity-100" : "opacity-0"
-      )}>
-        Align Shards to Stabilize Sector
-      </div>
+      {gameStarted && isLoaded && (
+        <div className="mt-8 w-full max-w-[300px] animate-in fade-in slide-in-from-bottom-4">
+          <Progress value={progress} className="h-1 w-full bg-white/10" />
+          <div className="mt-2 text-[8px] text-muted-foreground text-center uppercase tracking-[0.4em] font-bold">
+            Sector Stabilization Status
+          </div>
+        </div>
+      )}
     </div>
   );
 }

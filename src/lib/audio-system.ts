@@ -4,16 +4,19 @@
 let audioCtx: AudioContext | null = null;
 
 function getAudioContext() {
+  if (typeof window === 'undefined') return null;
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    audioCtx = new AudioContextClass();
+    if (AudioContextClass) {
+      audioCtx = new AudioContextClass();
+    }
   }
   return audioCtx;
 }
 
 export function playSwapSound() {
-  if (typeof window === 'undefined') return;
   const ctx = getAudioContext();
+  if (!ctx) return;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = 'sine';
@@ -28,8 +31,8 @@ export function playSwapSound() {
 }
 
 export function playMatchSound() {
-  if (typeof window === 'undefined') return;
   const ctx = getAudioContext();
+  if (!ctx) return;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = 'sine';
@@ -44,8 +47,8 @@ export function playMatchSound() {
 }
 
 export function playRejectSound() {
-  if (typeof window === 'undefined') return;
   const ctx = getAudioContext();
+  if (!ctx) return;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = 'sine';
@@ -60,8 +63,8 @@ export function playRejectSound() {
 }
 
 export function playUIClickSound() {
-  if (typeof window === 'undefined') return;
   const ctx = getAudioContext();
+  if (!ctx) return;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = 'triangle';
@@ -75,8 +78,8 @@ export function playUIClickSound() {
 }
 
 export function playLevelUpSound() {
-  if (typeof window === 'undefined') return;
   const ctx = getAudioContext();
+  if (!ctx) return;
   [440, 554.37, 659.25, 880].forEach((freq, i) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -93,10 +96,9 @@ export function playLevelUpSound() {
 }
 
 export function playBombSound() {
-  if (typeof window === 'undefined') return;
   const ctx = getAudioContext();
+  if (!ctx) return;
   
-  // Implosion (shuck)
   const shuck = ctx.createOscillator();
   const shuckGain = ctx.createGain();
   shuck.type = 'sine';
@@ -110,7 +112,6 @@ export function playBombSound() {
   shuck.start();
   shuck.stop(ctx.currentTime + 0.1);
 
-  // Deep resonant BOOM
   const boom = ctx.createOscillator();
   const boomGain = ctx.createGain();
   boom.type = 'sine';
@@ -122,16 +123,4 @@ export function playBombSound() {
   boomGain.connect(ctx.destination);
   boom.start(ctx.currentTime + 0.1);
   boom.stop(ctx.currentTime + 1.0);
-
-  // Metallic shimmer/tinkle
-  const tinkle = ctx.createOscillator();
-  const tinkleGain = ctx.createGain();
-  tinkle.type = 'sawtooth';
-  tinkle.frequency.setValueAtTime(2000, ctx.currentTime + 0.5);
-  tinkleGain.gain.setValueAtTime(0.05, ctx.currentTime + 0.5);
-  tinkleGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
-  tinkle.connect(tinkleGain);
-  tinkleGain.connect(ctx.destination);
-  tinkle.start(ctx.currentTime + 0.5);
-  tinkle.stop(ctx.currentTime + 1.5);
 }
