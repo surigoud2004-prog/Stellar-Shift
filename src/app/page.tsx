@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Board } from '@/components/game/Board';
@@ -138,8 +139,8 @@ function MissionContent() {
       {/* GLOBAL HUD - PINNED AT TOP-MOST LAYER Z-10010 */}
       <div id="Global_HUD" className="fixed inset-x-0 top-0 pointer-events-none z-[10010] h-40">
         
-        {/* TOP-LEFT: ABORT MISSION (X) */}
-        <div className="absolute top-[20px] left-[30px] flex items-center gap-3 pointer-events-auto">
+        {/* TOP-LEFT: ABORT MISSION (X) & WALLET */}
+        <div className="absolute top-[20px] left-[30px] flex items-center gap-4 pointer-events-auto">
           <button 
             onClick={() => setAbortDialogOpen(true)}
             className="w-[50px] h-[50px] rounded-full bg-red-600 flex items-center justify-center shadow-[0_0_25px_rgba(220,38,38,0.7)] hover:scale-110 active:scale-90 transition-all border-2 border-white/20"
@@ -148,6 +149,18 @@ function MissionContent() {
             <XIcon className="w-7 h-7 text-white stroke-[4px]" />
           </button>
           
+          <div className={cn(
+            "flex items-center gap-3 bg-black/70 px-5 py-2.5 rounded-2xl border-2 border-yellow-500/40 backdrop-blur-xl shadow-[0_0_25px_rgba(234,179,8,0.2)] transition-all",
+            !uiVisible && "opacity-0"
+          )}>
+            <div className="w-6 h-6 rounded-full bg-yellow-400 flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.6)] border-2 border-yellow-200">
+               <Coins className="w-4 h-4 text-black stroke-[3px]" />
+            </div>
+            <span className="text-white font-black text-lg tracking-widest">
+              {Math.floor(profile.coins || 0).toLocaleString()}
+            </span>
+          </div>
+
           <button 
             onClick={() => setUiVisible(!uiVisible)}
             className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md"
@@ -174,7 +187,7 @@ function MissionContent() {
             </div>
           </div>
 
-          <h1 className="font-headline text-lg md:text-xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_20px_rgba(168,85,247,0.7)] mb-1 mt-6">
+          <h1 className="font-headline text-lg md:text-xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_20px_rgba(168,85,247,0.7)] mb-1 mt-10">
             Stellar <span className="text-primary">Shift</span>
           </h1>
           
@@ -187,20 +200,8 @@ function MissionContent() {
           </div>
         </div>
 
-        {/* TOP-RIGHT: WALLET & SETTINGS */}
+        {/* TOP-RIGHT: ARCHIVE & SETTINGS */}
         <div className="absolute top-[20px] right-[30px] flex items-center gap-4 pointer-events-auto">
-          <div className={cn(
-            "flex items-center gap-3 bg-black/70 px-5 py-2.5 rounded-2xl border-2 border-yellow-500/40 backdrop-blur-xl shadow-[0_0_25px_rgba(234,179,8,0.2)] transition-all",
-            !uiVisible && "opacity-0"
-          )}>
-            <div className="w-6 h-6 rounded-full bg-yellow-400 flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.6)] border-2 border-yellow-200">
-               <Coins className="w-4 h-4 text-black stroke-[3px]" />
-            </div>
-            <span className="text-white font-black text-lg tracking-widest">
-              {Math.floor(profile.coins || 0).toLocaleString()}
-            </span>
-          </div>
-
           <button 
             onClick={() => setShowLogs(true)}
             className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md"

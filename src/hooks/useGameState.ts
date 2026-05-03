@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -114,27 +115,31 @@ export function useGameState() {
   const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMovedId?: string, comboFactor: number = 1, forceExplosionIds?: Set<string>, silent: boolean = false) => {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMovedId);
     
-    // Process matches AND potential chain reactions
     const idsToProcess = new Set<string>([...matches, ...(forceExplosionIds || [])]);
+    if (idsToProcess.size === 0) {
+      if (!silent) setIsProcessing(false);
+      return;
+    }
+
     const allToDestroy = new Set<string>();
     const activatedSpecialIds = new Set<string>();
+    const currentLasers: LaserEffect[] = [];
     
     let triggeredFlash = false;
     let triggeredShake = false;
     let chainMultiplier = 1;
-    const currentLasers: LaserEffect[] = [];
 
-    // Recursive special processing loop for chain reactions
-    while (idsToProcess.size > 0) {
-      const id = idsToProcess.values().next().value;
-      idsToProcess.delete(id);
+    // Process explosions and special chain reactions recursively
+    const queue = Array.from(idsToProcess);
+    while (queue.length > 0) {
+      const id = queue.shift()!;
+      if (allToDestroy.has(id)) continue;
       
       const ent = currentEntities.find(e => e.id === id);
-      if (!ent || allToDestroy.has(id)) continue;
+      if (!ent) continue;
 
       allToDestroy.add(id);
 
-      // If it's a special entity, activate its effect and add targeted entities to processing queue
       if (ent.special && !activatedSpecialIds.has(id)) {
         activatedSpecialIds.add(id);
         chainMultiplier *= 1.25;
@@ -144,26 +149,26 @@ export function useGameState() {
           triggeredShake = true;
           currentEntities.forEach(e => {
             if (Math.abs(e.q - ent.q) <= 1 && Math.abs(e.r - ent.r) <= 1) {
-              if (!allToDestroy.has(e.id)) idsToProcess.add(e.id);
+              if (!allToDestroy.has(e.id)) queue.push(e.id);
             }
           });
         } else if (ent.special === 'nova-h') {
-          currentLasers.push({ id: `laser-${ent.id}`, type: 'h', pos: ent.r });
+          currentLasers.push({ id: `laser-${ent.id}-${Date.now()}`, type: 'h', pos: ent.r });
           currentEntities.forEach(e => {
             if (e.r === ent.r) {
-              if (!allToDestroy.has(e.id)) idsToProcess.add(e.id);
+              if (!allToDestroy.has(e.id)) queue.push(e.id);
             }
           });
         } else if (ent.special === 'nova-v') {
-          currentLasers.push({ id: `laser-${ent.id}`, type: 'v', pos: ent.q });
+          currentLasers.push({ id: `laser-${ent.id}-${Date.now()}`, type: 'v', pos: ent.q });
           currentEntities.forEach(e => {
             if (e.q === ent.q) {
-              if (!allToDestroy.has(e.id)) idsToProcess.add(e.id);
+              if (!allToDestroy.has(e.id)) queue.push(e.id);
             }
           });
         } else if (ent.special === 'rainbow-core') {
-           // Rainbow cores currently handled via swap, but if matched:
-           triggeredFlash = true;
+          triggeredFlash = true;
+          triggeredShake = true;
         }
       }
     }
@@ -239,7 +244,6 @@ export function useGameState() {
 
       setEntities(newGrid);
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000));
-      // Recursive call for cascades
       await handleMatch(newGrid, undefined, comboFactor * 1.5, undefined, silent);
     } else {
       if (!silent) setIsProcessing(false);
@@ -272,7 +276,6 @@ export function useGameState() {
     setIsReviving(false);
     setReviveCost(200);
 
-    // Silent check to ensure board stability
     await handleMatch(initial, undefined, 1, undefined, true);
     setIsProcessing(false);
   }, [getVariety, levelTimeLimit, powerUps.novaBlast, handleMatch]);
@@ -350,6 +353,13 @@ export function useGameState() {
     await new Promise(resolve => setTimeout(resolve, animationDuration * 1000)); 
 
     const { matches } = findMatches(newEntities, id1);
+    
+    // Check if we swapped two specials
+    if (e1.special && e2.special) {
+      await handleMatch(newEntities, id1, 1, new Set([id1, id2]));
+      return;
+    }
+
     if (matches.length === 0) {
       playRejectSound();
       const reverted = [...newEntities];
@@ -381,7 +391,7 @@ export function useGameState() {
     setEntities(updated);
 
     setTimeout(() => {
-      handleMatch(updated);
+      handleMatch(updated, undefined, 1, new Set(matchingIds));
     }, 500);
   }, [entities, handleMatch, isProcessing, powerUps.colorNuke, isReviving]);
 
