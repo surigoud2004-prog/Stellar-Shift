@@ -26,7 +26,8 @@
         "totalMatches": { "type": "number" },
         "gamesWon": { "type": "number" },
         "starsCollected": { "type": "number" },
-        "allTimeHigh": { "type": "number" }
+        "allTimeHigh": { "type": "number" },
+        "coins": { "type": "number" }
       },
       "required": ["uid", "name", "avatarId", "xp"]
     },

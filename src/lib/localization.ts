@@ -47,7 +47,8 @@ export const LOCALIZATION = {
     legend: 'LEGEND',
     batterySaver: 'BATTERY SAVER',
     on: 'ON',
-    off: 'OFF'
+    off: 'OFF',
+    coins: 'COINS'
   },
   es: {
     start: 'INICIAR',
@@ -94,7 +95,8 @@ export const LOCALIZATION = {
     legend: 'LEYENDA',
     batterySaver: 'AHORRO BATERÍA',
     on: 'SÍ',
-    off: 'NO'
+    off: 'NO',
+    coins: 'MONEDAS'
   },
   fr: {
     start: 'COMMENCER',
@@ -141,6 +143,7 @@ export const LOCALIZATION = {
     legend: 'LÉGENDE',
     batterySaver: 'ÉCONOMIE BATT.',
     on: 'OUI',
-    off: 'NON'
+    off: 'NON',
+    coins: 'PIÈCES'
   }
 };

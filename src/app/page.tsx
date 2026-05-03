@@ -11,7 +11,7 @@ import { MissionLogs } from '@/components/game/MissionLogs';
 import { GameStateProvider, useGameState } from '@/context/GameStateContext';
 import { useState, useEffect, useMemo } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
-import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff, Radio, Orbit } from 'lucide-react';
+import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff, Radio, Orbit, Coins } from 'lucide-react';
 import { getSectorInfo } from '@/lib/game-utils';
 import {
   AlertDialog,
@@ -42,21 +42,27 @@ function MissionContent() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [abortDialogOpen, setAbortDialogOpen] = useState(false);
   const [uiVisible, setUiVisible] = useState(true);
+  
+  // Guard to prevent multiple reward processing for the same win event
+  const [lastProcessedLevel, setLastProcessedLevel] = useState(0);
 
   const labels = LOCALIZATION[language];
   const sector = useMemo(() => getSectorInfo(level), [level]);
 
   // Update profile stats when a win occurs
   useEffect(() => {
-    if (isWin) {
-      updateStats(score, 0, true);
+    if (isWin && level > lastProcessedLevel) {
+      const coinsWon = 100 + (timeLeft * 5);
+      updateStats(score, 0, true, coinsWon);
+      setLastProcessedLevel(level);
     }
-  }, [isWin, score, updateStats]);
+  }, [isWin, score, updateStats, level, lastProcessedLevel, timeLeft]);
 
   const handleAbort = () => {
     quitGame();
     setAbortDialogOpen(false);
     setSettingsOpen(false);
+    setLastProcessedLevel(0);
   };
 
   return (
@@ -128,6 +134,19 @@ function MissionContent() {
 
         {/* TOP-RIGHT ANCHOR: COMMAND CLUSTER */}
         <div className="absolute top-[30px] right-[30px] flex items-center gap-4 pointer-events-auto">
+          {/* COIN HUD */}
+          <div className={cn(
+            "flex items-center gap-2 bg-black/40 px-4 py-2 rounded-xl border border-yellow-500/30 backdrop-blur-md shadow-[0_0_15px_rgba(234,179,8,0.1)] transition-all",
+            !uiVisible && "opacity-0"
+          )}>
+            <div className="w-5 h-5 rounded-full bg-yellow-400 flex items-center justify-center shadow-[0_0_10px_rgba(234,179,8,0.5)]">
+               <Coins className="w-3 h-3 text-black stroke-[3px]" />
+            </div>
+            <span className="text-white font-black text-sm tracking-widest">
+              {(profile.coins || 0).toLocaleString()}
+            </span>
+          </div>
+
           <button 
             onClick={() => setShowLogs(true)}
             className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/40 backdrop-blur-md"
@@ -159,7 +178,7 @@ function MissionContent() {
             gameMode={gameMode}
             onSetGameMode={setGameMode}
             onShowFame={() => setShowFame(true)}
-            onAbort={() => setAbortDialogOpen(true)}
+            onAbort={handleAbort}
             gameStarted={gameStarted}
             labels={labels}
           />

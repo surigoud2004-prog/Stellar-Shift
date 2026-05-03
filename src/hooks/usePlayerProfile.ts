@@ -12,6 +12,7 @@ export interface PlayerProfile {
   gamesWon: number;
   starsCollected: number;
   allTimeHigh: number;
+  coins: number;
 }
 
 const DEFAULT_PROFILE: PlayerProfile = {
@@ -22,6 +23,7 @@ const DEFAULT_PROFILE: PlayerProfile = {
   gamesWon: 0,
   starsCollected: 0,
   allTimeHigh: 0,
+  coins: 0,
 };
 
 export function usePlayerProfile() {
@@ -46,7 +48,7 @@ export function usePlayerProfile() {
     } catch (e) {}
   }, []);
 
-  const updateStats = useCallback((score: number, matches: number, isWin: boolean = false) => {
+  const updateStats = useCallback((score: number, matches: number, isWin: boolean = false, coinsWon: number = 0) => {
     setProfile(prev => {
       const newXP = prev.xp + Math.floor(score / 10);
       const oldRank = Math.floor(prev.xp / 1000);
@@ -63,6 +65,7 @@ export function usePlayerProfile() {
         gamesWon: isWin ? prev.gamesWon + 1 : prev.gamesWon,
         starsCollected: prev.starsCollected + Math.floor(score / 50),
         allTimeHigh: Math.max(prev.allTimeHigh, score),
+        coins: (prev.coins || 0) + coinsWon,
       };
       
       try {
