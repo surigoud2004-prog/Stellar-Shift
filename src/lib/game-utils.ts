@@ -1,5 +1,5 @@
 
-export type EntityType = 0 | 1 | 2 | 3 | 4;
+export type EntityType = 0 | 1 | 2 | 3 | 4 | 5;
 export type SpecialType = 'nova-h' | 'black-hole' | 'bomb' | 'comet' | null;
 
 export interface CelestialEntity {
@@ -14,7 +14,6 @@ export interface CelestialEntity {
 
 /**
  * High-Density 9x7 Sector Grid
- * HEX_WIDTH set to 70px to balance visibility and density on all screens.
  */
 export const GRID_COLS = 9;
 export const GRID_ROWS = 7;
@@ -27,7 +26,7 @@ function generateStableId() {
   return `shard-${Math.random().toString(36).substring(2, 11)}-${Date.now()}`;
 }
 
-export function generateRandomEntity(q: number, r: number, variety: number = 5): CelestialEntity {
+export function generateRandomEntity(q: number, r: number, variety: number = 6): CelestialEntity {
   return {
     id: generateStableId(),
     type: Math.floor(Math.random() * variety) as EntityType,

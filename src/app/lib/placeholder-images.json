@@ -3,33 +3,57 @@
   "placeholderImages": [
     {
       "id": "planet-1",
-      "description": "Pulsing sun-orange energy orb with internal heat",
-      "imageUrl": "https://picsum.photos/seed/orange-orb/200/200",
-      "imageHint": "orange sun"
-    },
-    {
-      "id": "planet-2",
-      "description": "Frozen sapphire crystal energy core with icy facets",
-      "imageUrl": "https://picsum.photos/seed/sapphire-core/200/200",
-      "imageHint": "blue crystal"
-    },
-    {
-      "id": "planet-3",
-      "description": "Swirling violet nebula sphere with stardust particles",
-      "imageUrl": "https://picsum.photos/seed/violet-nebula/200/200",
+      "description": "Swirling violet nebula with bright embedded star clusters",
+      "imageUrl": "https://picsum.photos/seed/nebula-violet/300/300",
       "imageHint": "violet nebula"
     },
     {
+      "id": "planet-2",
+      "description": "Glowing binary star system with contrasting orange and blue light",
+      "imageUrl": "https://picsum.photos/seed/binary-stars/300/300",
+      "imageHint": "binary star"
+    },
+    {
+      "id": "planet-3",
+      "description": "Golden solar flare erupting from a sun surface",
+      "imageUrl": "https://picsum.photos/seed/solar-flare-gold/300/300",
+      "imageHint": "solar flare"
+    },
+    {
       "id": "planet-4",
-      "description": "Neon-green radioactive energy core with high intensity",
-      "imageUrl": "https://picsum.photos/seed/green-radioactive/200/200",
-      "imageHint": "green energy"
+      "description": "Deep-blue spiral galaxy with an intensely bright core",
+      "imageUrl": "https://picsum.photos/seed/galaxy-spiral-blue/300/300",
+      "imageHint": "blue galaxy"
     },
     {
       "id": "planet-5",
-      "description": "Golden celestial energy ring with star-matter shell",
-      "imageUrl": "https://picsum.photos/seed/golden-ring/200/200",
-      "imageHint": "golden star"
+      "description": "Green aurora-style celestial dust cloud with starlight",
+      "imageUrl": "https://picsum.photos/seed/aurora-dust-green/300/300",
+      "imageHint": "green aurora"
+    },
+    {
+      "id": "planet-6",
+      "description": "Supernova explosion radiating purple and white cosmic light",
+      "imageUrl": "https://picsum.photos/seed/supernova-purple/300/300",
+      "imageHint": "supernova purple"
+    },
+    {
+      "id": "avatar-1",
+      "description": "Cybernetic space pilot helmet with neon visor",
+      "imageUrl": "https://picsum.photos/seed/pilot1/200/200",
+      "imageHint": "cyberpunk pilot"
+    },
+    {
+      "id": "avatar-2",
+      "description": "Neural link interface portrait with data streams",
+      "imageUrl": "https://picsum.photos/seed/pilot2/200/200",
+      "imageHint": "sci-fi interface"
+    },
+    {
+      "id": "avatar-3",
+      "description": "Stellar explorer silhouette against a nebula",
+      "imageUrl": "https://picsum.photos/seed/pilot3/200/200",
+      "imageHint": "space traveler"
     }
   ]
 }
