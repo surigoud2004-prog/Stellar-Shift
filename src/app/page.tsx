@@ -8,6 +8,7 @@ import { SettingsDrawer } from '@/components/game/SettingsDrawer';
 import { ParallaxBackground } from '@/components/game/ParallaxBackground';
 import { HallOfFame } from '@/components/game/HallOfFame';
 import { MissionLogs } from '@/components/game/MissionLogs';
+import { PowerUpShop } from '@/components/game/PowerUpShop';
 import { GameStateProvider, useGameState } from '@/context/GameStateContext';
 import { useState, useEffect, useMemo } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
@@ -27,11 +28,12 @@ import { cn } from '@/lib/utils';
 
 function MissionContent() {
   const { 
-    profile, showProfile, setShowProfile, setAvatar, setName, getRank, updateStats
+    profile, showProfile, setShowProfile, setAvatar, setName, getRank, updateStats, spendCoins
   } = usePlayerProfile();
   
   const { 
-    gameMode, setGameMode, gameStarted, quitGame, score, targetScore, timeLeft, startGame, level, isWin, isWarping
+    gameMode, setGameMode, gameStarted, quitGame, score, targetScore, timeLeft, startGame, level, isWin, isWarping,
+    powerUps, setPowerUps
   } = useGameState();
 
   const [language, setLanguage] = useState<'en' | 'es' | 'fr'>('en');
@@ -39,6 +41,7 @@ function MissionContent() {
   const [isBatterySaver, setIsBatterySaver] = useState(false);
   const [showFame, setShowFame] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
+  const [showShop, setShowShop] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [abortDialogOpen, setAbortDialogOpen] = useState(false);
   const [uiVisible, setUiVisible] = useState(true);
@@ -55,6 +58,8 @@ function MissionContent() {
       const coinsWon = 100 + (timeLeft * 5);
       updateStats(score, 0, true, coinsWon);
       setLastProcessedLevel(level);
+      // Automatically show shop for next level
+      setTimeout(() => setShowShop(true), 1500);
     }
   }, [isWin, score, updateStats, level, lastProcessedLevel, timeLeft]);
 
@@ -63,6 +68,19 @@ function MissionContent() {
     setAbortDialogOpen(false);
     setSettingsOpen(false);
     setLastProcessedLevel(0);
+  };
+
+  const handleBuyPowerUp = (type: 'time' | 'nova' | 'nuke') => {
+    const costs = { time: 200, nova: 500, nuke: 800 };
+    if (spendCoins(costs[type])) {
+      if (type === 'time') setPowerUps(p => ({ ...p, timeDilator: true }));
+      if (type === 'nova') setPowerUps(p => ({ ...p, novaBlast: true }));
+      if (type === 'nuke') setPowerUps(p => ({ ...p, colorNuke: p.colorNuke + 1 }));
+    }
+  };
+
+  const handleStartMission = () => {
+    setShowShop(true);
   };
 
   return (
@@ -190,7 +208,7 @@ function MissionContent() {
         {!gameStarted ? (
           <div className="flex flex-col items-center animate-in zoom-in duration-700">
              <button 
-                onClick={startGame}
+                onClick={handleStartMission}
                 className="group relative px-16 py-8 bg-primary rounded-full text-2xl font-black uppercase tracking-[0.3em] text-white shadow-[0_0_50px_rgba(168,85,247,0.5)] hover:scale-110 active:scale-95 transition-all"
              >
                 <div className="absolute inset-0 bg-white/20 rounded-full blur-xl group-hover:blur-2xl transition-all" />
@@ -243,6 +261,15 @@ function MissionContent() {
       <MissionLogs 
         isOpen={showLogs}
         onClose={() => setShowLogs(false)}
+        labels={labels}
+      />
+
+      <PowerUpShop 
+        coins={profile.coins || 0}
+        powerUps={powerUps}
+        onBuy={handleBuyPowerUp}
+        isOpen={showShop}
+        onClose={() => { setShowShop(false); if (!gameStarted) startGame(); }}
         labels={labels}
       />
 

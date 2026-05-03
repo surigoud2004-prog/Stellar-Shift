@@ -75,6 +75,13 @@ export function usePlayerProfile() {
     });
   }, []);
 
+  const spendCoins = useCallback((amount: number): boolean => {
+    if ((profile.coins || 0) < amount) return false;
+    const next = { ...profile, coins: profile.coins - amount };
+    saveProfile(next);
+    return true;
+  }, [profile, saveProfile]);
+
   const setAvatar = (id: string) => {
     try { playUIClickSound(); } catch (e) {}
     saveProfile({ ...profile, avatarId: id });
@@ -98,6 +105,7 @@ export function usePlayerProfile() {
     showProfile,
     setShowProfile,
     updateStats,
+    spendCoins,
     setAvatar,
     setName,
     getRank

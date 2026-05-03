@@ -17,6 +17,12 @@ import { generateDynamicLore } from '@/ai/flows/dynamic-lore-generation';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
 
+export interface PowerUpState {
+  timeDilator: boolean;
+  novaBlast: boolean;
+  colorNuke: number;
+}
+
 export function useGameState() {
   const firestoreState = useFirestore();
   const authState = useAuth();
@@ -36,20 +42,29 @@ export function useGameState() {
   const [gameMode, setGameMode] = useState<GameMode>('easy');
   const [isFlashing, setIsFlashing] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState<number>(0);
+
+  // Power Up States
+  const [powerUps, setPowerUps] = useState<PowerUpState>({
+    timeDilator: false,
+    novaBlast: false,
+    colorNuke: 0
+  });
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // INFINITE LEVELING MATH
   const targetScore = useMemo(() => level * 1500, [level]);
-  const levelTimeLimit = useMemo(() => Math.max(30, 60 - (level - 1) * 2), [level]);
+  const levelTimeLimit = useMemo(() => {
+    const base = Math.max(30, 60 - (level - 1) * 2);
+    return powerUps.timeDilator ? base + 15 : base;
+  }, [level, powerUps.timeDilator]);
   
-  // SPEED FORMULA: 5% faster per level (base 0.3s)
   const animationDuration = useMemo(() => 0.3 * Math.pow(0.95, level - 1), [level]);
 
   const getVariety = useCallback(() => {
     if (!sessionStartTime) return 6;
     const elapsed = (Date.now() - sessionStartTime) / 1000;
-    return elapsed < 60 ? 4 : 6; // Early game ease for first minute
+    return elapsed < 60 ? 4 : 6; 
   }, [sessionStartTime]);
 
   const archiveLore = useCallback(async (event: string, context?: string) => {
@@ -63,9 +78,7 @@ export function useGameState() {
         snippet: lore.loreSnippet,
         timestamp: Date.now()
       });
-    } catch (e) {
-      // Fail silently
-    }
+    } catch (e) {}
   }, [firestore, auth]);
 
   const initBoard = useCallback(() => {
@@ -85,6 +98,14 @@ export function useGameState() {
       const { matches } = findMatches(initial);
       if (matches.length === 0) hasMatches = false;
     }
+
+    // Apply Nova Blast Powerup
+    if (powerUps.novaBlast) {
+      for (let i = 0; i < 2; i++) {
+        const randIdx = Math.floor(Math.random() * initial.length);
+        initial[randIdx].special = 'bomb';
+      }
+    }
     
     setEntities(initial);
     setSelectedId(null);
@@ -94,7 +115,7 @@ export function useGameState() {
     setTimeLeft(levelTimeLimit);
     setIsProcessing(false);
     setIsFlashing(false);
-  }, [getVariety, levelTimeLimit]);
+  }, [getVariety, levelTimeLimit, powerUps.novaBlast]);
 
   // Level Progression Logic
   useEffect(() => {
@@ -104,7 +125,8 @@ export function useGameState() {
         setLevel(prev => prev + 1);
         setScore(0);
         setIsWin(false);
-        // initBoard will be called by the effect below watching level
+        // Reset single-level powerups but keep color nukes
+        setPowerUps(prev => ({ ...prev, timeDilator: false, novaBlast: false }));
       }, 2000); 
       return () => clearTimeout(timeout);
     }
@@ -261,6 +283,28 @@ export function useGameState() {
     await handleMatch(newEntities, id1, 1);
   }, [entities, handleMatch, isProcessing, isWin, isGameOver, isWarping, animationDuration]);
 
+  const triggerColorNuke = useCallback(() => {
+    if (isProcessing || powerUps.colorNuke <= 0) return;
+    playBombSound();
+    setIsProcessing(true);
+    setPowerUps(prev => ({ ...prev, colorNuke: prev.colorNuke - 1 }));
+
+    // Count colors and pick the most frequent one
+    const counts: Record<number, number> = {};
+    entities.forEach(e => {
+      counts[e.type] = (counts[e.type] || 0) + 1;
+    });
+    const mostFrequentColor = Number(Object.entries(counts).reduce((a, b) => b[1] > a[1] ? b : a)[0]);
+
+    const matchingIds = entities.filter(e => e.type === mostFrequentColor).map(e => e.id);
+    const updated = entities.map(e => matchingIds.includes(e.id) ? { ...e, isMatched: true } : e);
+    setEntities(updated);
+
+    setTimeout(() => {
+      handleMatch(updated);
+    }, 500);
+  }, [entities, handleMatch, isProcessing, powerUps.colorNuke]);
+
   const startGame = useCallback(() => {
     playUIClickSound();
     setGameStarted(true);
@@ -279,6 +323,7 @@ export function useGameState() {
     setLevel(1);
     setTimeLeft(60);
     setSessionStartTime(0);
+    setPowerUps({ timeDilator: false, novaBlast: false, colorNuke: 0 });
   }, []);
 
   return {
@@ -286,6 +331,7 @@ export function useGameState() {
     isGameOver, isWin, isWarping, selectedId, setSelectedId,
     swapEntities, isProcessing, initBoard,
     gameStarted, startGame, quitGame, gameMode, setGameMode,
-    isFlashing, animationDuration
+    isFlashing, animationDuration,
+    powerUps, setPowerUps, triggerColorNuke
   };
 }

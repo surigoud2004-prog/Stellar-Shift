@@ -6,13 +6,14 @@ import { useGameState } from '@/context/GameStateContext';
 import { Entity } from './Entity';
 import { areAdjacent, HEX_WIDTH, GRID_COLS, GRID_ROWS } from '@/lib/game-utils';
 import { Button } from '@/components/ui/button';
-import { Trophy, RotateCcw, FastForward } from 'lucide-react';
+import { Trophy, RotateCcw, FastForward, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Board() {
   const { 
     entities, isGameOver, isWin, isWarping, selectedId, setSelectedId, 
-    swapEntities, isProcessing, initBoard, isFlashing, level, targetScore
+    swapEntities, isProcessing, initBoard, isFlashing, level, targetScore,
+    powerUps, triggerColorNuke
   } = useGameState();
 
   const handleSelect = useCallback((id: string) => {
@@ -41,6 +42,20 @@ export function Board() {
       {isFlashing && (
         <div className="fixed inset-0 z-[10000] bg-white mix-blend-difference pointer-events-none animate-negative-flash" />
       )}
+
+      {/* Power-Up HUD Sidebar (Integrated into Board Area) */}
+      <div className="absolute -left-20 top-1/2 -translate-y-1/2 flex flex-col gap-4">
+         {powerUps.colorNuke > 0 && (
+           <button 
+             onClick={triggerColorNuke}
+             disabled={isProcessing || isGameOver || isWin || isWarping}
+             className="w-16 h-16 rounded-2xl bg-primary flex flex-col items-center justify-center border-b-4 border-primary-foreground/30 shadow-[0_0_20px_rgba(168,85,247,0.5)] hover:scale-105 active:scale-90 transition-all group"
+           >
+              <Zap className="w-8 h-8 text-white group-hover:animate-pulse" />
+              <span className="text-[10px] font-black text-white mt-1">{powerUps.colorNuke}</span>
+           </button>
+         )}
+      </div>
 
       {/* 9x7 High-Density Sector Grid Centered */}
       <div className={cn(
