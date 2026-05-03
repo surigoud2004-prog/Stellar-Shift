@@ -2,39 +2,39 @@
   "placeholderImages": [
     {
       "id": "planet-1",
-      "description": "High-vibrancy electric pink and neon magenta swirling nebula with intense white sparkling core",
-      "imageUrl": "https://picsum.photos/seed/electric-pink-nebula/300/300",
-      "imageHint": "neon nebula"
+      "description": "High-vibrancy Electric Cyan energy core with internal sparkling singularity",
+      "imageUrl": "https://picsum.photos/seed/cyan-nebula/300/300",
+      "imageHint": "cyan galaxy"
     },
     {
       "id": "planet-2",
-      "description": "Deep azure blue galaxy spiral with a high-intensity glowing white singularity core",
-      "imageUrl": "https://picsum.photos/seed/deep-azure-galaxy/300/300",
-      "imageHint": "azure galaxy"
+      "description": "Magnesium Pink swirling cosmic cloud with intense neon highlights",
+      "imageUrl": "https://picsum.photos/seed/pink-nebula/300/300",
+      "imageHint": "pink nebula"
     },
     {
       "id": "planet-3",
-      "description": "Sun-fire orange burning star with hyper-saturated solar flares and bright core",
-      "imageUrl": "https://picsum.photos/seed/sun-fire-orange/300/300",
-      "imageHint": "burning sun"
+      "description": "Toxic Green radioactive space cloud with glowing emerald streaks",
+      "imageUrl": "https://picsum.photos/seed/green-nebula/300/300",
+      "imageHint": "green aurora"
     },
     {
       "id": "planet-4",
-      "description": "Deep emerald green aurora space cloud with neon radioactive streaks and bright center",
-      "imageUrl": "https://picsum.photos/seed/emerald-aurora-green/300/300",
-      "imageHint": "emerald aurora"
+      "description": "Deep Amber solar core with intense orange flares and bright highlight",
+      "imageUrl": "https://picsum.photos/seed/amber-nebula/300/300",
+      "imageHint": "amber sun"
     },
     {
       "id": "planet-5",
-      "description": "High-contrast blood-red supernova with intense light rays and bright white center",
-      "imageUrl": "https://picsum.photos/seed/vivid-supernova-red/300/300",
-      "imageHint": "red supernova"
+      "description": "Plasma Violet galaxy spiral with neon purple energy rays",
+      "imageUrl": "https://picsum.photos/seed/violet-nebula/300/300",
+      "imageHint": "violet nebula"
     },
     {
       "id": "planet-6",
-      "description": "Glistening golden ringed planet with a high-saturation celestial glow and white highlight",
-      "imageUrl": "https://picsum.photos/seed/vivid-planet-gold/300/300",
-      "imageHint": "golden planet"
+      "description": "Supernova Red explosion with high-contrast crimson light rays",
+      "imageUrl": "https://picsum.photos/seed/red-nebula/300/300",
+      "imageHint": "red supernova"
     },
     {
       "id": "avatar-1",
