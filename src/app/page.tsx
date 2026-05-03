@@ -53,7 +53,7 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-[#0a0512]">
       <ParallaxBackground disabled={isBatterySaver} />
       
-      {/* Global_HUD Layer */}
+      {/* Global HUD Layer: Fixed and Topmost */}
       <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
         
         {/* Top-Center Anchor: Mission Telemetry */}
@@ -79,7 +79,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* Top-Right Anchor: Auxiliary Commands */}
+        {/* Top-Right Anchor: Tactical Cluster */}
         <div className="absolute top-[30px] right-[30px] flex items-center gap-4 pointer-events-auto">
           <button 
             onClick={() => setShowLogs(true)}
@@ -120,8 +120,8 @@ export default function Home() {
           />
         </div>
 
-        {/* Best Score Badge */}
-        <div className="absolute top-[100px] right-[30px]">
+        {/* Dynamic Rank/Best Display */}
+        <div className="absolute top-[100px] right-[30px] pointer-events-none">
           <div className="flex items-center gap-2 glass-panel px-3 py-1 rounded-full border-primary/10 bg-black/40 backdrop-blur-md">
             <Trophy className="w-3 h-3 text-amber-400" />
             <span className="text-[10px] font-black text-white tabular-nums tracking-widest uppercase">{labels.best}: {profile.allTimeHigh}</span>
@@ -129,10 +129,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Main Game Interface */}
+      {/* Primary Mission Grid */}
       <Board />
 
-      {/* Overlays */}
+      {/* Confirmation Overlays */}
       <AlertDialog open={abortDialogOpen} onOpenChange={setAbortDialogOpen}>
         <AlertDialogContent className="glass-panel border-destructive/50 bg-black/95 text-white shadow-[0_0_50px_rgba(239,68,68,0.2)] z-[10000]">
           <AlertDialogHeader>

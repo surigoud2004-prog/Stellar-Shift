@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Settings, Volume2, VolumeX, Languages, Zap, Trophy, BatteryLow, BatteryFull, X } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Languages, Zap, Trophy, BatteryLow, BatteryFull, Power } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { playUIClickSound } from '@/lib/audio-system';
 import { Language } from '@/lib/localization';
@@ -94,10 +94,10 @@ export function SettingsDrawer({
     },
   ];
 
-  // Only show abort in drawer if a game is active
+  // Injected Emergency Abort Control
   if (gameStarted) {
     buttons.push({
-      icon: X,
+      icon: Power,
       label: labels.abortMission,
       onClick: onAbort,
       active: true,
@@ -133,7 +133,7 @@ export function SettingsDrawer({
               btn.active === false ? "bg-black/40 text-muted-foreground" : "bg-white/5 text-white",
               btn.color,
               "hover:bg-white/10 active:scale-90 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]",
-              btn.color === 'text-red-500' && "bg-red-500/10 border border-red-500/20"
+              btn.color === 'text-red-500' && "bg-red-500/10 border border-red-500/20 shadow-[0_0_20px_rgba(239,68,68,0.2)]"
             )}
             title={btn.label}
           >
