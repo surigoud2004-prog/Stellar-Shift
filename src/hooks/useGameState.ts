@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -52,20 +53,24 @@ export function useGameState() {
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // INFINITE LEVELING MATH
+  // INFINITE LEVELING MATH - Level * 1500
   const targetScore = useMemo(() => level * 1500, [level]);
+  
   const levelTimeLimit = useMemo(() => {
     const base = Math.max(30, 60 - (level - 1) * 2);
     return powerUps.timeDilator ? base + 15 : base;
   }, [level, powerUps.timeDilator]);
   
+  // 5% speed increase per level
   const animationDuration = useMemo(() => 0.3 * Math.pow(0.95, level - 1), [level]);
 
   const getVariety = useCallback(() => {
     if (!sessionStartTime) return 6;
     const elapsed = (Date.now() - sessionStartTime) / 1000;
-    return elapsed < 120 ? 4 : 6; // 4 colors for first 2 minutes for Flow State
-  }, [sessionStartTime]);
+    // Levels 1-5 use 4 colors for "Flow State"
+    if (level <= 5) return 4;
+    return 6;
+  }, [sessionStartTime, level]);
 
   const archiveLore = useCallback(async (event: string, context?: string) => {
     if (!firestore || !auth?.currentUser) return;
@@ -87,6 +92,7 @@ export function useGameState() {
     let hasMatches = true;
     let attempts = 0;
     
+    // Ensure no matches on start
     while (hasMatches && attempts < 100) {
       attempts++;
       initial = [];
@@ -118,23 +124,28 @@ export function useGameState() {
     setIsShaking(false);
   }, [getVariety, levelTimeLimit, powerUps.novaBlast]);
 
+  // Handle Level Transition
   useEffect(() => {
     if (isWin) {
       setIsWarping(true);
       const timeout = setTimeout(() => {
         setLevel(prev => prev + 1);
+        // Score is reset to 0 in initBoard via level change dependency or manually here
+        setScore(0);
         setIsWin(false);
+        setIsWarping(false);
         setPowerUps(prev => ({ ...prev, timeDilator: false, novaBlast: false }));
-      }, 2000); 
+        // initBoard will trigger due to level change effect
+      }, 2500); 
       return () => clearTimeout(timeout);
     }
   }, [isWin]);
 
   useEffect(() => {
-    if (gameStarted && !isWin && !isGameOver && score === 0 && entities.length === 0) {
+    if (gameStarted && !isWin && !isGameOver && !isWarping) {
       initBoard();
     }
-  }, [level, gameStarted, initBoard, isWin, score, isGameOver, entities.length]);
+  }, [level, gameStarted, initBoard, isWin, isGameOver]);
 
   useEffect(() => {
     if (!gameStarted || isGameOver || isWin || isWarping || entities.length === 0) {
@@ -217,14 +228,17 @@ export function useGameState() {
 
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000 * 1.3));
 
-      const points = allToDestroy.size * 10 * comboFactor * chainMultiplier;
+      // Use Math.floor to keep score as an integer
+      const points = Math.floor(allToDestroy.size * 10 * comboFactor * chainMultiplier);
+      
+      let currentNewScore = 0;
       setScore(s => {
-        const newScore = s + points;
-        if (newScore >= targetScore && !isWin) {
+        currentNewScore = Math.floor(s + points);
+        if (currentNewScore >= targetScore && !isWin && !isWarping) {
            setIsWin(true);
            archiveLore("Sector Secured", `Level ${level} targets reached.`);
         }
-        return newScore;
+        return currentNewScore;
       });
 
       const updated = currentEntities.filter(e => !allToDestroy.has(e.id));
@@ -260,7 +274,7 @@ export function useGameState() {
     } else {
       setIsProcessing(false);
     }
-  }, [targetScore, getVariety, isWin, level, archiveLore, animationDuration]);
+  }, [targetScore, getVariety, isWin, isWarping, level, archiveLore, animationDuration]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
     if (isProcessing || isWin || isGameOver || isWarping) return;
@@ -288,7 +302,7 @@ export function useGameState() {
     const { matches } = findMatches(newEntities, id1);
     const isSpecialMoved = e1.special || e2.special;
 
-    // REWARD PROTOCOL: If a special is moved but no match, it still triggers
+    // Trigger even without match if special is moved
     if (matches.length === 0 && !isSpecialMoved) {
       playRejectSound();
       const reverted = [...newEntities];
@@ -342,6 +356,7 @@ export function useGameState() {
     setTimeLeft(60);
     setIsGameOver(false);
     setIsWin(false);
+    setIsWarping(false);
     setSessionStartTime(0);
     setPowerUps({ timeDilator: false, novaBlast: false, colorNuke: 0 });
   }, []);

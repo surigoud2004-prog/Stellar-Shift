@@ -1,3 +1,4 @@
+
 export type EntityType = 0 | 1 | 2 | 3 | 4 | 5;
 export type SpecialType = 'nova-h' | 'nova-v' | 'bomb' | 'nova-core' | null;
 
@@ -12,8 +13,8 @@ export interface CelestialEntity {
 }
 
 export interface SectorInfo {
-  name: string;
   id: 'neon' | 'gilded' | 'void';
+  name: string;
   nebulaColors: string[];
 }
 
@@ -34,7 +35,7 @@ function generateStableId() {
 /**
  * Generates a random entity. 
  * 'variety' determines how many different types can spawn.
- * Includes a 5% chance for a random special entity.
+ * Includes a 5% "Luck" chance for a random special entity.
  */
 export function generateRandomEntity(q: number, r: number, variety: number = 6): CelestialEntity {
   const luck = Math.random();
@@ -66,21 +67,21 @@ export function areAdjacent(a: CelestialEntity, b: CelestialEntity): boolean {
 export function getSectorInfo(level: number): SectorInfo {
   if (level <= 5) {
     return { 
-      name: 'Neon Sector', 
       id: 'neon', 
+      name: 'Neon Sector', 
       nebulaColors: ['#4c1d95', '#1e3a8a'] 
     };
   }
   if (level <= 10) {
     return { 
-      name: 'Gilded Sector', 
       id: 'gilded', 
+      name: 'Gilded Sector', 
       nebulaColors: ['#065f46', '#92400e'] 
     };
   }
   return { 
-    name: 'Void Sector', 
     id: 'void', 
+    name: 'Void Sector', 
     nebulaColors: ['#7f1d1d', '#000000'] 
   };
 }
@@ -165,7 +166,7 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
 
     if (moved) {
       if (hGroup && vGroup) {
-        // L or T shape intersection -> Nova Core
+        // L or T shape intersection -> Nova Core (Rainbow Core)
         specialToSpawn = { id: generateStableId(), type: 'nova-core', entityType: moved.type, q: moved.q, r: moved.r };
       } else if (hGroup && hGroup.length >= 5 || vGroup && vGroup.length >= 5) {
         // 5-match linear -> Cosmic Bomb

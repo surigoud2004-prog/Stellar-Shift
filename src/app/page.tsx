@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Board } from '@/components/game/Board';
@@ -52,9 +53,10 @@ function MissionContent() {
   const labels = LOCALIZATION[language];
   const sector = useMemo(() => getSectorInfo(level), [level]);
 
+  // Handle Rewards on Level Clear
   useEffect(() => {
     if (isWin && level > lastProcessedLevel) {
-      const coinsWon = 100 + (timeLeft * 5);
+      const coinsWon = Math.floor(100 + (timeLeft * 5));
       updateStats(score, 0, true, coinsWon);
       setLastProcessedLevel(level);
       setShowCoins(true);
@@ -91,10 +93,10 @@ function MissionContent() {
       
       <ParallaxBackground disabled={isBatterySaver} isWarping={isWarping} level={level} />
       
-      {/* GLOBAL HUD - ANCHORED & REINFORCED */}
+      {/* GLOBAL HUD - PERSISTENT & ANCHORED */}
       <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
         
-        {/* TOP-LEFT: ABORT MISSION CLUSTER */}
+        {/* TOP-LEFT: UTILITY CLUSTER */}
         <div className="absolute top-[30px] left-[30px] flex items-center gap-3 pointer-events-auto">
           <button 
             onClick={() => setAbortDialogOpen(true)}
@@ -113,7 +115,7 @@ function MissionContent() {
           </button>
         </div>
 
-        {/* TOP-CENTER: MISSION STATUS & SCORE */}
+        {/* TOP-CENTER: MISSION STATUS & WHOLE-NUMBER SCORE */}
         <div className={cn(
           "absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center pointer-events-auto transition-all duration-500 w-full max-w-md",
           !uiVisible && "opacity-0 translate-y-[-100px]"
@@ -125,7 +127,7 @@ function MissionContent() {
           <div className="mt-4 flex flex-col items-center gap-2">
             <div className="flex items-center gap-3">
                <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-sm md:text-xl bg-black/70 px-8 py-3 rounded-2xl border-2 border-primary/40 backdrop-blur-xl min-w-[220px] shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-                {labels.score}: <span className="text-primary">{score.toLocaleString()}</span> / {targetScore.toLocaleString()}
+                {labels.score}: <span className="text-primary">{Math.floor(score).toLocaleString()}</span> / {targetScore.toLocaleString()}
               </div>
               <div className="flex flex-col gap-1">
                 <div className="bg-primary/30 border border-primary/50 rounded-xl px-4 py-1.5 flex items-center gap-2 backdrop-blur-md shadow-lg">
@@ -161,7 +163,7 @@ function MissionContent() {
                <Coins className="w-4 h-4 text-black stroke-[3px]" />
             </div>
             <span className="text-white font-black text-lg tracking-widest">
-              {(profile.coins || 0).toLocaleString()}
+              {Math.floor(profile.coins || 0).toLocaleString()}
             </span>
           </div>
 
