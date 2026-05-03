@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Board } from '@/components/game/Board';
@@ -9,6 +8,7 @@ import { ParallaxBackground } from '@/components/game/ParallaxBackground';
 import { HallOfFame } from '@/components/game/HallOfFame';
 import { MissionLogs } from '@/components/game/MissionLogs';
 import { PowerUpShop } from '@/components/game/PowerUpShop';
+import { CoinFountain } from '@/components/game/CoinFountain';
 import { GameStateProvider, useGameState } from '@/context/GameStateContext';
 import { useState, useEffect, useMemo } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
@@ -45,6 +45,7 @@ function MissionContent() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [abortDialogOpen, setAbortDialogOpen] = useState(false);
   const [uiVisible, setUiVisible] = useState(true);
+  const [showCoins, setShowCoins] = useState(false);
   
   // Guard to prevent multiple reward processing for the same win event
   const [lastProcessedLevel, setLastProcessedLevel] = useState(0);
@@ -58,8 +59,13 @@ function MissionContent() {
       const coinsWon = 100 + (timeLeft * 5);
       updateStats(score, 0, true, coinsWon);
       setLastProcessedLevel(level);
+      setShowCoins(true);
+      
       // Automatically show shop for next level
-      setTimeout(() => setShowShop(true), 1500);
+      setTimeout(() => {
+        setShowShop(true);
+        setShowCoins(false);
+      }, 2500);
     }
   }, [isWin, score, updateStats, level, lastProcessedLevel, timeLeft]);
 
@@ -202,6 +208,8 @@ function MissionContent() {
           />
         </div>
       </div>
+
+      <CoinFountain isActive={showCoins} />
 
       {/* LAYER 3: GAME BOARD (CENTER LAYER) */}
       <div className="relative flex-1 w-full flex flex-col items-center justify-center z-10 pt-48 pb-20">

@@ -1,4 +1,3 @@
-
 'use client';
 
 let audioCtx: AudioContext | null = null;
@@ -123,4 +122,20 @@ export function playBombSound() {
   boomGain.connect(ctx.destination);
   boom.start(ctx.currentTime + 0.1);
   boom.stop(ctx.currentTime + 1.0);
+}
+
+export function playCoinClinkSound() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(2500, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(2000, ctx.currentTime + 0.05);
+  gain.gain.setValueAtTime(0.05, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.1);
 }
