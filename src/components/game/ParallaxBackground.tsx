@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 interface Star {
   width: string;
@@ -8,6 +9,8 @@ interface Star {
   left: string;
   top: string;
   opacity: number;
+  twinkleDuration: string;
+  twinkleDelay: string;
 }
 
 interface DustParticle {
@@ -27,12 +30,14 @@ export function ParallaxBackground({ disabled }: { disabled?: boolean }) {
       [...Array(count)].map(() => ({
         width: (Math.random() * 1.5 + 0.5) + 'px',
         height: (Math.random() * 1.5 + 0.5) + 'px',
-        left: Math.random() * 200 + '%',
+        left: Math.random() * 200 + '%', // Spanned for horizontal drift
         top: Math.random() * 100 + '%',
-        opacity: Math.random() * 0.6 + 0.2
+        opacity: Math.random() * 0.6 + 0.2,
+        twinkleDuration: (Math.random() * 3 + 2) + 's',
+        twinkleDelay: (Math.random() * -5) + 's'
       }));
 
-    setStars(generateStars(100));
+    setStars(generateStars(150));
 
     setDust([...Array(15)].map(() => ({
       left: Math.random() * 100 + '%',
@@ -49,7 +54,7 @@ export function ParallaxBackground({ disabled }: { disabled?: boolean }) {
   return (
     <div className="fixed inset-0 z-[-10] pointer-events-none bg-[#020108] overflow-hidden select-none">
       
-      {/* LAYER 1: PULSING NEBULA CLOUD */}
+      {/* LAYER 1: NEBULA RESPIRATION (DEEP SPACE CLOUDS) */}
       <div 
         className="absolute inset-[-100px] opacity-20 mix-blend-screen animate-nebula-breath blur-[80px]"
         style={{ 
@@ -60,24 +65,26 @@ export function ParallaxBackground({ disabled }: { disabled?: boolean }) {
         }}
       />
       
-      {/* LAYER 2: DRIFTING STARFIELD */}
-      <div className="absolute inset-0 animate-drift-left">
+      {/* LAYER 2: DRIFTING STARFIELD (PARALLAX DEPTH) */}
+      <div className="absolute inset-0 w-[200%] animate-drift-left">
         {stars.map((star, i) => (
           <div 
             key={`star-${i}`}
-            className="absolute bg-white rounded-full"
+            className={cn("absolute bg-white rounded-full", !disabled && "animate-twinkle")}
             style={{
               width: star.width,
               height: star.height,
               left: star.left,
               top: star.top,
-              opacity: star.opacity
-            }}
+              opacity: star.opacity,
+              '--twinkle-duration': star.twinkleDuration,
+              animationDelay: star.twinkleDelay
+            } as any}
           />
         ))}
       </div>
 
-      {/* LAYER 3: FLOATING STELLAR EMBERS */}
+      {/* LAYER 3: STELLAR EMBERS (UPWARD DRIFT) */}
       {!disabled && (
         <div className="absolute inset-0">
           {dust.map((particle, i) => (

@@ -73,17 +73,17 @@
 /* ANIMATIONS */
 @keyframes driftLeft {
   from { transform: translateX(0); }
-  to { transform: translateX(-100px); }
+  to { transform: translateX(-50%); }
 }
 
 @keyframes nebulaBreath {
-  0%, 100% { opacity: 0.2; transform: scale(1); filter: blur(80px) brightness(1); }
-  50% { opacity: 0.4; transform: scale(1.05); filter: blur(90px) brightness(1.2); }
+  0%, 100% { opacity: 0.15; transform: scale(1) translate(0, 0); filter: blur(80px) brightness(1); }
+  50% { opacity: 0.35; transform: scale(1.1) translate(-20px, 10px); filter: blur(100px) brightness(1.4); }
 }
 
 @keyframes coreBreath {
   0%, 100% { transform: scale(1); filter: brightness(1); }
-  50% { transform: scale(1.03); filter: brightness(1.1); }
+  50% { transform: scale(1.04); filter: brightness(1.15); }
 }
 
 @keyframes eventHorizonRotate {
@@ -99,13 +99,14 @@
 
 @keyframes implodeToStar {
   0% { transform: scale(1); filter: brightness(1); }
-  30% { transform: scale(1.2); filter: brightness(5); }
-  100% { transform: scale(0); filter: brightness(10) blur(10px); }
+  30% { transform: scale(1.3); filter: brightness(8); }
+  100% { transform: scale(0); filter: brightness(15) blur(10px); }
 }
 
 @keyframes sparkleBurst {
-  0% { transform: scale(0); opacity: 1; }
-  100% { transform: scale(2.5); opacity: 0; }
+  0% { transform: scale(0); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: scale(3.5); opacity: 0; }
 }
 
 @keyframes emberRise {
@@ -115,14 +116,20 @@
   100% { transform: translate(40px, -250px); opacity: 0; }
 }
 
-.animate-drift-left { animation: driftLeft 30s infinite linear; }
-.animate-nebula-breath { animation: nebulaBreath 8s infinite ease-in-out; }
-.animate-core-breath { animation: coreBreath 3s infinite ease-in-out; }
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.animate-drift-left { animation: driftLeft 60s infinite linear; }
+.animate-nebula-breath { animation: nebulaBreath 12s infinite ease-in-out; }
+.animate-core-breath { animation: coreBreath 4s infinite ease-in-out; }
 .animate-event-horizon { animation: eventHorizonRotate 4s infinite linear; }
 .animate-negative-flash { animation: negativeFlash 0.4s ease-out forwards; }
 .animate-implode { animation: implodeToStar 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-.animate-sparkle { animation: sparkleBurst 0.6s ease-out forwards; }
+.animate-sparkle { animation: sparkleBurst 0.7s ease-out forwards; }
 .animate-ember-rise { animation: emberRise var(--ember-duration) infinite linear; }
+.animate-twinkle { animation: twinkle var(--twinkle-duration) infinite ease-in-out; }
 
 .sparkle-effect {
   @apply absolute inset-0 pointer-events-none rounded-full opacity-0;

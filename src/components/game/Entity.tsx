@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useState } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import { CelestialEntity, HEX_WIDTH } from '@/lib/game-utils';
 import { cn } from '@/lib/utils';
 
@@ -48,9 +48,15 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
   const coreClass = CORE_CLASS_MAP[entity.type % CORE_CLASS_MAP.length];
   const sparkleColor = SPARKLE_COLOR_MAP[entity.type % SPARKLE_COLOR_MAP.length];
 
+  // Trigger sparkle burst when matched or selected
+  useEffect(() => {
+    if (entity.isMatched || isSelected) {
+      setSparkleKey(prev => prev + 1);
+    }
+  }, [entity.isMatched, isSelected]);
+
   const handleInteraction = () => {
     if (disabled) return;
-    setSparkleKey(prev => prev + 1);
     onSelect(entity.id);
   };
 
@@ -74,7 +80,7 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
       <div className={cn(
         "w-full h-full transition-all relative rounded-full animate-core-breath",
         bloomClass,
-        isSelected && "ring-4 ring-white shadow-[0_0_30px_white]"
+        isSelected && "brightness-150 ring-4 ring-white shadow-[0_0_40px_white]"
       )}>
         {/* Color-Matched Sparkle Burst Layer */}
         <div 
@@ -85,30 +91,23 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
 
         {entity.special === 'bomb' ? (
           <div className="w-full h-full bg-black relative flex items-center justify-center overflow-hidden rounded-full border border-white/20">
-             {/* Rotating Event Horizon */}
              <div className="absolute inset-0 border-[3px] border-white/80 rounded-full animate-event-horizon shadow-[0_0_20px_white,0_0_40px_gold]" />
              <div className="absolute inset-[15%] border-[1px] border-gold/40 rounded-full animate-event-horizon reverse" style={{ animationDirection: 'reverse' }} />
-             {/* Black Hole Core */}
              <div className="relative w-8 h-8 rounded-full bg-black shadow-[inset_0_0_25px_white]" />
-             {/* Glass FX */}
              <div className="absolute inset-0 glossy-overlay opacity-60" />
              <div className="rim-light" />
           </div>
         ) : (
-          <div className="relative w-full h-full rounded-full overflow-hidden border border-white/10">
-            {/* The Solid Neon Core */}
+          <div className="relative w-full h-full rounded-full overflow-hidden border border-white/10 group">
+            {/* The Solid Neon Core with Inner Singularity Bloom */}
             <div className={cn("absolute inset-0", coreClass)} />
             
-            {/* 3D Glass Marble: Inner Singularity Glow */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,white_0%,transparent_30%)] opacity-50" />
+            {/* Pulsing Inner Singularity Glow */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,white_0%,transparent_40%)] opacity-70 animate-pulse" />
             
-            {/* 3D Glass Marble: Specular Highlight */}
+            {/* 3D Glass Marble Elements */}
             <div className="absolute inset-0 specular-highlight pointer-events-none" />
-            
-            {/* 3D Glass Marble: Rim Light */}
             <div className="rim-light" />
-            
-            {/* 3D Glass Marble: Glossy Overlay */}
             <div className="absolute inset-0 glossy-overlay pointer-events-none opacity-50" />
           </div>
         )}
