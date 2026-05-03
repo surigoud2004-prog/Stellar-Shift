@@ -54,18 +54,8 @@ export default function Home() {
       {/* Global_HUD Layer: Top-most tactical overlay */}
       <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
         
-        {/* Top-Left Anchor: Abort Control & UI Toggle */}
+        {/* Top-Left Anchor: Eye Toggle */}
         <div className="absolute top-[30px] left-[30px] flex items-center gap-4 pointer-events-auto">
-          {gameStarted && (
-            <button 
-              onClick={() => setAbortDialogOpen(true)}
-              className="w-[50px] h-[50px] rounded-full bg-destructive flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.5)] border-2 border-white/20"
-              title={labels.abortMission}
-            >
-              <X className="w-6 h-6 text-white" />
-            </button>
-          )}
-          
           <button 
             onClick={() => setUiVisible(!uiVisible)}
             className="w-12 h-12 rounded-full glass-panel border-white/10 hover:border-primary/50 transition-all flex items-center justify-center group active:scale-90 bg-black/40 backdrop-blur-md"
@@ -105,11 +95,22 @@ export default function Home() {
           )}
         </div>
 
-        {/* Top-Right Anchor: Profile & Settings */}
+        {/* Top-Right Anchor: Abort, Profile & Settings */}
         <div className={cn(
           "absolute top-[30px] right-[30px] flex items-center gap-4 pointer-events-auto transition-all duration-500",
           !uiVisible && "opacity-0"
         )}>
+          {/* Abort Button relocated here next to Profile */}
+          {gameStarted && (
+            <button 
+              onClick={() => setAbortDialogOpen(true)}
+              className="w-12 h-12 rounded-full bg-destructive flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.5)] border-2 border-white/20"
+              title={labels.abortMission}
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
+          )}
+
           <button 
             onClick={() => setShowProfile(true)}
             className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-primary/30 hover:border-primary transition-all shadow-lg active:scale-90 bg-black/40 backdrop-blur-md"
