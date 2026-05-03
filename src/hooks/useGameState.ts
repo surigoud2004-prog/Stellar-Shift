@@ -99,7 +99,6 @@ export function useGameState() {
       if (matches.length === 0) hasMatches = false;
     }
 
-    // Apply Nova Blast Powerup
     if (powerUps.novaBlast) {
       for (let i = 0; i < 2; i++) {
         const randIdx = Math.floor(Math.random() * initial.length);
@@ -113,19 +112,17 @@ export function useGameState() {
     setIsWin(false);
     setIsWarping(false);
     setTimeLeft(levelTimeLimit);
+    setScore(0); // Ensure score resets on retry/init
     setIsProcessing(false);
     setIsFlashing(false);
   }, [getVariety, levelTimeLimit, powerUps.novaBlast]);
 
-  // Level Progression Logic
   useEffect(() => {
     if (isWin) {
       setIsWarping(true);
       const timeout = setTimeout(() => {
         setLevel(prev => prev + 1);
-        setScore(0);
         setIsWin(false);
-        // Reset single-level powerups but keep color nukes
         setPowerUps(prev => ({ ...prev, timeDilator: false, novaBlast: false }));
       }, 2000); 
       return () => clearTimeout(timeout);
@@ -133,11 +130,10 @@ export function useGameState() {
   }, [isWin]);
 
   useEffect(() => {
-    if (gameStarted && !isWin && score === 0 && level > 1) {
+    if (gameStarted && !isWin && !isGameOver && score === 0 && entities.length === 0) {
       initBoard();
-      archiveLore("Sector Warp Complete", `Entered Sector LVL ${level}.`);
     }
-  }, [level, gameStarted, initBoard, archiveLore, isWin, score]);
+  }, [level, gameStarted, initBoard, isWin, score, isGameOver, entities.length]);
 
   useEffect(() => {
     if (!gameStarted || isGameOver || isWin || isWarping || entities.length === 0) {
@@ -199,7 +195,14 @@ export function useGameState() {
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000 * 1.3));
 
       const points = allToDestroy.size * 10 * comboFactor;
-      setScore(s => s + points);
+      setScore(s => {
+        const newScore = s + points;
+        if (newScore >= targetScore && !isWin) {
+           setIsWin(true);
+           archiveLore("Sector Secured", `Level ${level} targets reached.`);
+        }
+        return newScore;
+      });
 
       const updated = currentEntities.filter(e => !allToDestroy.has(e.id));
       const newGrid: CelestialEntity[] = [];
@@ -230,18 +233,11 @@ export function useGameState() {
 
       setEntities(newGrid);
       await new Promise(resolve => setTimeout(resolve, animationDuration * 1000));
-      
       await handleMatch(newGrid, undefined, comboFactor * 2);
     } else {
       setIsProcessing(false);
-      setScore(current => {
-        if (current >= targetScore && !isWin && gameStarted) {
-          setIsWin(true);
-        }
-        return current;
-      });
     }
-  }, [targetScore, getVariety, isWin, gameStarted, animationDuration]);
+  }, [targetScore, getVariety, isWin, level, archiveLore, animationDuration]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
     if (isProcessing || isWin || isGameOver || isWarping) return;
@@ -289,7 +285,6 @@ export function useGameState() {
     setIsProcessing(true);
     setPowerUps(prev => ({ ...prev, colorNuke: prev.colorNuke - 1 }));
 
-    // Count colors and pick the most frequent one
     const counts: Record<number, number> = {};
     entities.forEach(e => {
       counts[e.type] = (counts[e.type] || 0) + 1;
@@ -312,8 +307,7 @@ export function useGameState() {
     setLevel(1);
     setScore(0);
     initBoard();
-    archiveLore("Mission Started", "Neural link established.");
-  }, [initBoard, archiveLore]);
+  }, [initBoard]);
 
   const quitGame = useCallback(() => {
     playUIClickSound();
@@ -322,6 +316,8 @@ export function useGameState() {
     setScore(0);
     setLevel(1);
     setTimeLeft(60);
+    setIsGameOver(false);
+    setIsWin(false);
     setSessionStartTime(0);
     setPowerUps({ timeDilator: false, novaBlast: false, colorNuke: 0 });
   }, []);

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Board } from '@/components/game/Board';
@@ -33,7 +34,7 @@ function MissionContent() {
   
   const { 
     gameMode, setGameMode, gameStarted, quitGame, score, targetScore, timeLeft, startGame, level, isWin, isWarping,
-    powerUps, setPowerUps
+    powerUps, setPowerUps, isGameOver
   } = useGameState();
 
   const [language, setLanguage] = useState<'en' | 'es' | 'fr'>('en');
@@ -47,13 +48,11 @@ function MissionContent() {
   const [uiVisible, setUiVisible] = useState(true);
   const [showCoins, setShowCoins] = useState(false);
   
-  // Guard to prevent multiple reward processing for the same win event
   const [lastProcessedLevel, setLastProcessedLevel] = useState(0);
 
   const labels = LOCALIZATION[language];
   const sector = useMemo(() => getSectorInfo(level), [level]);
 
-  // Update profile stats when a win occurs
   useEffect(() => {
     if (isWin && level > lastProcessedLevel) {
       const coinsWon = 100 + (timeLeft * 5);
@@ -61,7 +60,6 @@ function MissionContent() {
       setLastProcessedLevel(level);
       setShowCoins(true);
       
-      // Automatically show shop for next level
       setTimeout(() => {
         setShowShop(true);
         setShowCoins(false);
@@ -92,13 +90,12 @@ function MissionContent() {
   return (
     <main className="min-h-screen w-full flex flex-col items-center justify-center relative bg-black overflow-hidden">
       
-      {/* LAYER 1: COSMIC BACKGROUND */}
       <ParallaxBackground disabled={isBatterySaver} isWarping={isWarping} level={level} />
       
-      {/* LAYER 2: GLOBAL HUD (TOP LAYER - Z:9999) */}
+      {/* GLOBAL HUD - ALWAYS VISIBLE */}
       <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
         
-        {/* TOP-LEFT ANCHOR: COMMAND CLUSTER */}
+        {/* TOP-LEFT: COMMAND CLUSTER */}
         <div className="absolute top-[30px] left-[30px] flex items-center gap-3 pointer-events-auto">
           <button 
             onClick={() => setAbortDialogOpen(true)}
@@ -117,11 +114,11 @@ function MissionContent() {
           </button>
         </div>
 
-        {/* TOP-CENTER ANCHOR: MISSION STATUS */}
+        {/* TOP-CENTER: MISSION STATUS (Re-Anchored) */}
         <div className={cn(
-          "absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center pointer-events-auto transition-all duration-500",
+          "absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center pointer-events-auto transition-all duration-500 w-full max-w-md",
           !uiVisible && "opacity-0",
-          isWarping && "scale-110 brightness-150"
+          (isWarping || isGameOver) && "brightness-150"
         )}>
           <h1 className="font-headline text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
             Stellar <span className="text-primary">Shift</span>
@@ -129,12 +126,12 @@ function MissionContent() {
           
           <div className="mt-4 flex flex-col items-center gap-2">
             <div className="flex items-center gap-3">
-               <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-sm md:text-lg bg-black/40 px-6 py-2 rounded-xl border border-primary/20 backdrop-blur-md min-w-[200px]">
+               <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-sm md:text-lg bg-black/60 px-6 py-2 rounded-xl border border-primary/20 backdrop-blur-md min-w-[200px] shadow-2xl">
                 {labels.score}: {score.toLocaleString()} / {targetScore.toLocaleString()}
               </div>
               <div className="flex flex-col gap-1">
                 <div className="bg-primary/20 border border-primary/40 rounded-xl px-4 py-1.5 flex items-center gap-2 backdrop-blur-md">
-                  <Radio className={cn("w-3.5 h-3.5 text-primary", isWarping ? "animate-ping" : "animate-pulse")} />
+                  <Radio className={cn("w-3.5 h-3.5 text-primary", (isWarping || gameStarted) ? "animate-pulse" : "")} />
                   <span className="text-white font-black uppercase text-xs tracking-widest">LVL {level}</span>
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-lg px-2 py-0.5 flex items-center justify-center gap-1.5 backdrop-blur-md">
@@ -147,7 +144,7 @@ function MissionContent() {
             </div>
             
             <div className={cn(
-              "text-white/80 font-mono text-xs uppercase tracking-widest bg-black/40 px-4 py-1 rounded-full border border-white/5 backdrop-blur-md transition-all",
+              "text-white/80 font-mono text-xs uppercase tracking-widest bg-black/60 px-4 py-1 rounded-full border border-white/5 backdrop-blur-md transition-all shadow-xl",
               timeLeft < 10 && "text-red-400 animate-pulse border-red-500/50",
               isWarping && "opacity-0 scale-50"
             )}>
@@ -156,9 +153,8 @@ function MissionContent() {
           </div>
         </div>
 
-        {/* TOP-RIGHT ANCHOR: COMMAND CLUSTER */}
+        {/* TOP-RIGHT: COMMAND CLUSTER */}
         <div className="absolute top-[30px] right-[30px] flex items-center gap-4 pointer-events-auto">
-          {/* COIN HUD */}
           <div className={cn(
             "flex items-center gap-2 bg-black/40 px-4 py-2 rounded-xl border border-yellow-500/30 backdrop-blur-md shadow-[0_0_15px_rgba(234,179,8,0.1)] transition-all",
             !uiVisible && "opacity-0"
@@ -211,7 +207,6 @@ function MissionContent() {
 
       <CoinFountain isActive={showCoins} />
 
-      {/* LAYER 3: GAME BOARD (CENTER LAYER) */}
       <div className="relative flex-1 w-full flex flex-col items-center justify-center z-10 pt-48 pb-20">
         {!gameStarted ? (
           <div className="flex flex-col items-center animate-in zoom-in duration-700">
@@ -231,7 +226,6 @@ function MissionContent() {
         )}
       </div>
 
-      {/* LAYER 4: CONFIRMATION PROTOCOLS */}
       <AlertDialog open={abortDialogOpen} onOpenChange={setAbortDialogOpen}>
         <AlertDialogContent className="glass-panel border-red-500/30 bg-black/95 text-white z-[10000]">
           <AlertDialogHeader>

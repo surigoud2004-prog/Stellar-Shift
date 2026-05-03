@@ -6,14 +6,14 @@ import { useGameState } from '@/context/GameStateContext';
 import { Entity } from './Entity';
 import { areAdjacent, HEX_WIDTH, GRID_COLS, GRID_ROWS } from '@/lib/game-utils';
 import { Button } from '@/components/ui/button';
-import { Trophy, RotateCcw, FastForward, Zap } from 'lucide-react';
+import { Trophy, RotateCcw, FastForward, Zap, Power } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Board() {
   const { 
     entities, isGameOver, isWin, isWarping, selectedId, setSelectedId, 
-    swapEntities, isProcessing, initBoard, isFlashing, level, targetScore,
-    powerUps, triggerColorNuke
+    swapEntities, isProcessing, initBoard, isFlashing, level, 
+    powerUps, triggerColorNuke, quitGame
   } = useGameState();
 
   const handleSelect = useCallback((id: string) => {
@@ -43,7 +43,7 @@ export function Board() {
         <div className="fixed inset-0 z-[10000] bg-white mix-blend-difference pointer-events-none animate-negative-flash" />
       )}
 
-      {/* Power-Up HUD Sidebar (Integrated into Board Area) */}
+      {/* Power-Up HUD Sidebar */}
       <div className="absolute -left-20 top-1/2 -translate-y-1/2 flex flex-col gap-4">
          {powerUps.colorNuke > 0 && (
            <button 
@@ -57,7 +57,6 @@ export function Board() {
          )}
       </div>
 
-      {/* 9x7 High-Density Sector Grid Centered */}
       <div className={cn(
         "stellar-grid-frame p-4 flex items-center justify-center relative shadow-[0_0_100px_rgba(0,0,0,0.8)] border-primary/10 overflow-visible transition-all duration-1000",
         isWarping && "scale-90 opacity-40 blur-[10px]"
@@ -94,26 +93,41 @@ export function Board() {
           )}
 
           {(isGameOver || isWin) && !isWarping && (
-            <div className="absolute inset-[-20px] md:inset-[-40px] z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-2xl rounded-[3rem] animate-in zoom-in duration-300 border border-white/10 shadow-[0_0_100px_rgba(168,85,247,0.3)]">
+            <div className="absolute inset-[-20px] md:inset-[-40px] z-[50] flex flex-col items-center justify-center bg-black/95 backdrop-blur-2xl rounded-[3rem] animate-in zoom-in duration-300 border border-white/10 shadow-[0_0_100px_rgba(168,85,247,0.3)] pointer-events-auto">
               {isWin ? (
                 <>
                   <Trophy className="w-20 h-20 text-yellow-400 mb-6 drop-shadow-[0_0_30px_rgba(250,204,21,0.6)]" />
-                  <h2 className="text-3xl md:text-5xl font-black text-white mb-8 uppercase italic tracking-tighter">Mission Victory</h2>
-                  <p className="text-primary font-bold uppercase tracking-widest mb-4">Level {level} Secured</p>
+                  <h2 className="text-3xl md:text-5xl font-black text-white mb-8 uppercase italic tracking-tighter">Mission Accomplished</h2>
+                  <p className="text-primary font-bold uppercase tracking-widest mb-12">Sector {level} Secured</p>
                 </>
               ) : (
                 <>
-                  <div className="text-7xl mb-6 grayscale opacity-50">🌑</div>
-                  <h2 className="text-3xl md:text-5xl font-black text-white mb-8 uppercase italic tracking-tighter">Link Severed</h2>
+                  <div className="text-7xl mb-6 grayscale opacity-50 drop-shadow-[0_0_30px_rgba(255,0,0,0.5)]">🌑</div>
+                  <h2 className="text-3xl md:text-5xl font-black text-red-500 mb-8 uppercase italic tracking-tighter">Mission Failed</h2>
+                  <p className="text-white/40 font-bold uppercase tracking-widest mb-12">Neural Link Severed</p>
                 </>
               )}
-              <Button 
-                onClick={initBoard} 
-                size="lg" 
-                className="bg-primary hover:bg-primary/80 active:scale-95 transition-all font-black uppercase tracking-widest px-12 h-16 rounded-full text-lg shadow-2xl"
-              >
-                <RotateCcw className="w-5 h-5 mr-3" /> Reboot Link
-              </Button>
+              
+              <div className="flex flex-col gap-4 w-full max-w-xs">
+                <Button 
+                  onClick={initBoard} 
+                  size="lg" 
+                  className="bg-primary hover:bg-primary/80 active:scale-95 transition-all font-black uppercase tracking-widest h-16 rounded-2xl text-lg shadow-2xl w-full"
+                >
+                  <RotateCcw className="w-5 h-5 mr-3" /> {isWin ? 'Next Sector' : 'Retry Mission'}
+                </Button>
+                
+                {!isWin && (
+                  <Button 
+                    onClick={quitGame} 
+                    variant="outline"
+                    size="lg" 
+                    className="border-white/10 hover:bg-white/5 text-white/60 active:scale-95 transition-all font-black uppercase tracking-widest h-16 rounded-2xl text-sm w-full"
+                  >
+                    <Power className="w-4 h-4 mr-3" /> Abort to Menu
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </div>
