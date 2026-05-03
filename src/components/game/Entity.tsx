@@ -36,17 +36,26 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
       }}
     >
       <div className={cn(
-        "w-full h-full rounded-2xl overflow-hidden border-2 transition-colors",
+        "w-full h-full rounded-2xl overflow-hidden border-2 transition-colors relative",
         isSelected ? "border-primary shadow-[0_0_15px_rgba(168,85,247,0.5)]" : "border-white/10"
       )}>
-        <Image
-          src={placeholder.imageUrl}
-          alt={placeholder.description}
-          width={64}
-          height={64}
-          data-ai-hint={placeholder.imageHint}
-          className="object-cover w-full h-full"
-        />
+        {entity.special === 'nova-h' ? (
+          <div className="w-full h-full bg-gradient-to-tr from-amber-500 via-white to-amber-200 animate-pulse relative">
+             <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px]" />
+             <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full border-2 border-white/50 animate-spin" />
+             </div>
+          </div>
+        ) : (
+          <Image
+            src={placeholder.imageUrl}
+            alt={placeholder.description}
+            width={64}
+            height={64}
+            data-ai-hint={placeholder.imageHint}
+            className="object-cover w-full h-full"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
       </div>
     </div>

@@ -5,11 +5,12 @@ import {
   CelestialEntity, 
   generateRandomEntity, 
   findMatches, 
-  GRID_SIZE, 
-  calculateDifficulty,
-  getColorVariety
+  GRID_SIZE,
+  HEX_WIDTH
 } from '@/lib/game-utils';
 import { playSwapSound, playMatchSound, playRejectSound } from '@/lib/audio-system';
+
+export type GameMode = 'easy' | 'hard' | 'hell';
 
 export function useGameState() {
   const [entities, setEntities] = useState<CelestialEntity[]>([]);
@@ -21,19 +22,19 @@ export function useGameState() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
+  const [gameMode, setGameMode] = useState<GameMode>('easy');
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const targetScore = 1000 * level;
 
   const initBoard = useCallback(() => {
-    const variety = getColorVariety(level);
     let initial: CelestialEntity[] = [];
     let hasMatches = true;
     while (hasMatches) {
       initial = [];
       for (let r = 0; r < GRID_SIZE; r++) {
         for (let q = 0; q < GRID_SIZE; q++) {
-          initial.push(generateRandomEntity(q, r, variety));
+          initial.push(generateRandomEntity(q, r));
         }
       }
       const { matches } = findMatches(initial);
@@ -46,7 +47,7 @@ export function useGameState() {
     setScore(0);
     setTimeLeft(60);
     setIsProcessing(false);
-  }, [level]);
+  }, []);
 
   useEffect(() => {
     if (gameStarted && entities.length === 0) {
@@ -86,7 +87,6 @@ export function useGameState() {
       const updated = currentEntities.filter(e => !matches.includes(e.id));
       setScore(s => s + matches.length * 10);
 
-      const variety = getColorVariety(level);
       const newGrid: CelestialEntity[] = [];
       for (let q = 0; q < GRID_SIZE; q++) {
         const column = updated.filter(e => e.q === q).sort((a, b) => b.r - a.r);
@@ -95,7 +95,7 @@ export function useGameState() {
           if (existing) {
             newGrid.push({ ...existing, r });
           } else {
-            newGrid.push(generateRandomEntity(q, r, variety));
+            newGrid.push(generateRandomEntity(q, r));
           }
         }
       }
@@ -107,7 +107,7 @@ export function useGameState() {
       setIsProcessing(false);
       if (score >= targetScore) setIsWin(true);
     }
-  }, [level, score, targetScore]);
+  }, [score, targetScore]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
     if (isProcessing) return;
@@ -152,6 +152,6 @@ export function useGameState() {
     entities, score, targetScore, timeLeft, level,
     isGameOver, isWin, selectedId, setSelectedId,
     swapEntities, isProcessing, initBoard,
-    gameStarted, startGame
+    gameStarted, startGame, gameMode, setGameMode
   };
 }
