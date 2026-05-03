@@ -129,6 +129,8 @@ export function useGameState() {
   useEffect(() => {
     if (isWin) {
       setIsWarping(true);
+      // Clear entities immediately to prepare for warp refill
+      setEntities([]);
       const timeout = setTimeout(() => {
         setLevel(prev => prev + 1);
         setScore(0);
@@ -202,7 +204,6 @@ export function useGameState() {
           if (e.q === ent.q) explosiveIds.add(e.id);
         });
       } else if (ent.special === 'rainbow-core') {
-         // Rainbow core alone doesn't explode unless swapped, but if matched (though it shouldn't)
          explosiveIds.add(ent.id);
       }
     };
@@ -291,15 +292,12 @@ export function useGameState() {
     const e1 = newEntities[idx1];
     const e2 = newEntities[idx2];
     
-    // Check for combinations
     if (e1.special && e2.special) {
       const explosionIds = new Set<string>();
       
       if (e1.special === 'rainbow-core' && e2.special === 'rainbow-core') {
-        // Rainbow + Rainbow: Clear entire board
         newEntities.forEach(e => explosionIds.add(e.id));
       } else if (e1.special === 'rainbow-core' || e2.special === 'rainbow-core') {
-        // Rainbow + Any Special: Transform all of color to that special
         const rainbow = e1.special === 'rainbow-core' ? e1 : e2;
         const other = e1.special === 'rainbow-core' ? e2 : e1;
         const targetType = other.type;
@@ -313,17 +311,14 @@ export function useGameState() {
         });
         explosionIds.add(rainbow.id);
       } else if ((e1.special === 'nova-h' || e1.special === 'nova-v') && (e2.special === 'nova-h' || e2.special === 'nova-v')) {
-        // Beam + Beam: Cross
         newEntities.forEach(e => {
           if (e.q === e1.q || e.r === e1.r) explosionIds.add(e.id);
         });
       } else if (((e1.special === 'nova-h' || e1.special === 'nova-v') && e2.special === 'bomb') || (e1.special === 'bomb' && (e2.special === 'nova-h' || e2.special === 'nova-v'))) {
-        // Beam + Bomb: 3 Rows + 3 Cols
         newEntities.forEach(e => {
           if (Math.abs(e.q - e1.q) <= 1 || Math.abs(e.r - e1.r) <= 1) explosionIds.add(e.id);
         });
       } else if (e1.special === 'bomb' && e2.special === 'bomb') {
-        // Bomb + Bomb: Half the board
         newEntities.forEach(e => {
           if (Math.abs(e.q - e1.q) <= 3 && Math.abs(e.r - e1.r) <= 3) explosionIds.add(e.id);
         });
@@ -335,7 +330,6 @@ export function useGameState() {
       return;
     }
 
-    // Rainbow Core + Normal Shard
     if (e1.special === 'rainbow-core' || e2.special === 'rainbow-core') {
       const rainbow = e1.special === 'rainbow-core' ? e1 : e2;
       const normal = e1.special === 'rainbow-core' ? e2 : e1;
@@ -354,7 +348,6 @@ export function useGameState() {
       return;
     }
 
-    // Normal Swap
     newEntities[idx1] = { ...e1, q: e2.q, r: e2.r };
     newEntities[idx2] = { ...e2, q: e1.q, r: e1.r };
     
@@ -405,8 +398,9 @@ export function useGameState() {
     setLevel(1);
     setScore(0);
     setReviveCost(200);
-    initBoard();
-  }, [initBoard]);
+    // Clearing entities triggers the refill effect which calls initBoard
+    setEntities([]);
+  }, []);
 
   const quitGame = useCallback(() => {
     playUIClickSound();

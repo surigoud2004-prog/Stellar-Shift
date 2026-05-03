@@ -129,7 +129,7 @@ function MissionContent() {
       
       <ParallaxBackground disabled={isBatterySaver} isWarping={isWarping} level={level} />
       
-      {/* GLOBAL HUD - PERSISTENT & ANCHORED AT TOP */}
+      {/* GLOBAL HUD - PERSISTENT & ANCHORED AT TOP LAYER */}
       <div id="Global_HUD" className="fixed inset-x-0 top-0 pointer-events-none z-[9999] h-32">
         
         {/* TOP-LEFT: UTILITY CLUSTER */}
