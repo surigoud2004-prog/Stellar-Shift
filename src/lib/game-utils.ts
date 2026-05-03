@@ -1,6 +1,6 @@
 
 export type EntityType = 0 | 1 | 2 | 3 | 4 | 5;
-export type SpecialType = 'nova-h' | 'nova-v' | 'bomb' | 'nova-core' | null;
+export type SpecialType = 'nova-h' | 'nova-v' | 'bomb' | 'rainbow-core' | null;
 
 export interface CelestialEntity {
   id: string;
@@ -113,7 +113,7 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
   for (let r = 0; r < GRID_ROWS; r++) {
     let count = 1;
     for (let q = 1; q < GRID_COLS; q++) {
-      if (grid[r][q] && grid[r][q-1] && grid[r][q].type === grid[r][q-1].type) {
+      if (grid[r][q] && grid[r][q-1] && grid[r][q].type === grid[r][q-1].type && grid[r][q].special !== 'rainbow-core' && grid[r][q-1].special !== 'rainbow-core') {
         count++;
       } else {
         if (count >= 3) {
@@ -135,7 +135,7 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
   for (let q = 0; q < GRID_COLS; q++) {
     let count = 1;
     for (let r = 1; r < GRID_ROWS; r++) {
-      if (grid[r][q] && grid[r-1][q] && grid[r][q].type === grid[r-1][q].type) {
+      if (grid[r][q] && grid[r-1][q] && grid[r][q].type === grid[r-1][q].type && grid[r][q].special !== 'rainbow-core' && grid[r-1][q].special !== 'rainbow-core') {
         count++;
       } else {
         if (count >= 3) {
@@ -165,11 +165,11 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
     const moved = entities.find(e => e.id === lastMoveId);
 
     if (moved) {
-      if (hGroup && vGroup) {
-        // L or T shape intersection -> Nova Core (Rainbow Core)
-        specialToSpawn = { id: generateStableId(), type: 'nova-core', entityType: moved.type, q: moved.q, r: moved.r };
-      } else if (hGroup && hGroup.length >= 5 || vGroup && vGroup.length >= 5) {
-        // 5-match linear -> Cosmic Bomb
+      if (hGroup && hGroup.length >= 5 || vGroup && vGroup.length >= 5) {
+        // 5-match linear -> Rainbow Core
+        specialToSpawn = { id: generateStableId(), type: 'rainbow-core', entityType: moved.type, q: moved.q, r: moved.r };
+      } else if (hGroup && vGroup) {
+        // L or T shape intersection -> Cosmic Bomb
         specialToSpawn = { id: generateStableId(), type: 'bomb', entityType: moved.type, q: moved.q, r: moved.r };
       } else if (hGroup && hGroup.length === 4) {
         // Horizontal 4-match -> Horizontal Beam

@@ -8,7 +8,8 @@ import {
   findMatches, 
   GRID_COLS,
   GRID_ROWS,
-  SpecialType
+  SpecialType,
+  EntityType
 } from '@/lib/game-utils';
 import { playSwapSound, playMatchSound, playRejectSound, playBombSound, playUIClickSound } from '@/lib/audio-system';
 import { collection, doc, setDoc } from 'firebase/firestore';
@@ -68,8 +69,6 @@ export function useGameState() {
 
   const getVariety = useCallback(() => {
     if (!sessionStartTime) return 6;
-    const elapsed = (Date.now() - sessionStartTime) / 1000;
-    // Levels 1-5 use 4 colors for "Flow State"
     if (level <= 5) return 4;
     return 6;
   }, [sessionStartTime, level]);
@@ -94,7 +93,6 @@ export function useGameState() {
     let hasMatches = true;
     let attempts = 0;
     
-    // Ensure no matches on start
     while (hasMatches && attempts < 100) {
       attempts++;
       initial = [];
@@ -125,10 +123,9 @@ export function useGameState() {
     setIsFlashing(false);
     setIsShaking(false);
     setIsReviving(false);
-    setReviveCost(200); // Reset cost on new board init
+    setReviveCost(200);
   }, [getVariety, levelTimeLimit, powerUps.novaBlast]);
 
-  // Handle Level Transition
   useEffect(() => {
     if (isWin) {
       setIsWarping(true);
@@ -138,7 +135,7 @@ export function useGameState() {
         setIsWin(false);
         setIsWarping(false);
         setPowerUps(prev => ({ ...prev, timeDilator: false, novaBlast: false }));
-        setReviveCost(200); // Reset cost on level clear
+        setReviveCost(200);
       }, 2500); 
       return () => clearTimeout(timeout);
     }
@@ -146,7 +143,6 @@ export function useGameState() {
 
   useEffect(() => {
     if (gameStarted && !isWin && !isGameOver && !isWarping && !isReviving) {
-      // Only init if no entities exist yet (start of game)
       if (entities.length === 0) {
         initBoard();
       }
@@ -171,12 +167,12 @@ export function useGameState() {
     return () => clearInterval(timerRef.current!);
   }, [gameStarted, isGameOver, isWin, isWarping, isReviving, entities.length]);
 
-  const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMovedId?: string, comboFactor: number = 1) => {
+  const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMovedId?: string, comboFactor: number = 1, forceExplosionIds?: Set<string>) => {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMovedId);
     const variety = getVariety();
     
     const activatedSpecialIds = new Set<string>();
-    const explosiveIds = new Set<string>();
+    const explosiveIds = new Set<string>(forceExplosionIds || []);
     let triggeredFlash = false;
     let triggeredShake = false;
     let chainMultiplier = 1;
@@ -205,27 +201,25 @@ export function useGameState() {
         currentEntities.forEach(e => {
           if (e.q === ent.q) explosiveIds.add(e.id);
         });
-      } else if (ent.special === 'nova-core') {
-        currentEntities.forEach(e => {
-          if (e.type === ent.type) explosiveIds.add(e.id);
-        });
+      } else if (ent.special === 'rainbow-core') {
+         // Rainbow core alone doesn't explode unless swapped, but if matched (though it shouldn't)
+         explosiveIds.add(ent.id);
       }
     };
 
     matches.forEach(addExplosives);
+    if (forceExplosionIds) forceExplosionIds.forEach(addExplosives);
 
     if (matches.length > 0 || explosiveIds.size > 0) {
       setIsProcessing(true);
       playMatchSound();
       
       const allToDestroy = new Set([...matches, ...Array.from(explosiveIds)]);
-      
       setEntities(prev => prev.map(e => allToDestroy.has(e.id) ? { ...e, isMatched: true } : e));
       
       if (triggeredFlash) {
         setIsFlashing(true);
         playBombSound();
-        setTimeout(() => setIsFlashing(true), 10);
         setTimeout(() => setIsFlashing(false), 400);
       }
       if (triggeredShake) {
@@ -297,6 +291,70 @@ export function useGameState() {
     const e1 = newEntities[idx1];
     const e2 = newEntities[idx2];
     
+    // Check for combinations
+    if (e1.special && e2.special) {
+      const explosionIds = new Set<string>();
+      
+      if (e1.special === 'rainbow-core' && e2.special === 'rainbow-core') {
+        // Rainbow + Rainbow: Clear entire board
+        newEntities.forEach(e => explosionIds.add(e.id));
+      } else if (e1.special === 'rainbow-core' || e2.special === 'rainbow-core') {
+        // Rainbow + Any Special: Transform all of color to that special
+        const rainbow = e1.special === 'rainbow-core' ? e1 : e2;
+        const other = e1.special === 'rainbow-core' ? e2 : e1;
+        const targetType = other.type;
+        const targetSpecial = other.special;
+        
+        newEntities.forEach(e => {
+          if (e.type === targetType) {
+            e.special = targetSpecial;
+            explosionIds.add(e.id);
+          }
+        });
+        explosionIds.add(rainbow.id);
+      } else if ((e1.special === 'nova-h' || e1.special === 'nova-v') && (e2.special === 'nova-h' || e2.special === 'nova-v')) {
+        // Beam + Beam: Cross
+        newEntities.forEach(e => {
+          if (e.q === e1.q || e.r === e1.r) explosionIds.add(e.id);
+        });
+      } else if (((e1.special === 'nova-h' || e1.special === 'nova-v') && e2.special === 'bomb') || (e1.special === 'bomb' && (e2.special === 'nova-h' || e2.special === 'nova-v'))) {
+        // Beam + Bomb: 3 Rows + 3 Cols
+        newEntities.forEach(e => {
+          if (Math.abs(e.q - e1.q) <= 1 || Math.abs(e.r - e1.r) <= 1) explosionIds.add(e.id);
+        });
+      } else if (e1.special === 'bomb' && e2.special === 'bomb') {
+        // Bomb + Bomb: Half the board
+        newEntities.forEach(e => {
+          if (Math.abs(e.q - e1.q) <= 3 && Math.abs(e.r - e1.r) <= 3) explosionIds.add(e.id);
+        });
+      }
+
+      setEntities(newEntities);
+      playBombSound();
+      await handleMatch(newEntities, undefined, 2, explosionIds);
+      return;
+    }
+
+    // Rainbow Core + Normal Shard
+    if (e1.special === 'rainbow-core' || e2.special === 'rainbow-core') {
+      const rainbow = e1.special === 'rainbow-core' ? e1 : e2;
+      const normal = e1.special === 'rainbow-core' ? e2 : e1;
+      const targetType = normal.type;
+      
+      const explosionIds = new Set<string>();
+      newEntities.forEach(e => {
+        if (e.type === targetType || e.id === rainbow.id) {
+          explosionIds.add(e.id);
+        }
+      });
+      
+      setEntities(newEntities);
+      playBombSound();
+      await handleMatch(newEntities, undefined, 1, explosionIds);
+      return;
+    }
+
+    // Normal Swap
     newEntities[idx1] = { ...e1, q: e2.q, r: e2.r };
     newEntities[idx2] = { ...e2, q: e1.q, r: e1.r };
     
@@ -305,9 +363,7 @@ export function useGameState() {
     await new Promise(resolve => setTimeout(resolve, animationDuration * 1000)); 
 
     const { matches } = findMatches(newEntities, id1);
-    const isSpecialMoved = e1.special || e2.special;
-
-    if (matches.length === 0 && !isSpecialMoved) {
+    if (matches.length === 0) {
       playRejectSound();
       const reverted = [...newEntities];
       reverted[idx1] = { ...newEntities[idx1], q: e1.q, r: e1.r };
@@ -372,7 +428,7 @@ export function useGameState() {
     setTimeLeft(extraTime);
     setIsReviving(false);
     setIsGameOver(false);
-    setReviveCost(prev => prev * 2); // Double cost for next time in same level
+    setReviveCost(prev => prev * 2);
     playUIClickSound();
   }, []);
 

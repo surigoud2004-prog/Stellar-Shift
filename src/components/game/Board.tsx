@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useGameState } from '@/context/GameStateContext';
 import { Entity } from './Entity';
 import { areAdjacent, HEX_WIDTH, GRID_COLS, GRID_ROWS } from '@/lib/game-utils';
@@ -35,17 +36,51 @@ export function Board() {
     }
   }, [selectedId, entities, isProcessing, isGameOver, isWin, isWarping, setSelectedId, swapEntities]);
 
+  // Electrical Arc Visuals
+  const electricalArc = useMemo(() => {
+    if (!selectedId) return null;
+    const sEnt = entities.find(e => e.id === selectedId);
+    if (!sEnt || !sEnt.special) return null;
+
+    const adjacentSpecials = entities.filter(e => e.special && areAdjacent(sEnt, e));
+    if (adjacentSpecials.length === 0) return null;
+
+    return adjacentSpecials.map(target => {
+      const x1 = sEnt.q * HEX_WIDTH + HEX_WIDTH / 2;
+      const y1 = sEnt.r * HEX_WIDTH + HEX_WIDTH / 2;
+      const x2 = target.q * HEX_WIDTH + HEX_WIDTH / 2;
+      const y2 = target.r * HEX_WIDTH + HEX_WIDTH / 2;
+
+      return (
+        <svg key={`${sEnt.id}-${target.id}`} className="absolute inset-0 w-full h-full pointer-events-none z-50">
+          <line 
+            x1={x1} y1={y1} x2={x2} y2={y2} 
+            stroke="white" 
+            strokeWidth="4" 
+            strokeDasharray="10 5" 
+            className="animate-pulse opacity-80"
+            style={{ filter: 'drop-shadow(0 0 10px rgba(168,85,247,0.8))' }}
+          />
+          <line 
+            x1={x1} y1={y1} x2={x2} y2={y2} 
+            stroke="rgba(139, 92, 246, 0.4)" 
+            strokeWidth="12" 
+            className="animate-pulse"
+          />
+        </svg>
+      );
+    });
+  }, [selectedId, entities]);
+
   return (
     <div className={cn(
       "relative flex flex-col items-center justify-center p-2 w-full h-full max-w-[95vw]",
       isShaking && "animate-shake"
     )}>
-      {/* High-Contrast Negative Flash Overlay */}
       {isFlashing && (
         <div className="fixed inset-0 z-[10000] bg-white mix-blend-difference pointer-events-none animate-negative-flash" />
       )}
 
-      {/* Power-Up HUD Sidebar */}
       <div className="absolute -left-20 top-1/2 -translate-y-1/2 flex flex-col gap-4">
          {powerUps.colorNuke > 0 && (
            <button 
@@ -72,6 +107,7 @@ export function Board() {
             maxHeight: '100%'
           }}
         >
+          {electricalArc}
           {entities.map((entity) => (
             <Entity 
               key={entity.id} 

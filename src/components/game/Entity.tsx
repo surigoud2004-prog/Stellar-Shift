@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { memo, useState, useEffect, useMemo } from 'react';
@@ -66,10 +67,9 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
   const x = entity.q * HEX_WIDTH;
   const y = entity.r * HEX_WIDTH;
   
-  const bloomClass = BLOOM_MAP[entity.type % BLOOM_MAP.length];
-  const sparkleColor = SPARKLE_COLOR_MAP[entity.type % SPARKLE_COLOR_MAP.length];
+  const bloomClass = entity.special === 'rainbow-core' ? 'bloom-violet' : BLOOM_MAP[entity.type % BLOOM_MAP.length];
+  const sparkleColor = entity.special === 'rainbow-core' ? 'rgba(255,255,255,0.8)' : SPARKLE_COLOR_MAP[entity.type % SPARKLE_COLOR_MAP.length];
 
-  // Trigger sparkle burst when matched or selected
   useEffect(() => {
     if (entity.isMatched || isSelected) {
       setSparkleKey(prev => prev + 1);
@@ -106,14 +106,21 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
         isSelected && "brightness-150 ring-4 ring-white shadow-[0_0_40px_white]",
         isSpecial && "ring-4 ring-white animate-pulse shadow-[0_0_20px_white] animate-energy-vibration"
       )}>
-        {/* Color-Matched Sparkle Burst Layer */}
         <div 
           key={sparkleKey} 
           className={cn("sparkle-effect", sparkleKey > 0 && "animate-sparkle")} 
           style={{ background: `radial-gradient(circle, ${sparkleColor} 0%, transparent 70%)` }}
         />
 
-        {entity.special === 'bomb' ? (
+        {entity.special === 'rainbow-core' ? (
+          <div className="w-full h-full relative flex items-center justify-center overflow-hidden rounded-full border-4 border-white shadow-[0_0_30px_white]">
+             <div className="absolute inset-0 bg-[linear-gradient(45deg,#ff0000,#ff7300,#fffb00,#48ff00,#00ffd5,#002bff,#7a00ff,#ff00c8,#ff0000)] bg-[length:400%_400%] animate-drift-left opacity-90" />
+             <div className="absolute inset-0 bg-white/20 animate-pulse" />
+             <div className="relative z-10 text-white font-black text-2xl italic uppercase drop-shadow-[0_0_10px_black]">∞</div>
+             <div className="rim-light" />
+             <div className="absolute inset-0 glossy-overlay opacity-80" />
+          </div>
+        ) : entity.special === 'bomb' ? (
           <div className="w-full h-full bg-black relative flex items-center justify-center overflow-hidden rounded-full border border-white/20">
              <div className="absolute inset-0 border-[3px] border-white/80 rounded-full animate-event-horizon shadow-[0_0_20px_white,0_0_40px_gold]" />
              <div className="absolute inset-[15%] border-[1px] border-gold/40 rounded-full animate-event-horizon reverse" style={{ animationDirection: 'reverse' }} />
@@ -124,7 +131,6 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
         ) : entity.special === 'nova-h' ? (
           <div className="w-full h-full relative flex items-center justify-center overflow-hidden rounded-full border border-white/40">
              <div className={cn("absolute inset-0", NEON_CORE_MAP[entity.type % NEON_CORE_MAP.length])} />
-             {/* Horizontal Stripes Indicator */}
              <div className="absolute inset-x-0 h-2 bg-white/60 blur-sm animate-pulse" />
              <div className="absolute inset-x-0 h-0.5 bg-white z-10" />
              <div className="rim-light" />
@@ -133,42 +139,26 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
         ) : entity.special === 'nova-v' ? (
           <div className="w-full h-full relative flex items-center justify-center overflow-hidden rounded-full border border-white/40">
              <div className={cn("absolute inset-0", NEON_CORE_MAP[entity.type % NEON_CORE_MAP.length])} />
-             {/* Vertical Stripes Indicator */}
              <div className="absolute inset-y-0 w-2 bg-white/60 blur-sm animate-pulse" />
              <div className="absolute inset-y-0 w-0.5 bg-white z-10" />
              <div className="rim-light" />
              <div className="absolute inset-0 glossy-overlay opacity-40" />
           </div>
-        ) : entity.special === 'nova-core' ? (
-          <div className="w-full h-full relative flex items-center justify-center overflow-hidden rounded-full border-4 border-white shadow-[0_0_20px_white]">
-             <div className={cn("absolute inset-0", NEON_CORE_MAP[entity.type % NEON_CORE_MAP.length])} />
-             <div className="absolute inset-0 bg-white/30 animate-pulse" />
-             <div className="relative z-10 text-white font-black text-xl italic uppercase">★</div>
-             <div className="rim-light" />
-             <div className="absolute inset-0 glossy-overlay opacity-60" />
-          </div>
         ) : (
           <div className="relative w-full h-full rounded-full overflow-hidden border border-white/10 group">
-            
             {sector.id === 'neon' && (
               <div className={cn("absolute inset-0", NEON_CORE_MAP[entity.type % NEON_CORE_MAP.length])} />
             )}
-
             {sector.id === 'gilded' && (
               <>
                 <div className={cn("absolute inset-0", GILDED_CORE_MAP[entity.type % GILDED_CORE_MAP.length])} />
                 <div className="glitter-overlay" />
               </>
             )}
-
             {sector.id === 'void' && (
               <div className={cn("absolute inset-0 void-core", VOID_OUTLINE_MAP[entity.type % VOID_OUTLINE_MAP.length])} />
             )}
-            
-            {/* Pulsing Inner Singularity Glow */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,white_0%,transparent_40%)] opacity-70 animate-pulse" />
-            
-            {/* 3D Glass Marble Elements */}
             <div className="absolute inset-0 specular-highlight pointer-events-none" />
             <div className="rim-light" />
             <div className="absolute inset-0 glossy-overlay pointer-events-none opacity-50" />
