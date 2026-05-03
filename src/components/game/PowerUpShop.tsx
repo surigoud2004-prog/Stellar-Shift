@@ -4,7 +4,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Timer, Zap, Radiation, Coins, ShoppingCart } from 'lucide-react';
+import { Timer, Zap, Radiation, Coins, ShoppingCart, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { playUIClickSound } from '@/lib/audio-system';
 
@@ -56,17 +56,30 @@ export function PowerUpShop({ coins, onBuy, powerUps, isOpen, onClose, labels }:
   ];
 
   return (
-    <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4 bg-black/80 backdrop-blur-2xl animate-in fade-in duration-500">
-      <Card className="w-full max-w-xl glass-morphism border-primary/20 bg-black/60 overflow-hidden flex flex-col p-8">
-        <div className="flex items-center justify-between mb-8">
+    <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4 bg-black/90 backdrop-blur-[40px] animate-in fade-in duration-500">
+      <Card className="w-full max-w-xl glass-morphism border-primary/40 bg-black/80 overflow-hidden flex flex-col p-8 relative shadow-[0_0_100px_rgba(168,85,247,0.3)]">
+        
+        {/* CLOSE BUTTON */}
+        <button 
+          onClick={onClose}
+          className="absolute top-6 right-6 p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors z-10"
+        >
+          <X className="w-6 h-6 text-white" />
+        </button>
+
+        <div className="flex items-center justify-between mb-8 pr-12">
           <div className="flex items-center gap-3">
              <ShoppingCart className="w-8 h-8 text-primary" />
              <h2 className="text-3xl font-headline font-black text-white uppercase italic tracking-tighter">Tactical Procurement</h2>
           </div>
-          <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/30 px-4 py-2 rounded-xl">
-             <Coins className="w-4 h-4 text-yellow-500" />
-             <span className="text-xl font-black text-white">{coins.toLocaleString()}</span>
+        </div>
+
+        {/* REAL-TIME WALLET DISPLAY */}
+        <div className="flex items-center justify-center gap-3 bg-yellow-500/10 border border-yellow-500/30 px-6 py-4 rounded-2xl mb-8 animate-in slide-in-from-top-4 duration-300">
+          <div className="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.6)] border-2 border-yellow-200">
+             <Coins className="w-5 h-5 text-black stroke-[3px]" />
           </div>
+          <span className="text-3xl font-black text-white tracking-widest">{coins.toLocaleString()}</span>
         </div>
 
         <div className="grid gap-4 mb-8">
@@ -109,7 +122,7 @@ export function PowerUpShop({ coins, onBuy, powerUps, isOpen, onClose, labels }:
 
         <Button 
           onClick={onClose}
-          className="w-full h-14 bg-white/10 hover:bg-white/20 text-white font-black uppercase tracking-[0.3em] rounded-2xl border border-white/10"
+          className="w-full h-14 bg-white/10 hover:bg-white/20 text-white font-black uppercase tracking-[0.3em] rounded-2xl border border-white/10 shadow-2xl"
         >
           Confirm Loadout
         </Button>
