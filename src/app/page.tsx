@@ -11,7 +11,7 @@ import { MissionLogs } from '@/components/game/MissionLogs';
 import { useGameState } from '@/hooks/useGameState';
 import { useState } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
-import { User, X, Trophy, Eye, EyeOff, BookOpen } from 'lucide-react';
+import { User, X, Trophy, BookOpen } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,7 +40,6 @@ export default function Home() {
   const [showLogs, setShowLogs] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [abortDialogOpen, setAbortDialogOpen] = useState(false);
-  const [uiVisible, setUiVisible] = useState(true);
 
   const labels = LOCALIZATION[language];
 
@@ -56,62 +55,44 @@ export default function Home() {
       {/* Global_HUD Layer */}
       <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
         
-        {/* Top-Left Anchor */}
+        {/* Top-Left Anchor: Primary Emergency Command */}
         <div className="absolute top-[30px] left-[30px] flex items-center gap-4 pointer-events-auto">
-          <button 
-            onClick={() => setUiVisible(!uiVisible)}
-            className="w-12 h-12 rounded-full glass-panel border-white/10 hover:border-primary/50 transition-all flex items-center justify-center group active:scale-90 bg-black/40 backdrop-blur-md"
-            title={uiVisible ? "Hide UI" : "Show UI"}
-          >
-            {uiVisible ? (
-              <Eye className="w-6 h-6 text-white/70 group-hover:text-primary" />
-            ) : (
-              <EyeOff className="w-6 h-6 text-primary" />
-            )}
-          </button>
+          {gameStarted && (
+            <button 
+              onClick={() => setAbortDialogOpen(true)}
+              className="w-12 h-12 rounded-full bg-destructive flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.5)] border-2 border-white/20"
+              title={labels.abortMission}
+            >
+              <X className="w-6 h-6 text-white" />
+            </button>
+          )}
         </div>
 
-        {/* Top-Center Anchor */}
-        <div className={cn(
-          "absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center transition-all duration-500",
-          !uiVisible && "opacity-0"
-        )}>
+        {/* Top-Center Anchor: Mission Telemetry */}
+        <div className="absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center">
           <h1 className="font-headline text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
             Stellar <span className="text-primary">Shift</span>
           </h1>
           
           {gameStarted && (
-            <div className="mt-6 flex flex-col items-center space-y-2 pointer-events-auto">
+            <div className="mt-4 flex flex-col items-center space-y-2 pointer-events-auto">
               <div className="text-white drop-shadow-[0_0_10px_rgba(168,85,247,0.8)] font-black uppercase tracking-widest text-sm md:text-xl flex items-center gap-4">
                 <span className="bg-black/40 px-4 py-1 rounded-lg border border-primary/20">
-                  SCORE: {score.toLocaleString()} / {targetScore.toLocaleString()}
+                  {labels.score}: {score.toLocaleString()} / {targetScore.toLocaleString()}
                 </span>
                 <span className={cn(
                   "bg-black/40 px-4 py-1 rounded-lg border border-primary/20 tabular-nums",
                   timeLeft < 10 && "text-destructive animate-pulse"
                 )}>
-                  TIME: {timeLeft}s
+                  {labels.time}: {timeLeft}s
                 </span>
               </div>
             </div>
           )}
         </div>
 
-        {/* Top-Right Anchor */}
-        <div className={cn(
-          "absolute top-[30px] right-[30px] flex items-center gap-4 pointer-events-auto transition-all duration-500",
-          !uiVisible && "opacity-0"
-        )}>
-          {gameStarted && (
-            <button 
-              onClick={() => setAbortDialogOpen(true)}
-              className="w-12 h-12 rounded-full bg-destructive flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.5)] border-2 border-white/20"
-              title={labels.abortMission}
-            >
-              <X className="w-5 h-5 text-white" />
-            </button>
-          )}
-
+        {/* Top-Right Anchor: Auxiliary Commands */}
+        <div className="absolute top-[30px] right-[30px] flex items-center gap-4 pointer-events-auto">
           <button 
             onClick={() => setShowLogs(true)}
             className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-primary/30 hover:border-primary transition-all shadow-lg active:scale-90 bg-black/40 backdrop-blur-md"
@@ -123,6 +104,7 @@ export default function Home() {
           <button 
             onClick={() => setShowProfile(true)}
             className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-primary/30 hover:border-primary transition-all shadow-lg active:scale-90 bg-black/40 backdrop-blur-md"
+            title={labels.profile}
           >
             <User className="w-6 h-6 text-primary" />
           </button>
@@ -149,13 +131,10 @@ export default function Home() {
         </div>
 
         {/* Best Score Badge */}
-        <div className={cn(
-          "absolute top-[100px] right-[30px] transition-all duration-500",
-          !uiVisible && "opacity-0"
-        )}>
+        <div className="absolute top-[100px] right-[30px]">
           <div className="flex items-center gap-2 glass-panel px-3 py-1 rounded-full border-primary/10 bg-black/40 backdrop-blur-md">
             <Trophy className="w-3 h-3 text-amber-400" />
-            <span className="text-[10px] font-black text-white tabular-nums tracking-widest uppercase">BEST: {profile.allTimeHigh}</span>
+            <span className="text-[10px] font-black text-white tabular-nums tracking-widest uppercase">{labels.best}: {profile.allTimeHigh}</span>
           </div>
         </div>
       </div>
