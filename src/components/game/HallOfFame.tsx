@@ -1,9 +1,10 @@
+
 "use client";
 
 import { useEffect, useState } from 'react';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
-import { initializeFirebase } from '@/firebase';
+import { useFirestore, useAuth } from '@/firebase';
 import { Card } from '@/components/ui/card';
 import { Trophy, User, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
@@ -26,11 +27,12 @@ interface HallOfFameProps {
 export function HallOfFame({ title, subtitle }: HallOfFameProps) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const db = useFirestore();
+  const auth = useAuth();
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const { db, auth } = initializeFirebase();
         if (!auth.currentUser) await signInAnonymously(auth);
         
         const q = query(collection(db, 'leaderboard'), orderBy('score', 'desc'), limit(100));
@@ -48,7 +50,7 @@ export function HallOfFame({ title, subtitle }: HallOfFameProps) {
       }
     };
     fetchLeaderboard();
-  }, []);
+  }, [db, auth]);
 
   return (
     <Card className="glass-morphism p-6 h-full flex flex-col border-primary/20 bg-black/60 overflow-hidden">
