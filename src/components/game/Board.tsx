@@ -1,21 +1,16 @@
-
 "use client";
 
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useGameState } from '@/hooks/useGameState';
 import { Entity } from './Entity';
-import { areAdjacent, HEX_WIDTH, GRID_SIZE } from '@/lib/game-utils';
-import { Progress } from '@/components/ui/progress';
+import { areAdjacent, HEX_WIDTH, GRID_COLS, GRID_ROWS } from '@/lib/game-utils';
 import { Button } from '@/components/ui/button';
-import { Trophy, Play, RotateCcw, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Trophy, RotateCcw } from 'lucide-react';
 
 export function Board() {
   const { 
-    entities, score, targetScore, timeLeft, level,
-    isGameOver, isWin, selectedId, setSelectedId, 
-    swapEntities, isProcessing, initBoard,
-    gameStarted, startGame
+    entities, isGameOver, isWin, selectedId, setSelectedId, 
+    swapEntities, isProcessing, initBoard
   } = useGameState();
 
   const handleSelect = useCallback((id: string) => {
@@ -38,81 +33,53 @@ export function Board() {
     }
   }, [selectedId, entities, isProcessing, isGameOver, isWin, setSelectedId, swapEntities]);
 
-  const progress = Math.min(100, (score / targetScore) * 100);
-  const isLoaded = entities.length > 0;
-
   return (
-    <div className="relative flex flex-col items-center justify-center p-4 w-full flex-1 mt-32 mb-20 z-10">
-      
-      {/* Board Container */}
-      <div className="stellar-grid-frame p-6 flex items-center justify-center relative min-w-[320px] min-h-[320px]">
-        {!gameStarted ? (
-          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm p-8 text-center transition-all">
-            <h1 className="text-4xl md:text-5xl font-black text-white mb-4 italic uppercase tracking-tighter animate-in zoom-in duration-700">Stellar Shift</h1>
-            <p className="text-[10px] uppercase tracking-[0.3em] text-primary mb-8 font-bold animate-pulse">Neural Link Ready</p>
-            <Button 
-              size="lg" 
-              onClick={startGame} 
-              className="bg-primary hover:bg-primary/80 active:scale-95 transition-all h-16 px-12 text-xl font-black uppercase tracking-widest rounded-full shadow-[0_0_30px_rgba(168,85,247,0.4)]"
-            >
-              <Play className="w-6 h-6 mr-2 fill-white" /> Start Mission
-            </Button>
-          </div>
-        ) : !isLoaded ? (
-          <div className="flex flex-col items-center gap-4 animate-in fade-in duration-500">
-             <Loader2 className="w-12 h-12 text-primary animate-spin" />
-             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Initializing Sector...</p>
-          </div>
-        ) : (
-          <div 
-            className="relative" 
-            style={{ 
-              width: `${GRID_SIZE * HEX_WIDTH}px`, 
-              height: `${GRID_SIZE * HEX_WIDTH}px`,
-              transform: `scale(${Math.min(1, 400 / (GRID_SIZE * HEX_WIDTH))})`,
-              transformOrigin: 'center center'
-            }}
-          >
-            {entities.map((entity) => (
-              <Entity 
-                key={entity.id} 
-                entity={entity} 
-                isSelected={selectedId === entity.id} 
-                onSelect={handleSelect} 
-                disabled={isProcessing || isGameOver || isWin} 
-              />
-            ))}
+    <div className="relative flex flex-col items-center justify-center p-4">
+      {/* 7x5 Sector Grid Centered */}
+      <div className="stellar-grid-frame p-8 flex items-center justify-center relative shadow-[0_0_100px_rgba(0,0,0,0.8)] border-primary/10">
+        <div 
+          className="relative" 
+          style={{ 
+            width: `${GRID_COLS * HEX_WIDTH}px`, 
+            height: `${GRID_ROWS * HEX_WIDTH}px`,
+            transform: `scale(${Math.min(1, 350 / (GRID_ROWS * HEX_WIDTH))})`,
+            transformOrigin: 'center center'
+          }}
+        >
+          {entities.map((entity) => (
+            <Entity 
+              key={entity.id} 
+              entity={entity} 
+              isSelected={selectedId === entity.id} 
+              onSelect={handleSelect} 
+              disabled={isProcessing || isGameOver || isWin} 
+            />
+          ))}
 
-            {(isGameOver || isWin) && (
-              <div className="absolute inset-[-40px] z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md rounded-3xl animate-in zoom-in duration-300">
-                {isWin ? (
-                  <>
-                    <Trophy className="w-16 h-16 text-yellow-400 mb-4" />
-                    <h2 className="text-4xl font-black text-white mb-6 uppercase tracking-tighter">Victory</h2>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-6xl mb-4">🌑</div>
-                    <h2 className="text-4xl font-black text-white mb-6 uppercase tracking-tighter">Failed</h2>
-                  </>
-                )}
-                <Button onClick={initBoard} size="lg" className="bg-white text-black hover:bg-white/80 active:scale-95 transition-transform font-bold uppercase tracking-widest px-8 rounded-full h-14">
-                  <RotateCcw className="w-4 h-4 mr-2" /> Restart
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {gameStarted && isLoaded && (
-        <div className="mt-8 w-full max-w-[300px] animate-in fade-in slide-in-from-bottom-4">
-          <Progress value={progress} className="h-1 w-full bg-white/10" />
-          <div className="mt-2 text-[8px] text-muted-foreground text-center uppercase tracking-[0.4em] font-bold">
-            Sector Stabilization Status
-          </div>
+          {(isGameOver || isWin) && (
+            <div className="absolute inset-[-60px] z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl rounded-[3rem] animate-in zoom-in duration-300 border border-white/5 shadow-2xl">
+              {isWin ? (
+                <>
+                  <Trophy className="w-20 h-20 text-yellow-400 mb-6 drop-shadow-[0_0_20px_rgba(250,204,21,0.5)]" />
+                  <h2 className="text-5xl font-black text-white mb-8 uppercase italic tracking-tighter">Victory</h2>
+                </>
+              ) : (
+                <>
+                  <div className="text-8xl mb-6">🌑</div>
+                  <h2 className="text-5xl font-black text-white mb-8 uppercase italic tracking-tighter">Failed</h2>
+                </>
+              )}
+              <Button 
+                onClick={initBoard} 
+                size="lg" 
+                className="bg-primary hover:bg-primary/80 active:scale-95 transition-all font-black uppercase tracking-widest px-12 h-16 rounded-full text-lg shadow-xl"
+              >
+                <RotateCcw className="w-6 h-6 mr-3" /> Reboot Link
+              </Button>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

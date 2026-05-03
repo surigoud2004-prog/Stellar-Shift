@@ -1,55 +1,64 @@
-
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
 
 interface ParallaxBackgroundProps {
-  isWarping?: boolean;
   disabled?: boolean;
 }
 
-export function ParallaxBackground({ isWarping, disabled }: ParallaxBackgroundProps) {
+export function ParallaxBackground({ disabled }: ParallaxBackgroundProps) {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (disabled) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX - window.innerWidth / 2) / 100;
-      const y = (e.clientY - window.innerHeight / 2) / 100;
+      const x = (e.clientX - window.innerWidth / 2) / 80;
+      const y = (e.clientY - window.innerHeight / 2) / 80;
       setOffset({ x, y });
     };
 
-    const handleOrientation = (e: DeviceOrientationEvent) => {
-      if (e.beta && e.gamma) {
-        setOffset({ x: e.gamma / 5, y: (e.beta - 45) / 5 });
-      }
-    };
-
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('deviceorientation', handleOrientation);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('deviceorientation', handleOrientation);
-    };
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [disabled]);
 
-  if (disabled) return <div className="fixed inset-0 bg-[#0a0512] z-[-2]" />;
-
   return (
-    <div className="parallax-container">
+    <div className="fixed inset-0 z-[-10] pointer-events-none bg-black overflow-hidden">
+      {/* Deep Nebula Layer */}
       <div 
-        className="parallax-layer layer-nebula opacity-50"
-        style={{ transform: `translate3d(${offset.x * 0.5}px, ${offset.y * 0.5}px, 0)` }}
+        className="absolute inset-[-100px] opacity-40 mix-blend-screen transition-transform duration-75 ease-out"
+        style={{ 
+          background: 'radial-gradient(circle at 30% 30%, #4f46e533 0%, transparent 50%), radial-gradient(circle at 70% 70%, #7e22ce33 0%, transparent 50%)',
+          transform: `translate3d(${offset.x * 0.2}px, ${offset.y * 0.2}px, 0)` 
+        }}
       />
+      
+      {/* Static Star Field (Slow Drift) */}
+      <div className="absolute inset-0 opacity-30">
+        {[...Array(50)].map((_, i) => (
+          <div 
+            key={i}
+            className="absolute bg-white rounded-full animate-pulse"
+            style={{
+              width: Math.random() * 2 + 1 + 'px',
+              height: Math.random() * 2 + 1 + 'px',
+              left: Math.random() * 100 + '%',
+              top: Math.random() * 100 + '%',
+              animationDelay: Math.random() * 5 + 's',
+              opacity: Math.random() * 0.5 + 0.3
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Near Star Layer (Drifts with Mouse) */}
       <div 
-        className={cn("parallax-layer layer-stars-distant", isWarping && "warp-streak")}
-        style={{ transform: `translate3d(${offset.x * 1.5}px, ${offset.y * 1.5}px, 0)` }}
-      />
-      <div 
-        className={cn("parallax-layer layer-stars-near", isWarping && "warp-streak")}
-        style={{ transform: `translate3d(${offset.x * 4}px, ${offset.y * 4}px, 0)` }}
+        className="absolute inset-[-50px] transition-transform duration-150 ease-out"
+        style={{ 
+          backgroundImage: 'radial-gradient(1px 1px at 20% 30%, #fff 100%, transparent), radial-gradient(1.5px 1.5px at 50% 50%, #fff 100%, transparent), radial-gradient(1px 1px at 80% 70%, #fff 100%, transparent)',
+          backgroundSize: '200px 200px',
+          transform: `translate3d(${offset.x * 1.5}px, ${offset.y * 1.5}px, 0)` 
+        }}
       />
     </div>
   );

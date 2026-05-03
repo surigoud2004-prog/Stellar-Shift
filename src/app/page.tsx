@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Board } from '@/components/game/Board';
@@ -11,7 +10,7 @@ import { MissionLogs } from '@/components/game/MissionLogs';
 import { useGameState } from '@/hooks/useGameState';
 import { useState } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
-import { User, Trophy, BookOpen } from 'lucide-react';
+import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +29,7 @@ export default function Home() {
   } = usePlayerProfile();
   
   const { 
-    gameMode, setGameMode, gameStarted, quitGame, score, targetScore, timeLeft
+    gameMode, setGameMode, gameStarted, quitGame, score, targetScore, timeLeft, startGame
   } = useGameState();
 
   const [language, setLanguage] = useState<'en' | 'es' | 'fr'>('en');
@@ -40,6 +39,7 @@ export default function Home() {
   const [showLogs, setShowLogs] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [abortDialogOpen, setAbortDialogOpen] = useState(false);
+  const [uiVisible, setUiVisible] = useState(true);
 
   const labels = LOCALIZATION[language];
 
@@ -50,51 +50,69 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-[#0a0512]">
+    <main className="min-h-screen w-full flex flex-col items-center justify-center relative bg-black overflow-hidden selection:bg-primary/30">
+      
+      {/* LAYER 1: COSMIC BACKGROUND */}
       <ParallaxBackground disabled={isBatterySaver} />
       
-      {/* Global HUD Layer: Fixed and Topmost (Z-9999) */}
+      {/* LAYER 2: GLOBAL HUD (TOP LAYER) */}
       <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
         
-        {/* Top-Center Anchor: Mission Telemetry Stack */}
-        <div className="absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center">
+        {/* TOP-LEFT ANCHOR: ABORT + EYE */}
+        <div className="absolute top-[30px] left-[30px] flex items-center gap-3 pointer-events-auto">
+          <button 
+            onClick={() => setAbortDialogOpen(true)}
+            className="w-[50px] h-[50px] rounded-full bg-red-500 flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.5)] hover:scale-105 active:scale-90 transition-all border-none"
+            title={labels.abortMission}
+          >
+            <XIcon className="w-6 h-6 text-white stroke-[3px]" />
+          </button>
+          
+          <button 
+            onClick={() => setUiVisible(!uiVisible)}
+            className="w-[50px] h-[50px] rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-white transition-all bg-black/40 backdrop-blur-md"
+            title="Toggle HUD"
+          >
+            {uiVisible ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-white/50" />}
+          </button>
+        </div>
+
+        {/* TOP-CENTER ANCHOR: SCORE + TIMER */}
+        <div className={cn(
+          "absolute top-[30px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center transition-all duration-500",
+          !uiVisible && "opacity-0 -translate-y-full"
+        )}>
           <h1 className="font-headline text-3xl md:text-5xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
             Stellar <span className="text-primary">Shift</span>
           </h1>
           
-          {gameStarted && (
-            <div className="mt-4 flex flex-col items-center space-y-2 pointer-events-auto">
-              <div className="text-white drop-shadow-[0_0_15px_rgba(168,85,247,0.8)] font-black uppercase tracking-widest text-sm md:text-xl flex items-center gap-4">
-                <span className="bg-black/40 px-4 py-1 rounded-lg border border-primary/20">
-                  {labels.score}: {score.toLocaleString()} / {targetScore.toLocaleString()}
-                </span>
-                <span className={cn(
-                  "bg-black/40 px-4 py-1 rounded-lg border border-primary/20 tabular-nums",
-                  timeLeft < 10 && "text-destructive animate-pulse"
-                )}>
-                  {labels.time}: {timeLeft}s
-                </span>
-              </div>
+          <div className="mt-4 flex flex-col items-center gap-2">
+            <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-sm md:text-lg bg-black/40 px-6 py-2 rounded-xl border border-primary/20 backdrop-blur-md">
+              {labels.score}: {score.toLocaleString()} / {targetScore.toLocaleString()}
             </div>
-          )}
+            <div className={cn(
+              "text-white/80 font-mono text-xs uppercase tracking-widest bg-black/40 px-4 py-1 rounded-full border border-white/5 backdrop-blur-md",
+              timeLeft < 10 && "text-red-400 animate-pulse border-red-500/50"
+            )}>
+              {labels.time}: {timeLeft}s
+            </div>
+          </div>
         </div>
 
-        {/* Top-Right Anchor: Command Cluster */}
+        {/* TOP-RIGHT ANCHOR: PROFILE + SETTINGS */}
         <div className="absolute top-[30px] right-[30px] flex items-center gap-4 pointer-events-auto">
           <button 
             onClick={() => setShowLogs(true)}
-            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-primary/30 hover:border-primary transition-all shadow-lg active:scale-90 bg-black/40 backdrop-blur-md"
-            title={labels.archive}
+            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/40 backdrop-blur-md"
           >
-            <BookOpen className="w-6 h-6 text-secondary" />
+            <BookOpen className="w-5 h-5 text-secondary" />
           </button>
 
           <button 
             onClick={() => setShowProfile(true)}
-            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-primary/30 hover:border-primary transition-all shadow-lg active:scale-90 bg-black/40 backdrop-blur-md"
-            title={labels.profile}
+            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/40 backdrop-blur-md"
           >
-            <User className="w-6 h-6 text-primary" />
+            <User className="w-5 h-5 text-primary" />
           </button>
 
           <SettingsDrawer 
@@ -107,8 +125,7 @@ export default function Home() {
             language={language}
             onCycleLanguage={() => {
               const langs: ('en' | 'es' | 'fr')[] = ['en', 'es', 'fr'];
-              const next = langs[(langs.indexOf(language) + 1) % langs.length];
-              setLanguage(next);
+              setLanguage(langs[(langs.indexOf(language) + 1) % langs.length]);
             }}
             gameMode={gameMode}
             onSetGameMode={setGameMode}
@@ -116,42 +133,48 @@ export default function Home() {
             onAbort={() => setAbortDialogOpen(true)}
             gameStarted={gameStarted}
             labels={labels}
-            anchor="bottom"
           />
-        </div>
-
-        {/* Dynamic Personal Best Anchor */}
-        <div className="absolute top-[100px] right-[30px] pointer-events-none">
-          <div className="flex items-center gap-2 glass-panel px-3 py-1 rounded-full border-primary/10 bg-black/40 backdrop-blur-md">
-            <Trophy className="w-3 h-3 text-amber-400" />
-            <span className="text-[10px] font-black text-white tabular-nums tracking-widest uppercase">
-              {labels.best}: {profile.allTimeHigh}
-            </span>
-          </div>
         </div>
       </div>
 
-      {/* Primary Tactical Board */}
-      <Board />
+      {/* LAYER 3: GAME BOARD (CENTER LAYER) */}
+      <div className="relative flex-1 w-full flex flex-col items-center justify-center z-10 pt-48 pb-20">
+        {!gameStarted ? (
+          <div className="flex flex-col items-center animate-in zoom-in duration-700">
+             <button 
+                onClick={startGame}
+                className="group relative px-16 py-8 bg-primary rounded-full text-2xl font-black uppercase tracking-[0.3em] text-white shadow-[0_0_50px_rgba(168,85,247,0.5)] hover:scale-110 active:scale-95 transition-all"
+             >
+                <div className="absolute inset-0 bg-white/20 rounded-full blur-xl group-hover:blur-2xl transition-all" />
+                Start Mission
+             </button>
+             <p className="mt-8 text-[10px] text-primary font-bold uppercase tracking-[0.5em] animate-pulse">
+               Initialize Neural Link
+             </p>
+          </div>
+        ) : (
+          <Board />
+        )}
+      </div>
 
-      {/* Confirmation Protocols */}
+      {/* LAYER 4: CONFIRMATION PROTOCOLS */}
       <AlertDialog open={abortDialogOpen} onOpenChange={setAbortDialogOpen}>
-        <AlertDialogContent className="glass-panel border-destructive/50 bg-black/95 text-white shadow-[0_0_50px_rgba(239,68,68,0.2)] z-[10000]">
+        <AlertDialogContent className="glass-panel border-red-500/30 bg-black/95 text-white z-[10000]">
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-headline text-2xl uppercase italic font-black text-destructive">
+            <AlertDialogTitle className="font-headline text-2xl uppercase italic font-black text-red-500">
               {labels.abandonMission}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-muted-foreground uppercase text-[10px] tracking-widest font-bold leading-relaxed">
+            <AlertDialogDescription className="text-muted-foreground uppercase text-[10px] tracking-widest font-bold">
               {labels.abandonDesc}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 mt-4">
-            <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10 uppercase font-black text-[10px] tracking-widest rounded-xl h-12">
+          <AlertDialogFooter className="mt-6 gap-2">
+            <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10 rounded-xl h-12 uppercase font-black text-[10px]">
               {labels.no}
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleAbort}
-              className="bg-destructive hover:bg-destructive/80 text-white uppercase font-black text-[10px] tracking-widest rounded-xl h-12 shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+              className="bg-red-500 hover:bg-red-600 text-white rounded-xl h-12 uppercase font-black text-[10px] shadow-[0_0_20px_rgba(239,68,68,0.4)]"
             >
               {labels.yes}
             </AlertDialogAction>
@@ -176,23 +199,22 @@ export default function Home() {
       />
 
       {showFame && (
-        <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
           <div className="w-full max-w-2xl h-[80vh] relative">
             <button 
               onClick={() => setShowFame(false)}
-              className="absolute -top-4 -right-4 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center z-10 hover:scale-110 transition-transform shadow-lg"
+              className="absolute -top-4 -right-4 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center z-10"
             >
-              ×
+              <XIcon />
             </button>
             <HallOfFame title={labels.hallOfFame} subtitle={labels.sector + " 7G-Alpha"} />
           </div>
         </div>
       )}
 
-      {/* Footer Metadata */}
-      <footer className="fixed bottom-0 w-full p-6 text-center z-10 pointer-events-none opacity-30">
-        <div className="text-[8px] md:text-[10px] text-muted-foreground uppercase tracking-[0.4em] font-bold">
-          &copy; 2024 STELLAR SHIFT | NEURAL LINK V0.9.9 | SECTOR CLEARANCE GRANTED
+      <footer className="fixed bottom-0 w-full p-6 text-center z-10 opacity-20 pointer-events-none">
+        <div className="text-[10px] text-white uppercase tracking-[0.5em] font-bold">
+          Neural Link V2.0 • Sector Clearance Confirmed
         </div>
       </footer>
     </main>

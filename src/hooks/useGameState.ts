@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -6,13 +5,12 @@ import {
   CelestialEntity, 
   generateRandomEntity, 
   findMatches, 
-  GRID_SIZE,
-  HEX_WIDTH,
-  SpecialType,
+  GRID_COLS,
+  GRID_ROWS,
   EntityType
 } from '@/lib/game-utils';
 import { playSwapSound, playMatchSound, playRejectSound, playBombSound, playUIClickSound } from '@/lib/audio-system';
-import { collection, addDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, setDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
 import { generateDynamicLore } from '@/ai/flows/dynamic-lore-generation';
 
@@ -58,8 +56,8 @@ export function useGameState() {
     while (hasMatches && attempts < 100) {
       attempts++;
       initial = [];
-      for (let r = 0; r < GRID_SIZE; r++) {
-        for (let q = 0; q < GRID_SIZE; q++) {
+      for (let r = 0; r < GRID_ROWS; r++) {
+        for (let q = 0; q < GRID_COLS; q++) {
           initial.push(generateRandomEntity(q, r));
         }
       }
@@ -75,14 +73,6 @@ export function useGameState() {
     setTimeLeft(60);
     setIsProcessing(false);
   }, []);
-
-  useEffect(() => {
-    if (isWin) {
-      archiveLore("Mission Victory", `Reached score ${score} on level ${level}`);
-    } else if (isGameOver) {
-      archiveLore("Mission Failed", `Time expired at score ${score}`);
-    }
-  }, [isWin, isGameOver, score, level, archiveLore]);
 
   useEffect(() => {
     if (!gameStarted || isGameOver || isWin || entities.length === 0) {
@@ -117,6 +107,7 @@ export function useGameState() {
       matches.forEach(id => {
         const ent = currentEntities.find(e => e.id === id);
         if (ent?.special === 'bomb') {
+          // Cosmic Bomb 3x3 blast logic
           const neighbors = currentEntities.filter(e => 
             Math.abs(e.q - ent.q) <= 1 && Math.abs(e.r - ent.r) <= 1
           ).map(e => e.id);
@@ -126,7 +117,6 @@ export function useGameState() {
 
       if (bombIds.length > 0) {
         playBombSound();
-        archiveLore("Supernova Triggered", `A bomb match cleared ${bombIds.length} shards`);
       }
 
       const allToDelete = Array.from(new Set([...matches, ...bombIds]));
@@ -135,9 +125,9 @@ export function useGameState() {
       setScore(s => s + points);
 
       const newGrid: CelestialEntity[] = [];
-      for (let q = 0; q < GRID_SIZE; q++) {
+      for (let q = 0; q < GRID_COLS; q++) {
         const column = updated.filter(e => e.q === q).sort((a, b) => b.r - a.r);
-        for (let r = GRID_SIZE - 1; r >= 0; r--) {
+        for (let r = GRID_ROWS - 1; r >= 0; r--) {
           const existing = column.shift();
           if (existing) {
             newGrid.push({ ...existing, r });
@@ -162,14 +152,17 @@ export function useGameState() {
       await handleMatch(newGrid);
     } else {
       setIsProcessing(false);
-      if (score >= targetScore) setIsWin(true);
+      if (score >= targetScore) {
+        setIsWin(true);
+        archiveLore("Mission Victory", `Level completed with score ${score}`);
+      }
     }
   }, [score, targetScore, archiveLore]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
     if (isProcessing) return;
-    
     setIsProcessing(true);
+    
     const newEntities = [...entities];
     const idx1 = newEntities.findIndex(e => e.id === id1);
     const idx2 = newEntities.findIndex(e => e.id === id2);
@@ -186,7 +179,7 @@ export function useGameState() {
     
     setEntities(newEntities);
     playSwapSound();
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 300)); // Smooth Swap 0.3s
 
     const { matches } = findMatches(newEntities);
     if (matches.length === 0) {
@@ -214,6 +207,8 @@ export function useGameState() {
     playUIClickSound();
     setGameStarted(false);
     setEntities([]);
+    setScore(0);
+    setTimeLeft(60);
   }, []);
 
   return {

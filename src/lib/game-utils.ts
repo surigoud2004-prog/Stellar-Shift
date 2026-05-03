@@ -11,22 +11,15 @@ export interface CelestialEntity {
   isExploding?: boolean;
 }
 
-export const GRID_SIZE = 8;
+// Recalibrated for 7x5 Sector Grid
+export const GRID_COLS = 7;
+export const GRID_ROWS = 5;
 export const HEX_WIDTH = 64;
-
-export function calculateDifficulty(level: number): number {
-  return Math.pow(1.05, level - 1);
-}
-
-export function getColorVariety(level: number): number {
-  return Math.min(6, 4 + Math.floor(level / 10)); // Capped at 6 for stable image mapping
-}
 
 function generateStableId() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return `shard-${crypto.randomUUID()}`;
   }
-  // Fallback for non-secure contexts
   return `shard-${Math.random().toString(36).substring(2, 11)}-${Date.now()}`;
 }
 
@@ -58,9 +51,9 @@ export interface MatchResult {
 }
 
 export function findMatches(entities: CelestialEntity[], lastMoveId?: string): MatchResult {
-  const grid: (CelestialEntity | null)[][] = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
+  const grid: (CelestialEntity | null)[][] = Array.from({ length: GRID_ROWS }, () => Array(GRID_COLS).fill(null));
   entities.forEach(e => {
-    if (e.q >= 0 && e.q < GRID_SIZE && e.r >= 0 && e.r < GRID_SIZE) {
+    if (e.q >= 0 && e.q < GRID_COLS && e.r >= 0 && e.r < GRID_ROWS) {
       grid[e.r][e.q] = e;
     }
   });
@@ -69,10 +62,10 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
   const horizontalGroups: Set<string>[] = [];
   const verticalGroups: Set<string>[] = [];
 
-  // Horizontal matches
-  for (let r = 0; r < GRID_SIZE; r++) {
+  // Horizontal matches (Across Columns)
+  for (let r = 0; r < GRID_ROWS; r++) {
     let count = 1;
-    for (let q = 1; q < GRID_SIZE; q++) {
+    for (let q = 1; q < GRID_COLS; q++) {
       if (grid[r][q] && grid[r][q-1] && grid[r][q].type === grid[r][q-1].type) {
         count++;
       } else {
@@ -86,15 +79,15 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
     }
     if (count >= 3) {
       const group = new Set<string>();
-      for (let i = 0; i < count; i++) group.add(grid[r][GRID_SIZE - 1 - i]!.id);
+      for (let i = 0; i < count; i++) group.add(grid[r][GRID_COLS - 1 - i]!.id);
       horizontalGroups.push(group);
     }
   }
 
-  // Vertical matches
-  for (let q = 0; q < GRID_SIZE; q++) {
+  // Vertical matches (Across Rows)
+  for (let q = 0; q < GRID_COLS; q++) {
     let count = 1;
-    for (let r = 1; r < GRID_SIZE; r++) {
+    for (let r = 1; r < GRID_ROWS; r++) {
       if (grid[r][q] && grid[r-1][q] && grid[r][q].type === grid[r-1][q].type) {
         count++;
       } else {
@@ -108,7 +101,7 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
     }
     if (count >= 3) {
       const group = new Set<string>();
-      for (let i = 0; i < count; i++) group.add(grid[GRID_SIZE - 1 - i][q]!.id);
+      for (let i = 0; i < count; i++) group.add(grid[GRID_ROWS - 1 - i][q]!.id);
       verticalGroups.push(group);
     }
   }
@@ -117,13 +110,11 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
   verticalGroups.forEach(g => g.forEach(id => matchedIds.add(id)));
 
   let specialToSpawn: MatchResult['specialToSpawn'] = undefined;
-
   if (lastMoveId) {
     const moved = entities.find(e => e.id === lastMoveId);
     if (moved) {
       const hGroup = horizontalGroups.find(g => g.has(lastMoveId));
       const vGroup = verticalGroups.find(g => g.has(lastMoveId));
-
       if (hGroup && vGroup) {
         specialToSpawn = { id: generateStableId(), type: 'bomb', entityType: moved.type, q: moved.q, r: moved.r };
       } else if ((hGroup && hGroup.size >= 5) || (vGroup && vGroup.size >= 5)) {
