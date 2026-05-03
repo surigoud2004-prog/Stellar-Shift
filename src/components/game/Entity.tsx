@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { memo, useState } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { CelestialEntity, HEX_WIDTH } from '@/lib/game-utils';
 import { PLANET_IMAGES } from '@/lib/placeholder-images';
@@ -15,12 +15,12 @@ interface EntityProps {
 }
 
 const BLOOM_MAP = [
-  "bloom-violet border-purple-400/50", // Violet Nebula
-  "bloom-blue border-blue-400/50",     // Azure Galaxy
-  "bloom-orange border-orange-400/50", // Fiery Sun
-  "bloom-green border-green-400/50",   // Green Aurora
-  "bloom-red border-red-500/50",       // Red Supernova
-  "bloom-gold border-yellow-400/50"    // Golden Planet
+  "bloom-violet border-purple-500/30", 
+  "bloom-blue border-blue-500/30",     
+  "bloom-orange border-orange-500/30", 
+  "bloom-green border-green-500/30",   
+  "bloom-red border-red-500/30",       
+  "bloom-gold border-yellow-500/30"    
 ];
 
 const ROTATION_MAP = [
@@ -54,7 +54,7 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
       className={cn(
         "absolute cursor-pointer transition-all duration-300 p-1.5",
         isSelected && "z-10 scale-110 brightness-125",
-        entity.isMatched && "shard-match",
+        entity.isMatched && "animate-implode",
         !entity.isMatched && "shard-enter",
         entity.isExploding && "animate-implode"
       )}
@@ -67,8 +67,8 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
     >
       <div className={cn(
         "w-full h-full transition-all relative flex items-center justify-center animate-core-breath overflow-hidden",
-        isSelected ? "border-2 border-white shadow-[0_0_30px_#fff] rounded-2xl" : cn("border border-white/10 rounded-2xl", bloomClass),
-        "bg-black/60 backdrop-blur-sm shadow-xl"
+        "bg-black border border-white/5 rounded-2xl shadow-2xl",
+        isSelected ? "border-white ring-2 ring-white/50" : bloomClass
       )}>
         {/* Star-Dust Burst Layer */}
         <div key={sparkleKey} className={cn("sparkle-effect", sparkleKey > 0 && "animate-sparkle")} />
@@ -76,15 +76,15 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
         {entity.special === 'bomb' ? (
           <div className="w-full h-full bg-black relative flex items-center justify-center overflow-hidden rounded-full animate-orbital-float">
              {/* Event Horizon Ring */}
-             <div className="absolute inset-1.5 border-[3px] border-white/80 rounded-full animate-event-horizon shadow-[0_0_15px_#fff,0_0_30px_#eab308]" />
+             <div className="absolute inset-1 border-[4px] border-white/90 rounded-full animate-event-horizon shadow-[0_0_20px_#fff,0_0_40px_rgba(234,179,8,0.5)]" />
              
              {/* Singularity Core */}
-             <div className="relative w-8 h-8 rounded-full bg-black shadow-[inset_0_0_20px_rgba(255,255,255,0.4)] border border-white/20">
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent animate-pulse" />
+             <div className="relative w-8 h-8 rounded-full bg-black shadow-[inset_0_0_25px_rgba(255,255,255,0.6)] border border-white/30">
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent animate-pulse" />
              </div>
              
              {/* Distortion Lens */}
-             <div className="absolute inset-0 glossy-overlay opacity-40" />
+             <div className="absolute inset-0 glossy-overlay opacity-60" />
           </div>
         ) : (
           <div className={cn("relative w-full h-full flex items-center justify-center", rotationClass)}>
@@ -94,17 +94,17 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
               width={HEX_WIDTH}
               height={HEX_WIDTH}
               data-ai-hint={placeholder.imageHint}
-              className="object-cover w-full h-full opacity-100 scale-100"
+              className="object-cover w-full h-full opacity-100 scale-100 mix-blend-screen"
             />
             {/* Glossy 3D Glass Finish Overlays */}
-            <div className="absolute inset-0 glossy-overlay pointer-events-none opacity-40" />
-            <div className="absolute inset-0 lens-flare pointer-events-none opacity-50" />
+            <div className="absolute inset-0 glossy-overlay pointer-events-none opacity-50" />
+            <div className="absolute inset-0 lens-flare pointer-events-none opacity-60" />
             
-            {/* High-Saturation Glow Edge */}
+            {/* Edge Highlights */}
             <div className="absolute inset-0 border border-white/10 rounded-2xl pointer-events-none" />
             
-            {/* Dark Edges Vignette */}
-            <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] pointer-events-none" />
+            {/* Dark Vignette to make center pop */}
+            <div className="absolute inset-0 shadow-[inset_0_0_25px_rgba(0,0,0,0.9)] pointer-events-none" />
           </div>
         )}
       </div>

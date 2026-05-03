@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -48,7 +49,7 @@ export function useGameState() {
         timestamp: Date.now()
       });
     } catch (e) {
-      // Fail silently for lore generation
+      // Fail silently
     }
   }, [firestore, auth]);
 
@@ -57,7 +58,6 @@ export function useGameState() {
     let hasMatches = true;
     let attempts = 0;
     
-    // Generate a board with no initial matches
     while (hasMatches && attempts < 100) {
       attempts++;
       initial = [];
@@ -106,11 +106,11 @@ export function useGameState() {
       setIsProcessing(true);
       playMatchSound();
       
-      // Phase 1: Highlight Matches
+      // Phase 1: Neural Implosion Trigger
       setEntities(prev => prev.map(e => matches.includes(e.id) ? { ...e, isMatched: true } : e));
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 400)); // Match the CSS animation duration
 
-      // Phase 2: Handle Singularity (Bomb) Explosions
+      // Phase 2: Handle Black Hole/Singularity Explosions
       const bombIds: string[] = [];
       let hasBombDetonated = false;
 
@@ -118,7 +118,6 @@ export function useGameState() {
         const ent = currentEntities.find(e => e.id === id);
         if (ent?.special === 'bomb') {
           hasBombDetonated = true;
-          // Cosmic Bomb 3x3 blast logic
           const neighbors = currentEntities.filter(e => 
             Math.abs(e.q - ent.q) <= 1 && Math.abs(e.r - ent.r) <= 1
           ).map(e => e.id);
@@ -130,7 +129,7 @@ export function useGameState() {
         setIsFlashing(true);
         playBombSound();
         setEntities(prev => prev.map(e => bombIds.includes(e.id) ? { ...e, isExploding: true } : e));
-        setTimeout(() => setIsFlashing(false), 500);
+        setTimeout(() => setIsFlashing(false), 400);
         await new Promise(resolve => setTimeout(resolve, 150));
       }
 
@@ -139,7 +138,7 @@ export function useGameState() {
       const points = allToDelete.length * 10 * (bombIds.length > 0 ? 5 : 1);
       setScore(s => s + points);
 
-      // Phase 3: Refill Grid
+      // Phase 3: Cascade Refill
       const newGrid: CelestialEntity[] = [];
       for (let q = 0; q < GRID_COLS; q++) {
         const column = updated.filter(e => e.q === q).sort((a, b) => b.r - a.r);
@@ -153,7 +152,6 @@ export function useGameState() {
         }
       }
 
-      // Phase 4: Spawn Special Entities if created
       if (specialToSpawn) {
         const spawnedIdx = newGrid.findIndex(e => e.q === specialToSpawn.q && e.r === specialToSpawn.r);
         if (spawnedIdx !== -1) {
@@ -170,13 +168,13 @@ export function useGameState() {
       setEntities(newGrid);
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      // Phase 5: Recursive check for cascade matches
+      // Cascade check
       await handleMatch(newGrid);
     } else {
       setIsProcessing(false);
       if (score >= targetScore) {
         setIsWin(true);
-        archiveLore("Mission Victory", `Level completed with score ${score}`);
+        archiveLore("Mission Victory", `Link stabilized at score ${score}`);
       }
     }
   }, [score, targetScore, archiveLore]);
@@ -197,7 +195,6 @@ export function useGameState() {
     const e1 = newEntities[idx1];
     const e2 = newEntities[idx2];
     
-    // Swap logical positions
     newEntities[idx1] = { ...e1, q: e2.q, r: e2.r };
     newEntities[idx2] = { ...e2, q: e1.q, r: e1.r };
     
@@ -208,7 +205,6 @@ export function useGameState() {
     const { matches } = findMatches(newEntities);
     if (matches.length === 0) {
       playRejectSound();
-      // Swap back if no match
       const reverted = [...newEntities];
       reverted[idx1] = { ...newEntities[idx1], q: e1.q, r: e1.r };
       reverted[idx2] = { ...newEntities[idx2], q: e2.q, r: e2.r };
@@ -225,7 +221,7 @@ export function useGameState() {
     playUIClickSound();
     setGameStarted(true);
     initBoard();
-    archiveLore("Mission Started", "Neural link established for sector stabilization.");
+    archiveLore("Mission Started", "Neural link established.");
   }, [initBoard, archiveLore]);
 
   const quitGame = useCallback(() => {
