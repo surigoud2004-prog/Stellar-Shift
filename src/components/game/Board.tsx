@@ -42,32 +42,22 @@ export function Board() {
   const isLoaded = entities.length > 0;
 
   return (
-    <div className="relative flex flex-col items-center justify-center p-4 w-full h-full min-h-[600px]">
+    <div className="relative flex flex-col items-center justify-center p-4 w-full h-full min-h-[600px] mt-20">
       <div className="nebula-bg" />
       
-      {/* Header Stats - Only visible after game starts and entities load */}
+      {/* HUD Progress Bar (Minimal) */}
       <div className={cn(
-        "w-full max-w-[500px] flex justify-between items-end mb-6 transition-all duration-500",
-        gameStarted && isLoaded ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-8 pointer-events-none"
+        "w-full max-w-[400px] mb-8 transition-all duration-500",
+        gameStarted && isLoaded ? "opacity-100" : "opacity-0 pointer-events-none"
       )}>
-        <div className="flex flex-col gap-1">
-          <span className="text-[10px] uppercase tracking-widest text-primary font-bold">Target Score</span>
-          <div className="text-4xl font-black text-white tabular-nums">{score} / {targetScore}</div>
-          <Progress value={progress} className="h-1.5 w-full bg-white/10" />
-        </div>
-        <div className="text-right">
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Time Left</span>
-          <div className={cn("text-2xl font-bold tabular-nums", timeLeft < 10 ? "text-destructive animate-pulse" : "text-white")}>
-            {timeLeft}s
-          </div>
-        </div>
+        <Progress value={progress} className="h-1.5 w-full bg-white/10" />
       </div>
 
       {/* Grid Container */}
       <div className="stellar-grid-frame p-6 flex items-center justify-center relative min-w-[320px] min-h-[320px]">
         {!gameStarted ? (
           <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm p-8 text-center transition-all">
-            <h1 className="text-4xl md:text-5xl font-black text-white mb-4 italic uppercase tracking-tighter">Stellar Shift</h1>
+            <h1 className="text-4xl md:text-5xl font-black text-white mb-4 italic uppercase tracking-tighter animate-in zoom-in duration-700">Stellar Shift</h1>
             <p className="text-[10px] uppercase tracking-[0.3em] text-primary mb-8 font-bold animate-pulse">Neural Link Ready</p>
             <Button 
               size="lg" 
@@ -107,15 +97,15 @@ export function Board() {
                 {isWin ? (
                   <>
                     <Trophy className="w-16 h-16 text-yellow-400 mb-4" />
-                    <h2 className="text-4xl font-black text-white mb-6 uppercase">Victory</h2>
+                    <h2 className="text-4xl font-black text-white mb-6 uppercase tracking-tighter">Victory</h2>
                   </>
                 ) : (
                   <>
                     <div className="text-6xl mb-4">🌑</div>
-                    <h2 className="text-4xl font-black text-white mb-6 uppercase">Failed</h2>
+                    <h2 className="text-4xl font-black text-white mb-6 uppercase tracking-tighter">Failed</h2>
                   </>
                 )}
-                <Button onClick={initBoard} size="lg" className="bg-white text-black hover:bg-white/80 active:scale-95 transition-transform font-bold uppercase tracking-widest">
+                <Button onClick={initBoard} size="lg" className="bg-white text-black hover:bg-white/80 active:scale-95 transition-transform font-bold uppercase tracking-widest px-8 rounded-full h-14">
                   <RotateCcw className="w-4 h-4 mr-2" /> Restart
                 </Button>
               </div>
