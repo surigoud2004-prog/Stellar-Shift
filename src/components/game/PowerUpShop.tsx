@@ -62,6 +62,7 @@ export function PowerUpShop({ coins, onBuy, onAddCoins, powerUps, isOpen, onClos
   const handleWatchAd = () => {
     setIsAdLoading(true);
     logAnalyticsEvent('ad_started');
+    // Simulate a 5-second neural ad playback
     setTimeout(() => {
       onAddCoins(500);
       setIsAdLoading(false);

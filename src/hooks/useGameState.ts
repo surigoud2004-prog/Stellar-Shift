@@ -209,7 +209,7 @@ export function useGameState() {
             playVictoryFanfare(level);
             archiveLore("Sector Secured", `Level ${level} targets reached.`);
             submitHighScore(newScore, level);
-            logAnalyticsEvent('level_up', { level: level + 1 });
+            logAnalyticsEvent('level_up', { level: level + 1, score: newScore });
           }
           return newScore;
         });

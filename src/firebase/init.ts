@@ -22,14 +22,13 @@ export function initializeFirebase() {
     firestore = getFirestore(firebaseApp);
     auth = getAuth(firebaseApp);
 
-    // Initialize Analytics only in the browser and if the API key is not a placeholder
-    if (typeof window !== 'undefined' && !firebaseConfig.apiKey.includes('fake-key')) {
+    // Initialize Analytics only in the browser and if the API key is valid
+    if (typeof window !== 'undefined' && firebaseConfig.apiKey && !firebaseConfig.apiKey.includes('fake-key')) {
       isSupported().then(yes => {
         if (yes) {
           try {
             analyticsInstance = getAnalytics(firebaseApp);
           } catch (e) {
-            // Silently handle analytics failures to prevent app breakage
             console.warn('Firebase Analytics failed to initialize:', e);
           }
         }
