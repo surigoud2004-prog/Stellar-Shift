@@ -2,6 +2,7 @@
 'use client';
 
 let audioCtx: AudioContext | null = null;
+let noiseBuffer: AudioBuffer | null = null;
 
 function getAudioContext() {
   if (typeof window === 'undefined') return null;
@@ -12,6 +13,18 @@ function getAudioContext() {
     }
   }
   return audioCtx;
+}
+
+function getNoiseBuffer(ctx: AudioContext) {
+  if (!noiseBuffer) {
+    const bufferSize = ctx.sampleRate * 1.0; // 1 second of noise
+    noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+  }
+  return noiseBuffer;
 }
 
 export function playSwapSound() {
@@ -206,4 +219,49 @@ export function playVictoryFanfare(level: number = 1) {
   thudGain.connect(ctx.destination);
   thudOsc.start(thudTime);
   thudOsc.stop(thudTime + 1.2);
+}
+
+/**
+ * A short, high-tech 'vacuum' whoosh sound followed by a soft digital chime for level transitions.
+ */
+export function playWarpSound() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const startTime = ctx.currentTime;
+
+  // 1. Vacuum Whoosh (Filtered Noise)
+  const noiseSource = ctx.createBufferSource();
+  noiseSource.buffer = getNoiseBuffer(ctx);
+  
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(2000, startTime);
+  filter.frequency.exponentialRampToValueAtTime(100, startTime + 0.5);
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(0.2, startTime + 0.1);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.6);
+
+  noiseSource.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  noiseSource.start(startTime);
+  noiseSource.stop(startTime + 0.6);
+
+  // 2. Soft Digital Chime
+  const chimeTime = startTime + 0.5;
+  const chimeOsc = ctx.createOscillator();
+  const chimeGain = ctx.createGain();
+  chimeOsc.type = 'triangle';
+  chimeOsc.frequency.setValueAtTime(1200, chimeTime);
+  chimeGain.gain.setValueAtTime(0, chimeTime);
+  chimeGain.gain.linearRampToValueAtTime(0.1, chimeTime + 0.05);
+  chimeGain.gain.exponentialRampToValueAtTime(0.001, chimeTime + 0.4);
+  
+  chimeOsc.connect(chimeGain);
+  chimeGain.connect(ctx.destination);
+  chimeOsc.start(chimeTime);
+  chimeOsc.stop(chimeTime + 0.4);
 }

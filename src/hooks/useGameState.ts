@@ -17,7 +17,8 @@ import {
   playRejectSound, 
   playBombSound, 
   playUIClickSound,
-  playVictoryFanfare 
+  playVictoryFanfare,
+  playWarpSound
 } from '@/lib/audio-system';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
@@ -136,8 +137,8 @@ export function useGameState() {
   useEffect(() => {
     if (isWin) {
       setIsWarping(true);
-      // Clear entities immediately to prepare for warp refill
       setEntities([]);
+      playWarpSound(); // Play the tech warp whoosh!
       const timeout = setTimeout(() => {
         setLevel(prev => prev + 1);
         setScore(0);
