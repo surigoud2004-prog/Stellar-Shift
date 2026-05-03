@@ -67,7 +67,7 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
     >
       <div className={cn(
         "w-full h-full transition-all relative flex items-center justify-center animate-core-breath overflow-hidden",
-        "bg-black/90 border border-white/10 rounded-2xl shadow-2xl",
+        "bg-black/90 border border-white/10 rounded-full shadow-2xl",
         isSelected ? "border-white ring-4 ring-white/30" : bloomClass
       )}>
         {/* Star-Dust Burst Layer (Interaction Feedback) */}
@@ -87,7 +87,7 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
              <div className="absolute inset-0 glossy-overlay opacity-80" />
           </div>
         ) : (
-          <div className={cn("relative w-full h-full flex items-center justify-center transition-transform", rotationClass)}>
+          <div className={cn("relative w-full h-full flex items-center justify-center transition-transform rounded-full overflow-hidden", rotationClass)}>
             {/* Vivid Space Photography Layer */}
             <Image
               src={placeholder.imageUrl}
@@ -102,14 +102,14 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
             <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/5 mix-blend-overlay pointer-events-none" />
             
             {/* 3D Glossy Glass Finish Overlays */}
-            <div className="absolute inset-0 glossy-overlay pointer-events-none opacity-60" />
-            <div className="absolute inset-0 lens-flare pointer-events-none opacity-70" />
+            <div className="absolute inset-0 glossy-overlay pointer-events-none opacity-60 rounded-full" />
+            <div className="absolute inset-0 lens-flare pointer-events-none opacity-70 rounded-full" />
             
             {/* Edge Highlights (Inner border for 3D depth) */}
-            <div className="absolute inset-0.5 border border-white/20 rounded-xl pointer-events-none" />
+            <div className="absolute inset-0.5 border border-white/20 rounded-full pointer-events-none" />
             
             {/* High-Contrast Vignette */}
-            <div className="absolute inset-0 shadow-[inset_0_0_35px_rgba(0,0,0,1)] pointer-events-none" />
+            <div className="absolute inset-0 shadow-[inset_0_0_35px_rgba(0,0,0,1)] pointer-events-none rounded-full" />
           </div>
         )}
       </div>
