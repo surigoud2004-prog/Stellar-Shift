@@ -11,7 +11,14 @@ import {
   SpecialType,
   EntityType
 } from '@/lib/game-utils';
-import { playSwapSound, playMatchSound, playRejectSound, playBombSound, playUIClickSound } from '@/lib/audio-system';
+import { 
+  playSwapSound, 
+  playMatchSound, 
+  playRejectSound, 
+  playBombSound, 
+  playUIClickSound,
+  playVictoryFanfare 
+} from '@/lib/audio-system';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { useAuth, useFirestore } from '@/firebase';
 import { generateDynamicLore } from '@/ai/flows/dynamic-lore-generation';
@@ -236,6 +243,7 @@ export function useGameState() {
         const newScore = Math.floor(s + points);
         if (newScore >= targetScore && !isWin && !isWarping) {
            setIsWin(true);
+           playVictoryFanfare(level);
            archiveLore("Sector Secured", `Level ${level} targets reached.`);
         }
         return newScore;

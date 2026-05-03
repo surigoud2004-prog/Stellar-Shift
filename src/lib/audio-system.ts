@@ -1,3 +1,4 @@
+
 'use client';
 
 let audioCtx: AudioContext | null = null;
@@ -138,4 +139,71 @@ export function playCoinClinkSound() {
   gain.connect(ctx.destination);
   osc.start();
   osc.stop(ctx.currentTime + 0.1);
+}
+
+/**
+ * A triumphant celestial fanfare with pitch shifting every 5 levels.
+ */
+export function playVictoryFanfare(level: number = 1) {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const pitchShift = 1 + (Math.floor((level - 1) / 5) * 0.1);
+
+  // 1. Ascending Crystalline Twinkles
+  const twinkleFreqs = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98].map(f => f * pitchShift);
+  twinkleFreqs.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.05);
+    gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.05);
+    gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + i * 0.05 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.05 + 0.15);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime + i * 0.05);
+    osc.stop(ctx.currentTime + i * 0.05 + 0.2);
+  });
+
+  // 2. Warm Resonant Swell
+  const swellStart = ctx.currentTime + 0.3;
+  [261.63, 329.63, 392.00].forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(freq * pitchShift, swellStart);
+    
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(200, swellStart);
+    filter.frequency.exponentialRampToValueAtTime(2200, swellStart + 1.2);
+
+    gain.gain.setValueAtTime(0, swellStart);
+    gain.gain.linearRampToValueAtTime(0.15, swellStart + 0.6);
+    gain.gain.exponentialRampToValueAtTime(0.01, swellStart + 2.5);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(swellStart);
+    osc.stop(swellStart + 2.5);
+  });
+
+  // 3. Deep Orchestral Thud (Synced with Swell Peak and Coin Fountain)
+  const thudTime = ctx.currentTime + 0.6;
+  const thudOsc = ctx.createOscillator();
+  const thudGain = ctx.createGain();
+  thudOsc.type = 'sine';
+  thudOsc.frequency.setValueAtTime(55 * pitchShift, thudTime);
+  thudOsc.frequency.exponentialRampToValueAtTime(20, thudTime + 0.8);
+  thudGain.gain.setValueAtTime(0, thudTime);
+  thudGain.gain.linearRampToValueAtTime(0.4, thudTime + 0.05);
+  thudGain.gain.exponentialRampToValueAtTime(0.01, thudTime + 1.2);
+  thudOsc.connect(thudGain);
+  thudGain.connect(ctx.destination);
+  thudOsc.start(thudTime);
+  thudOsc.stop(thudTime + 1.2);
 }
