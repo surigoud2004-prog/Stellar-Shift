@@ -151,7 +151,7 @@ function MissionContent() {
           
           <div className={cn(
             "flex items-center gap-3 bg-black/70 px-5 py-2.5 rounded-2xl border-2 border-yellow-500/40 backdrop-blur-xl shadow-[0_0_25px_rgba(234,179,8,0.2)] transition-all",
-            !uiVisible && "opacity-0"
+            (!uiVisible || showShop) && "opacity-0"
           )}>
             <div className="w-6 h-6 rounded-full bg-yellow-400 flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.6)] border-2 border-yellow-200">
                <Coins className="w-4 h-4 text-black stroke-[3px]" />
@@ -163,17 +163,20 @@ function MissionContent() {
 
           <button 
             onClick={() => setUiVisible(!uiVisible)}
-            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md"
+            className={cn(
+              "w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md",
+              showShop && "opacity-0 pointer-events-none"
+            )}
             title="Cloak UI"
           >
             {uiVisible ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-white/40" />}
           </button>
         </div>
 
-        {/* TOP-CENTER: MISSION STATUS & TELEMETRY */}
+        {/* TOP-CENTER: MISSION STATUS & TELEMETRY (Hidden when Shop is open) */}
         <div className={cn(
           "absolute top-[10px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center pointer-events-auto transition-all duration-500 w-full max-w-md",
-          !uiVisible && "opacity-0 translate-y-[-100px]"
+          (!uiVisible || showShop) && "opacity-0 translate-y-[-100px]"
         )}>
           <div className="flex items-center gap-3 mb-2">
              <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-xs md:text-lg bg-black/70 px-6 py-2 rounded-2xl border-2 border-primary/40 backdrop-blur-xl min-w-[240px] shadow-[0_0_40px_rgba(0,0,0,0.5)]">
@@ -194,7 +197,7 @@ function MissionContent() {
           <div className={cn(
             "text-white font-mono text-[10px] uppercase tracking-[0.2em] bg-black/60 px-4 py-1 rounded-full border border-white/20 backdrop-blur-md transition-all shadow-xl",
             timeLeft < 10 && "text-red-500 animate-pulse border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]",
-            isWarping && "opacity-0 scale-50"
+            (isWarping || showShop) && "opacity-0 scale-50"
           )}>
             {labels.time}: <span className={timeLeft < 10 ? "font-black" : ""}>{timeLeft}s</span>
           </div>
@@ -204,7 +207,10 @@ function MissionContent() {
         <div className="absolute top-[20px] right-[30px] flex items-center gap-4 pointer-events-auto">
           <button 
             onClick={() => setShowLogs(true)}
-            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md"
+            className={cn(
+              "w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md",
+              showShop && "opacity-0 pointer-events-none"
+            )}
             title={labels.archive}
           >
             <BookOpen className="w-5 h-5 text-secondary" />
@@ -212,7 +218,10 @@ function MissionContent() {
 
           <button 
             onClick={() => setShowProfile(true)}
-            className="w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md"
+            className={cn(
+              "w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md",
+              showShop && "opacity-0 pointer-events-none"
+            )}
             title={labels.profile}
           >
             <User className="w-5 h-5 text-primary" />
@@ -243,7 +252,10 @@ function MissionContent() {
 
       <CoinFountain isActive={showCoins} />
 
-      <div className="relative flex-1 w-full flex flex-col items-center justify-center z-10 pt-48 pb-20">
+      <div className={cn(
+        "relative flex-1 w-full flex flex-col items-center justify-center z-10 pt-48 pb-20 transition-all duration-700",
+        showShop && "blur-xl opacity-20 scale-95"
+      )}>
         {!gameStarted ? (
           <div className="flex flex-col items-center animate-in zoom-in duration-700">
              <button 
@@ -363,7 +375,10 @@ function MissionContent() {
         </div>
       )}
 
-      <footer className="fixed bottom-0 w-full p-6 text-center z-10 opacity-20 pointer-events-none">
+      <footer className={cn(
+        "fixed bottom-0 w-full p-6 text-center z-10 opacity-20 pointer-events-none transition-opacity",
+        showShop && "opacity-0"
+      )}>
         <div className="text-[10px] text-white uppercase tracking-[0.5em] font-bold">
           Neural Link V2.0 • Sector Clearance Confirmed
         </div>
