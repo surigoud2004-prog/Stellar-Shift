@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -32,6 +31,7 @@ export function useGameState() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameMode, setGameMode] = useState<GameMode>('easy');
+  const [isFlashing, setIsFlashing] = useState(false);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const targetScore = 1000 * level;
@@ -77,6 +77,7 @@ export function useGameState() {
     setScore(0);
     setTimeLeft(60);
     setIsProcessing(false);
+    setIsFlashing(false);
   }, []);
 
   useEffect(() => {
@@ -109,11 +110,14 @@ export function useGameState() {
       setEntities(prev => prev.map(e => matches.includes(e.id) ? { ...e, isMatched: true } : e));
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      // Phase 2: Handle Bomb Explosions
+      // Phase 2: Handle Singularity (Bomb) Explosions
       const bombIds: string[] = [];
+      let hasBombDetonated = false;
+
       matches.forEach(id => {
         const ent = currentEntities.find(e => e.id === id);
         if (ent?.special === 'bomb') {
+          hasBombDetonated = true;
           // Cosmic Bomb 3x3 blast logic
           const neighbors = currentEntities.filter(e => 
             Math.abs(e.q - ent.q) <= 1 && Math.abs(e.r - ent.r) <= 1
@@ -122,9 +126,11 @@ export function useGameState() {
         }
       });
 
-      if (bombIds.length > 0) {
+      if (hasBombDetonated) {
+        setIsFlashing(true);
         playBombSound();
         setEntities(prev => prev.map(e => bombIds.includes(e.id) ? { ...e, isExploding: true } : e));
+        setTimeout(() => setIsFlashing(false), 500);
         await new Promise(resolve => setTimeout(resolve, 150));
       }
 
@@ -234,6 +240,7 @@ export function useGameState() {
     entities, score, targetScore, timeLeft, level,
     isGameOver, isWin, selectedId, setSelectedId,
     swapEntities, isProcessing, initBoard,
-    gameStarted, startGame, quitGame, gameMode, setGameMode
+    gameStarted, startGame, quitGame, gameMode, setGameMode,
+    isFlashing
   };
 }

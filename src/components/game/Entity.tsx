@@ -72,11 +72,16 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
 
         {entity.special === 'bomb' ? (
           <div className="w-full h-full bg-black relative flex items-center justify-center overflow-hidden rounded-full">
-             <div className="absolute inset-0 bg-gradient-to-tr from-amber-600 via-white to-red-400 animate-pulse opacity-90" />
-             <div className="relative w-10 h-10 rounded-full bg-white shadow-[0_0_30px_#fff]">
-                <div className="absolute inset-[-15px] border-2 border-primary rounded-full animate-spin duration-[1500ms]" />
-                <div className="absolute inset-[-8px] border border-white/60 rounded-full animate-orbital-float-reverse duration-[2000ms]" />
+             {/* Event Horizon Ring */}
+             <div className="absolute inset-2 border-[4px] border-white rounded-full animate-event-horizon shadow-[0_0_20px_#fff,0_0_40px_#eab308]" />
+             
+             {/* Singularity Core */}
+             <div className="relative w-10 h-10 rounded-full bg-black shadow-[inset_0_0_20px_rgba(255,255,255,0.4)] border border-white/20">
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent animate-pulse" />
              </div>
+             
+             {/* Distortion Lens */}
+             <div className="absolute inset-0 glossy-overlay opacity-40" />
           </div>
         ) : (
           <div className={cn("relative w-full h-full", rotationClass)}>

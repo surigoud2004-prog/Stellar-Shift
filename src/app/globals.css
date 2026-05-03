@@ -60,9 +60,21 @@
   to { transform: rotate(360deg); }
 }
 
+@keyframes eventHorizonRotate {
+  from { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.15); }
+  to { transform: rotate(360deg) scale(1); }
+}
+
 @keyframes sparkleBurst {
   0% { transform: scale(0); opacity: 1; }
   100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes negativeFlash {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 .animate-core-breath {
@@ -75,6 +87,14 @@
 
 .animate-orbital-float-reverse {
   animation: orbitalFloat 15s infinite linear reverse;
+}
+
+.animate-event-horizon {
+  animation: eventHorizonRotate 3s infinite linear;
+}
+
+.animate-negative-flash {
+  animation: negativeFlash 0.5s ease-out forwards;
 }
 
 .sparkle-effect {

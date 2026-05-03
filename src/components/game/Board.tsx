@@ -10,7 +10,7 @@ import { Trophy, RotateCcw } from 'lucide-react';
 export function Board() {
   const { 
     entities, isGameOver, isWin, selectedId, setSelectedId, 
-    swapEntities, isProcessing, initBoard
+    swapEntities, isProcessing, initBoard, isFlashing
   } = useGameState();
 
   const handleSelect = useCallback((id: string) => {
@@ -35,6 +35,11 @@ export function Board() {
 
   return (
     <div className="relative flex flex-col items-center justify-center p-2 w-full h-full max-w-[95vw]">
+      {/* High-Contrast Negative Flash Overlay */}
+      {isFlashing && (
+        <div className="fixed inset-0 z-[10000] bg-white mix-blend-difference pointer-events-none animate-negative-flash" />
+      )}
+
       {/* 9x7 High-Density Sector Grid Centered */}
       <div className="stellar-grid-frame p-4 flex items-center justify-center relative shadow-[0_0_100px_rgba(0,0,0,0.8)] border-primary/10 overflow-visible">
         <div 
