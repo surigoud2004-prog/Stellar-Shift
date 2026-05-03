@@ -139,9 +139,9 @@ function MissionContent() {
       <ParallaxBackground disabled={isBatterySaver} isWarping={isWarping} level={level} />
       
       {/* GLOBAL HUD - PERSISTENT & ANCHORED AT TOP LAYER */}
-      <div id="Global_HUD" className="fixed inset-x-0 top-0 pointer-events-none z-[10010] h-32">
+      <div id="Global_HUD" className="fixed inset-x-0 top-0 pointer-events-none z-[10010] h-40">
         
-        {/* TOP-LEFT: UTILITY CLUSTER */}
+        {/* TOP-LEFT: ABORT MISSION (X) */}
         <div className="absolute top-[20px] left-[30px] flex items-center gap-3 pointer-events-auto">
           <button 
             onClick={() => setAbortDialogOpen(true)}
@@ -160,41 +160,36 @@ function MissionContent() {
           </button>
         </div>
 
-        {/* TOP-CENTER: MISSION STATUS & WHOLE-NUMBER SCORE (Moved Higher) */}
+        {/* TOP-CENTER: MISSION STATUS & TELEMETRY */}
         <div className={cn(
-          "absolute top-[10px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center pointer-events-auto transition-all duration-500 w-full max-w-md",
+          "absolute top-[15px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center pointer-events-auto transition-all duration-500 w-full max-w-md",
           !uiVisible && "opacity-0 translate-y-[-100px]"
         )}>
-          <h1 className="font-headline text-2xl md:text-4xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_20px_rgba(168,85,247,0.7)]">
+          {/* PRIMARY PANELS */}
+          <div className="flex items-center gap-3 mb-2">
+             <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-xs md:text-lg bg-black/70 px-6 py-2 rounded-2xl border-2 border-primary/40 backdrop-blur-xl min-w-[180px] shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+              {labels.score}: <span className="text-primary">{Math.floor(score).toLocaleString()}</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <div className="bg-primary/30 border border-primary/50 rounded-xl px-3 py-1 flex items-center gap-2 backdrop-blur-md shadow-lg">
+                <Radio className={cn("w-3 h-3 text-primary", (isWarping || gameStarted) ? "animate-pulse" : "")} />
+                <span className="text-white font-black uppercase text-[10px] tracking-widest">LVL {level}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* STELLAR SHIFT LOGO (SAFE ZONE - MOVED DOWN) */}
+          <h1 className="font-headline text-xl md:text-2xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_20px_rgba(168,85,247,0.7)] mb-2">
             Stellar <span className="text-primary">Shift</span>
           </h1>
           
-          <div className="mt-2 flex flex-col items-center gap-1.5">
-            <div className="flex items-center gap-3">
-               <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-xs md:text-lg bg-black/70 px-6 py-2 rounded-2xl border-2 border-primary/40 backdrop-blur-xl min-w-[180px] shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-                {labels.score}: <span className="text-primary">{Math.floor(score).toLocaleString()}</span> / {targetScore.toLocaleString()}
-              </div>
-              <div className="flex flex-col gap-1">
-                <div className="bg-primary/30 border border-primary/50 rounded-xl px-3 py-1 flex items-center gap-2 backdrop-blur-md shadow-lg">
-                  <Radio className={cn("w-3 h-3 text-primary", (isWarping || gameStarted) ? "animate-pulse" : "")} />
-                  <span className="text-white font-black uppercase text-[10px] tracking-widest">LVL {level}</span>
-                </div>
-                <div className="bg-white/5 border border-white/10 rounded-lg px-2 py-0.5 flex items-center justify-center gap-1.5 backdrop-blur-md">
-                   <Orbit className="w-2 h-2 text-secondary" />
-                   <span className="text-[7px] text-white font-bold uppercase tracking-widest whitespace-nowrap">
-                     {sector.name}
-                   </span>
-                </div>
-              </div>
-            </div>
-            
-            <div className={cn(
-              "text-white font-mono text-[10px] uppercase tracking-[0.2em] bg-black/60 px-4 py-1 rounded-full border border-white/20 backdrop-blur-md transition-all shadow-xl",
-              timeLeft < 10 && "text-red-500 animate-pulse border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]",
-              isWarping && "opacity-0 scale-50"
-            )}>
-              {labels.time}: <span className={timeLeft < 10 ? "font-black" : ""}>{timeLeft}s</span>
-            </div>
+          {/* TIME HUD */}
+          <div className={cn(
+            "text-white font-mono text-[10px] uppercase tracking-[0.2em] bg-black/60 px-4 py-1 rounded-full border border-white/20 backdrop-blur-md transition-all shadow-xl",
+            timeLeft < 10 && "text-red-500 animate-pulse border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]",
+            isWarping && "opacity-0 scale-50"
+          )}>
+            {labels.time}: <span className={timeLeft < 10 ? "font-black" : ""}>{timeLeft}s</span>
           </div>
         </div>
 
