@@ -52,14 +52,13 @@ export function useGameState() {
   const [activeExplosions, setActiveExplosions] = useState<{q: number, r: number}[]>([]);
   
   const [soundOn, setSoundOn] = useState(true);
+  const [isBatterySaver, setIsBatterySaver] = useState(false);
   const [language, setLanguage] = useState<Language>('en');
   
-  const lastMoveTime = useRef(Date.now());
   const lastMatchTime = useRef(Date.now());
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const profile = usePlayerProfile();
-
   const t = LOCALIZATION[language];
 
   const targetScore = Math.floor(1000 * calculateDifficulty(level) * (gameMode === 'hard' ? 1.5 : gameMode === 'hell' ? 2 : 1));
@@ -71,11 +70,13 @@ export function useGameState() {
     const savedBest = localStorage.getItem('stellar_best_score');
     const savedLevel = localStorage.getItem('stellar_level');
     const savedSound = localStorage.getItem('stellar_sound_on');
+    const savedBattery = localStorage.getItem('stellar_battery_saver');
     const savedLang = localStorage.getItem('stellar_language') as Language;
 
     if (savedBest) setBestScore(parseInt(savedBest));
     if (savedLevel) setLevel(parseInt(savedLevel));
     if (savedLang) setLanguage(savedLang);
+    if (savedBattery === 'true') setIsBatterySaver(true);
     
     if (savedSound !== null) {
       const isSound = savedSound === 'true';
@@ -91,6 +92,13 @@ export function useGameState() {
     localStorage.setItem('stellar_sound_on', newState.toString());
   }, [soundOn]);
 
+  const toggleBatterySaver = useCallback(() => {
+    const newState = !isBatterySaver;
+    setIsBatterySaver(newState);
+    localStorage.setItem('stellar_battery_saver', newState.toString());
+    playUIClickSound();
+  }, [isBatterySaver]);
+
   const cycleLanguage = useCallback(() => {
     const languages: Language[] = ['en', 'es', 'fr'];
     const currentIndex = languages.indexOf(language);
@@ -103,7 +111,7 @@ export function useGameState() {
 
   const addLoreLog = useCallback((msg: string) => {
     setLore(msg);
-    setLoreLogs(prev => [msg, ...prev].slice(0, 50));
+    setLoreLogs(prev => [msg, ...prev].slice(0, 30));
   }, []);
 
   const syncHighScore = async () => {
@@ -162,10 +170,9 @@ export function useGameState() {
     setIsSettingsOpen(false);
     setScore(0);
     lastMatchTime.current = Date.now();
-    lastMoveTime.current = Date.now();
     setIsLocked(false);
     setTimeLeft(gameMode === 'easy' ? 180 : gameMode === 'hard' ? 90 : 45);
-    addLoreLog("SECTOR INITIALIZED: Awaiting alignment protocol.");
+    addLoreLog("SECTOR INITIALIZED");
   }, [level, gameMode, addLoreLog]);
 
   useEffect(() => {
@@ -204,15 +211,13 @@ export function useGameState() {
       let bombClearedIds = new Set<string>();
 
       if (bombMatches.length > 0) {
-        // Phase 1: Implosion (0.1s)
         setEntities(prev => prev.map(e => {
           const isCore = bombMatches.some(b => b.id === e.id);
           return isCore ? { ...e, isExploding: true } : e;
         }));
         playCosmicBombSound();
-        await new Promise(resolve => setTimeout(resolve, 150));
+        await new Promise(resolve => setTimeout(resolve, 100));
 
-        // Phase 2: Explosion & AoE Detection
         const newExplosions: {q: number, r: number}[] = [];
         bombMatches.forEach(bomb => {
           newExplosions.push({ q: bomb.q, r: bomb.r });
@@ -227,9 +232,8 @@ export function useGameState() {
         });
         
         setActiveExplosions(newExplosions);
-        addLoreLog("COSMIC EVENT: Supernova Core triggered.");
+        addLoreLog("SUPERNOVA EVENT");
         
-        // Sync with visual explosion
         await new Promise(resolve => setTimeout(resolve, 200));
         setActiveExplosions([]);
       } else {
@@ -237,9 +241,8 @@ export function useGameState() {
         else playComboSound(comboLevel);
       }
 
-      // Phase 3: Destruction/Ember Dissolve
       setEntities(prev => prev.map(e => finalMatchedIds.has(e.id) ? { ...e, isMatched: true } : e));
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       let updated = currentEntities.filter(e => !finalMatchedIds.has(e.id));
 
@@ -256,9 +259,8 @@ export function useGameState() {
         addLoreLog(loreRes.loreSnippet);
       }
 
-      // 5x Score Multiplier for bomb-cleared tiles
       const regularPoints = matches.length * 20;
-      const bombPoints = bombClearedIds.size * 100; // 20 * 5 = 100
+      const bombPoints = bombClearedIds.size * 100;
       const matchPoints = (regularPoints + bombPoints) * (comboLevel + 1);
       
       setScore(s => s + matchPoints);
@@ -279,7 +281,7 @@ export function useGameState() {
       }
 
       setEntities(newGrid);
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await new Promise(resolve => setTimeout(resolve, 200));
       await handleMatch(newGrid, undefined, comboLevel + 1);
     } else {
       setIsProcessing(false);
@@ -290,7 +292,6 @@ export function useGameState() {
     if (isInputFrozen) return;
     
     playSwapSound();
-    lastMoveTime.current = Date.now();
     setIsLocked(false);
     setIsProcessing(true);
 
@@ -298,46 +299,28 @@ export function useGameState() {
     const idx1 = newEntities.findIndex(e => e.id === id1);
     const idx2 = newEntities.findIndex(e => e.id === id2);
 
-    if (newEntities[idx1].special === 'comet' || newEntities[idx2].special === 'comet') {
-      playSpecialActivationSound();
-      const comet = newEntities[idx1].special === 'comet' ? newEntities[idx1] : newEntities[idx2];
-      const cleared = entities.filter(e => e.id !== comet.id).slice(0, 5).map(e => e.id);
-      
-      const bonusScore = 500;
-      setScore(s => s + bonusScore);
-      profile.updateStats(bonusScore, 1);
-
-      const filtered = entities.filter(e => !cleared.includes(e.id) && e.id !== comet.id);
-      setEntities(filtered);
-      setTimeout(() => handleMatch(filtered, undefined, 0), 200);
-      return;
-    }
-
     const q1 = newEntities[idx1].q;
     const r1 = newEntities[idx1].r;
     newEntities[idx1] = { ...newEntities[idx1], q: newEntities[idx2].q, r: newEntities[idx2].r };
     newEntities[idx2] = { ...newEntities[idx2], q: q1, r: r1 };
     setEntities(newEntities);
 
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     const { matches } = findMatches(newEntities);
     if (matches.length === 0) {
-      addLoreLog("ALIGNMENT REJECTED: Resonant frequency mismatch.");
       playRejectSound();
-      
       const reverted = [...newEntities];
       reverted[idx1] = { ...reverted[idx1], q: q1, r: r1 };
       reverted[idx2] = { ...reverted[idx2], q: newEntities[idx1].q, r: newEntities[idx1].r };
       setEntities(reverted);
-      
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await new Promise(resolve => setTimeout(resolve, 300));
       setIsProcessing(false);
       return;
     }
     
     await handleMatch(newEntities, id1, 0);
-  }, [entities, handleMatch, isInputFrozen, addLoreLog, profile]);
+  }, [entities, handleMatch, isInputFrozen]);
 
   const startGame = () => {
     playUIClickSound();
@@ -354,7 +337,6 @@ export function useGameState() {
     setIsLocked(false);
     setIsSettingsOpen(false);
     setGameStarted(false);
-    setLoreLogs(["SYSTEM READY: Neural link established."]);
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
@@ -364,7 +346,7 @@ export function useGameState() {
     swapEntities, isProcessing, initBoard, bestScore, showHallOfFame, setShowHallOfFame,
     gameStarted, startGame, resetToMainMenu,
     isSettingsOpen, setIsSettingsOpen, isInputFrozen,
-    soundOn, handleToggleSound,
+    soundOn, handleToggleSound, isBatterySaver, toggleBatterySaver,
     language, cycleLanguage, t,
     profile, activeExplosions
   };

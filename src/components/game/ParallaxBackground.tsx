@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -5,101 +6,51 @@ import { cn } from '@/lib/utils';
 
 interface ParallaxBackgroundProps {
   isWarping?: boolean;
+  disabled?: boolean;
 }
 
-interface Ember {
-  left: string;
-  top: string;
-  animationDelay: string;
-  animationDuration: string;
-  backgroundColor: string;
-  transform: string;
-  tx: string;
-  ty: string;
-}
-
-export function ParallaxBackground({ isWarping }: ParallaxBackgroundProps) {
+export function ParallaxBackground({ isWarping, disabled }: ParallaxBackgroundProps) {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [embers, setEmbers] = useState<Ember[]>([]);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Generate embers only on the client to avoid hydration mismatch
-    const newEmbers = [...Array(25)].map((_, i) => ({
-      left: `${Math.random() * 100}%`,
-      top: `${Math.random() * 100}%`,
-      animationDelay: `${Math.random() * 8}s`,
-      animationDuration: `${6 + Math.random() * 6}s`,
-      backgroundColor: i % 2 === 0 ? '#fff' : '#a855f7',
-      transform: `rotate(${Math.random() * 360}deg)`,
-      tx: `${(Math.random() - 0.5) * 400}px`,
-      ty: `${(Math.random() - 0.5) * 400}px`,
-    }));
-    setEmbers(newEmbers);
+    if (disabled) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      const { innerWidth, innerHeight } = window;
-      const x = (e.clientX - innerWidth / 2) / 60;
-      const y = (e.clientY - innerHeight / 2) / 60;
+      const x = (e.clientX - window.innerWidth / 2) / 100;
+      const y = (e.clientY - window.innerHeight / 2) / 100;
       setOffset({ x, y });
     };
 
-    const handleDeviceOrientation = (e: DeviceOrientationEvent) => {
-      if (e.beta !== null && e.gamma !== null) {
-        const x = e.gamma / 1.5;
-        const y = (e.beta - 45) / 1.5;
-        setOffset({ x, y });
+    const handleOrientation = (e: DeviceOrientationEvent) => {
+      if (e.beta && e.gamma) {
+        setOffset({ x: e.gamma / 5, y: (e.beta - 45) / 5 });
       }
     };
 
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('deviceorientation', handleDeviceOrientation);
-
+    window.addEventListener('deviceorientation', handleOrientation);
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('deviceorientation', handleDeviceOrientation);
+      window.removeEventListener('deviceorientation', handleOrientation);
     };
-  }, []);
+  }, [disabled]);
+
+  if (disabled) return <div className="fixed inset-0 bg-[#0a0512] z-[-2]" />;
 
   return (
-    <div className="parallax-container" ref={containerRef}>
-      {/* Layer 1 (Deepest): Nebula */}
+    <div className="parallax-container">
       <div 
-        className="parallax-layer layer-nebula"
-        style={{ transform: `translate3d(${offset.x * 0.4}px, ${offset.y * 0.4}px, 0)` }}
+        className="parallax-layer layer-nebula opacity-50"
+        style={{ transform: `translate3d(${offset.x * 0.5}px, ${offset.y * 0.5}px, 0)` }}
       />
-      
-      {/* Layer 2 (Middle): Distant Stars & Galaxy */}
       <div 
         className={cn("parallax-layer layer-stars-distant", isWarping && "warp-streak")}
-        style={{ transform: `translate3d(${offset.x * 1.2}px, ${offset.y * 1.2}px, 0)` }}
+        style={{ transform: `translate3d(${offset.x * 1.5}px, ${offset.y * 1.5}px, 0)` }}
       />
-      
-      {/* Layer 3 (Top): Near Stars & Drifting Objects */}
       <div 
         className={cn("parallax-layer layer-stars-near", isWarping && "warp-streak")}
-        style={{ transform: `translate3d(${offset.x * 3.5}px, ${offset.y * 3.5}px, 0)` }}
+        style={{ transform: `translate3d(${offset.x * 4}px, ${offset.y * 4}px, 0)` }}
       />
-
-      {/* Layer 4 (Atmosphere): Floating Star Embers */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-[1]">
-        {embers.map((ember, i) => (
-          <div 
-            key={i}
-            className="floating-ember"
-            style={{
-              left: ember.left,
-              top: ember.top,
-              animationDelay: ember.animationDelay,
-              animationDuration: ember.animationDuration,
-              backgroundColor: ember.backgroundColor,
-              transform: ember.transform,
-              '--tx': ember.tx,
-              '--ty': ember.ty,
-            } as any}
-          />
-        ))}
-      </div>
     </div>
   );
 }
