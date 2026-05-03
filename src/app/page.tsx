@@ -15,6 +15,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
 import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff, Radio, Orbit, Coins, ShieldAlert } from 'lucide-react';
 import { getSectorInfo } from '@/lib/game-utils';
+import Link from 'next/link';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -399,8 +400,15 @@ function MissionContent() {
         "fixed bottom-0 w-full p-6 text-center z-10 opacity-20 pointer-events-none transition-opacity",
         (showShop || showFame) && "opacity-0"
       )}>
-        <div className="text-[10px] text-white uppercase tracking-[0.5em] font-bold">
-          Neural Link V2.0 • Sector Clearance Confirmed
+        <div className="flex flex-col items-center gap-2">
+          <div className="text-[10px] text-white uppercase tracking-[0.5em] font-bold">
+            Neural Link V2.0 • Sector Clearance Confirmed
+          </div>
+          <div className="pointer-events-auto">
+            <Link href="/privacy" className="text-[8px] text-white/40 hover:text-primary uppercase tracking-widest transition-colors">
+              Privacy Protocol
+            </Link>
+          </div>
         </div>
       </footer>
     </main>
