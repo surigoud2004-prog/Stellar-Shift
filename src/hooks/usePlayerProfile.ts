@@ -29,19 +29,21 @@ export function usePlayerProfile() {
   const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('stellar_player_profile');
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem('stellar_player_profile');
+      if (saved) {
         setProfile(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse player profile", e);
       }
+    } catch (e) {
+      console.warn("Failed to load profile", e);
     }
   }, []);
 
   const saveProfile = useCallback((newProfile: PlayerProfile) => {
     setProfile(newProfile);
-    localStorage.setItem('stellar_player_profile', JSON.stringify(newProfile));
+    try {
+      localStorage.setItem('stellar_player_profile', JSON.stringify(newProfile));
+    } catch (e) {}
   }, []);
 
   const updateStats = useCallback((score: number, matches: number, isWin: boolean = false) => {
@@ -51,7 +53,7 @@ export function usePlayerProfile() {
       const newRank = Math.floor(newXP / 1000);
 
       if (newRank > oldRank) {
-        playLevelUpSound();
+        try { playLevelUpSound(); } catch (e) {}
       }
 
       const next: PlayerProfile = {
@@ -63,13 +65,15 @@ export function usePlayerProfile() {
         allTimeHigh: Math.max(prev.allTimeHigh, score),
       };
       
-      localStorage.setItem('stellar_player_profile', JSON.stringify(next));
+      try {
+        localStorage.setItem('stellar_player_profile', JSON.stringify(next));
+      } catch (e) {}
       return next;
     });
   }, []);
 
   const setAvatar = (id: string) => {
-    playUIClickSound();
+    try { playUIClickSound(); } catch (e) {}
     saveProfile({ ...profile, avatarId: id });
   };
 
