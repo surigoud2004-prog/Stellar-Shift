@@ -3,73 +3,73 @@
   "placeholderImages": [
     {
       "id": "planet-1",
-      "description": "A vibrant purple gas giant planet with glowing rings",
-      "imageUrl": "https://picsum.photos/seed/planet1/200/200",
-      "imageHint": "purple planet"
+      "description": "A vibrant blue Earth-like planet with swirling white clouds",
+      "imageUrl": "https://picsum.photos/seed/earth1/200/200",
+      "imageHint": "blue planet"
     },
     {
       "id": "planet-2",
-      "description": "An electric blue crystal star radiating energy",
-      "imageUrl": "https://picsum.photos/seed/planet2/200/200",
+      "description": "An electric blue crystal star radiating cosmic energy",
+      "imageUrl": "https://picsum.photos/seed/star2/200/200",
       "imageHint": "blue star"
     },
     {
       "id": "planet-3",
-      "description": "A glowing crescent moon with a silver sheen",
-      "imageUrl": "https://picsum.photos/seed/planet3/200/200",
+      "description": "A glowing crescent moon with a cinematic silver sheen",
+      "imageUrl": "https://picsum.photos/seed/moon3/200/200",
       "imageHint": "crescent moon"
     },
     {
       "id": "planet-4",
-      "description": "A swirling green nebula contained in an orb",
-      "imageUrl": "https://picsum.photos/seed/planet4/200/200",
+      "description": "A swirling green and blue nebula contained in a celestial orb",
+      "imageUrl": "https://picsum.photos/seed/nebula4/200/200",
       "imageHint": "green nebula"
     },
     {
       "id": "planet-5",
-      "description": "A fiery orange celestial sun-like body",
-      "imageUrl": "https://picsum.photos/seed/planet5/200/200",
+      "description": "A fiery orange celestial body resembling a distant sun",
+      "imageUrl": "https://picsum.photos/seed/sun5/200/200",
       "imageHint": "orange sun"
     },
     {
       "id": "planet-6",
-      "description": "A mysterious dark matter void with white sparks",
-      "imageUrl": "https://picsum.photos/seed/planet6/200/200",
+      "description": "A mysterious deep space void with shimmering white sparks",
+      "imageUrl": "https://picsum.photos/seed/void6/200/200",
       "imageHint": "dark void"
     },
     {
       "id": "avatar-1",
-      "description": "Futuristic astronaut in a white suit",
+      "description": "Futuristic astronaut in a high-tech white suit",
       "imageUrl": "https://picsum.photos/seed/astro1/200/200",
       "imageHint": "astronaut suit"
     },
     {
       "id": "avatar-2",
-      "description": "Glowing cyan alien being with energy trails",
+      "description": "Glowing cyan alien being with ethereal energy trails",
       "imageUrl": "https://picsum.photos/seed/alien2/200/200",
       "imageHint": "alien being"
     },
     {
       "id": "avatar-3",
-      "description": "Robotic space explorer with bronze plating",
+      "description": "Robotic space explorer with sleek bronze plating",
       "imageUrl": "https://picsum.photos/seed/bot3/200/200",
       "imageHint": "space robot"
     },
     {
       "id": "avatar-4",
-      "description": "Star-shining nebula goddess with violet hair",
+      "description": "Star-shining nebula goddess with violet energy hair",
       "imageUrl": "https://picsum.photos/seed/goddess4/200/200",
       "imageHint": "nebula goddess"
     },
     {
       "id": "avatar-5",
-      "description": "Sleek chrome helmet reflecting stars",
+      "description": "Sleek chrome helmet reflecting distant star systems",
       "imageUrl": "https://picsum.photos/seed/helmet5/200/200",
       "imageHint": "space helmet"
     },
     {
       "id": "avatar-6",
-      "description": "Abstract cosmic entity made of dark energy",
+      "description": "Abstract cosmic entity composed of pure dark energy",
       "imageUrl": "https://picsum.photos/seed/entity6/200/200",
       "imageHint": "cosmic entity"
     }

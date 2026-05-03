@@ -2,38 +2,38 @@
   "placeholderImages": [
     {
       "id": "planet-1",
-      "description": "A vibrant purple gas giant planet with glowing rings",
-      "imageUrl": "https://picsum.photos/seed/planet1/200/200",
-      "imageHint": "purple planet"
+      "description": "A vibrant blue Earth-like planet with swirling white clouds",
+      "imageUrl": "https://picsum.photos/seed/earth1/200/200",
+      "imageHint": "blue planet"
     },
     {
       "id": "planet-2",
-      "description": "An electric blue crystal star radiating energy",
-      "imageUrl": "https://picsum.photos/seed/planet2/200/200",
+      "description": "An electric blue crystal star radiating cosmic energy",
+      "imageUrl": "https://picsum.photos/seed/star2/200/200",
       "imageHint": "blue star"
     },
     {
       "id": "planet-3",
-      "description": "A glowing crescent moon with a silver sheen",
-      "imageUrl": "https://picsum.photos/seed/planet3/200/200",
+      "description": "A glowing crescent moon with a cinematic silver sheen",
+      "imageUrl": "https://picsum.photos/seed/moon3/200/200",
       "imageHint": "crescent moon"
     },
     {
       "id": "planet-4",
-      "description": "A swirling green nebula contained in an orb",
-      "imageUrl": "https://picsum.photos/seed/planet4/200/200",
+      "description": "A swirling green and blue nebula contained in a celestial orb",
+      "imageUrl": "https://picsum.photos/seed/nebula4/200/200",
       "imageHint": "green nebula"
     },
     {
       "id": "planet-5",
-      "description": "A fiery orange celestial sun-like body",
-      "imageUrl": "https://picsum.photos/seed/planet5/200/200",
+      "description": "A fiery orange celestial body resembling a distant sun",
+      "imageUrl": "https://picsum.photos/seed/sun5/200/200",
       "imageHint": "orange sun"
     },
     {
       "id": "planet-6",
-      "description": "A mysterious dark matter void with white sparks",
-      "imageUrl": "https://picsum.photos/seed/planet6/200/200",
+      "description": "A mysterious deep space void with shimmering white sparks",
+      "imageUrl": "https://picsum.photos/seed/void6/200/200",
       "imageHint": "dark void"
     }
   ]
