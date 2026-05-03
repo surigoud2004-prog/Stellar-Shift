@@ -36,29 +36,29 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
       style={{
         left: `${x}px`,
         top: `${y}px`,
-        width: `${HEX_WIDTH - 4}px`,
-        height: `${HEX_WIDTH - 4}px`,
+        width: `${HEX_WIDTH - 6}px`, // Slight spacing between tiles
+        height: `${HEX_WIDTH - 6}px`,
       }}
     >
       <div className={cn(
         "w-full h-full rounded-2xl overflow-hidden border-2 transition-colors relative",
-        isSelected ? "border-primary shadow-[0_0_15px_rgba(168,85,247,0.5)]" : "border-white/10"
+        isSelected ? "border-primary shadow-[0_0_20px_rgba(168,85,247,0.6)]" : "border-white/10"
       )}>
         {entity.special === 'bomb' ? (
           <div className="w-full h-full bg-black relative flex items-center justify-center overflow-hidden">
              {/* Supernova Core Visual */}
              <div className="absolute inset-0 bg-gradient-to-tr from-amber-500 via-white to-amber-200 animate-pulse opacity-80" />
-             <div className="relative w-8 h-8 rounded-full bg-white shadow-[0_0_20px_#fff] animate-core-pulse">
-                <div className="absolute inset-[-8px] border-2 border-primary rounded-full animate-spin duration-[2000ms]" />
-                <div className="absolute inset-[-4px] border border-white/50 rounded-lg animate-spin-reverse duration-[3000ms]" />
+             <div className="relative w-12 h-12 rounded-full bg-white shadow-[0_0_30px_#fff] animate-core-pulse">
+                <div className="absolute inset-[-12px] border-2 border-primary rounded-full animate-spin duration-[2000ms]" />
+                <div className="absolute inset-[-6px] border border-white/50 rounded-lg animate-spin-reverse duration-[3000ms]" />
              </div>
           </div>
         ) : (
           <Image
             src={placeholder.imageUrl}
             alt={placeholder.description}
-            width={64}
-            height={64}
+            width={HEX_WIDTH}
+            height={HEX_WIDTH}
             data-ai-hint={placeholder.imageHint}
             className="object-cover w-full h-full"
           />

@@ -11,10 +11,13 @@ export interface CelestialEntity {
   isExploding?: boolean;
 }
 
-// Recalibrated for 7x5 Sector Grid
+/**
+ * Recalibrated for Immersive 7x5 Sector Grid
+ * HEX_WIDTH increased to 90px to fill the container and improve mobile ergonomics.
+ */
 export const GRID_COLS = 7;
 export const GRID_ROWS = 5;
-export const HEX_WIDTH = 64;
+export const HEX_WIDTH = 90;
 
 function generateStableId() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {

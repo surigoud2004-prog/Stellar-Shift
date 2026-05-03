@@ -35,15 +35,16 @@ export function Board() {
   }, [selectedId, entities, isProcessing, isGameOver, isWin, setSelectedId, swapEntities]);
 
   return (
-    <div className="relative flex flex-col items-center justify-center p-4">
-      {/* 7x5 Sector Grid Centered */}
-      <div className="stellar-grid-frame p-8 flex items-center justify-center relative shadow-[0_0_100px_rgba(0,0,0,0.8)] border-primary/10">
+    <div className="relative flex flex-col items-center justify-center p-4 w-full h-full max-w-[95vw]">
+      {/* 7x5 Sector Grid Centered - Dynamic Sizing */}
+      <div className="stellar-grid-frame p-4 md:p-8 flex items-center justify-center relative shadow-[0_0_100px_rgba(0,0,0,0.8)] border-primary/10 overflow-visible">
         <div 
-          className="relative" 
+          className="relative transition-all duration-500" 
           style={{ 
             width: `${GRID_COLS * HEX_WIDTH}px`, 
             height: `${GRID_ROWS * HEX_WIDTH}px`,
-            transformOrigin: 'center center'
+            maxWidth: '100%',
+            maxHeight: '100%'
           }}
         >
           {entities.map((entity) => (
@@ -57,22 +58,22 @@ export function Board() {
           ))}
 
           {(isGameOver || isWin) && (
-            <div className="absolute inset-[-60px] z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl rounded-[3rem] animate-in zoom-in duration-300 border border-white/5 shadow-2xl">
+            <div className="absolute inset-[-40px] md:inset-[-60px] z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-2xl rounded-[3rem] animate-in zoom-in duration-300 border border-white/10 shadow-[0_0_100px_rgba(168,85,247,0.3)]">
               {isWin ? (
                 <>
-                  <Trophy className="w-20 h-20 text-yellow-400 mb-6 drop-shadow-[0_0_20px_rgba(250,204,21,0.5)]" />
-                  <h2 className="text-5xl font-black text-white mb-8 uppercase italic tracking-tighter">Victory</h2>
+                  <Trophy className="w-24 h-24 text-yellow-400 mb-6 drop-shadow-[0_0_30px_rgba(250,204,21,0.6)]" />
+                  <h2 className="text-4xl md:text-6xl font-black text-white mb-8 uppercase italic tracking-tighter">Mission Victory</h2>
                 </>
               ) : (
                 <>
-                  <div className="text-8xl mb-6">🌑</div>
-                  <h2 className="text-5xl font-black text-white mb-8 uppercase italic tracking-tighter">Failed</h2>
+                  <div className="text-8xl mb-6 grayscale opacity-50">🌑</div>
+                  <h2 className="text-4xl md:text-6xl font-black text-white mb-8 uppercase italic tracking-tighter">Link Severed</h2>
                 </>
               )}
               <Button 
                 onClick={initBoard} 
                 size="lg" 
-                className="bg-primary hover:bg-primary/80 active:scale-95 transition-all font-black uppercase tracking-widest px-12 h-16 rounded-full text-lg shadow-xl"
+                className="bg-primary hover:bg-primary/80 active:scale-95 transition-all font-black uppercase tracking-widest px-16 h-20 rounded-full text-xl shadow-2xl"
               >
                 <RotateCcw className="w-6 h-6 mr-3" /> Reboot Link
               </Button>
