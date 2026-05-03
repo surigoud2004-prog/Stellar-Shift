@@ -3,75 +3,33 @@
   "placeholderImages": [
     {
       "id": "planet-1",
-      "description": "A vibrant blue Earth-like planet with swirling white clouds",
-      "imageUrl": "https://picsum.photos/seed/earth1/200/200",
-      "imageHint": "blue planet"
-    },
-    {
-      "id": "planet-2",
-      "description": "An electric blue crystal star radiating cosmic energy",
-      "imageUrl": "https://picsum.photos/seed/star2/200/200",
-      "imageHint": "blue star"
-    },
-    {
-      "id": "planet-3",
-      "description": "A glowing crescent moon with a cinematic silver sheen",
-      "imageUrl": "https://picsum.photos/seed/moon3/200/200",
-      "imageHint": "crescent moon"
-    },
-    {
-      "id": "planet-4",
-      "description": "A swirling green and blue nebula contained in a celestial orb",
-      "imageUrl": "https://picsum.photos/seed/nebula4/200/200",
-      "imageHint": "green nebula"
-    },
-    {
-      "id": "planet-5",
-      "description": "A fiery orange celestial body resembling a distant sun",
-      "imageUrl": "https://picsum.photos/seed/sun5/200/200",
+      "description": "Pulsing sun-orange energy orb with internal heat",
+      "imageUrl": "https://picsum.photos/seed/orange-orb/200/200",
       "imageHint": "orange sun"
     },
     {
-      "id": "planet-6",
-      "description": "A mysterious deep space void with shimmering white sparks",
-      "imageUrl": "https://picsum.photos/seed/void6/200/200",
-      "imageHint": "dark void"
+      "id": "planet-2",
+      "description": "Frozen sapphire crystal energy core with icy facets",
+      "imageUrl": "https://picsum.photos/seed/sapphire-core/200/200",
+      "imageHint": "blue crystal"
     },
     {
-      "id": "avatar-1",
-      "description": "Futuristic astronaut in a high-tech white suit",
-      "imageUrl": "https://picsum.photos/seed/astro1/200/200",
-      "imageHint": "astronaut suit"
+      "id": "planet-3",
+      "description": "Swirling violet nebula sphere with stardust particles",
+      "imageUrl": "https://picsum.photos/seed/violet-nebula/200/200",
+      "imageHint": "violet nebula"
     },
     {
-      "id": "avatar-2",
-      "description": "Glowing cyan alien being with ethereal energy trails",
-      "imageUrl": "https://picsum.photos/seed/alien2/200/200",
-      "imageHint": "alien being"
+      "id": "planet-4",
+      "description": "Neon-green radioactive energy core with high intensity",
+      "imageUrl": "https://picsum.photos/seed/green-radioactive/200/200",
+      "imageHint": "green energy"
     },
     {
-      "id": "avatar-3",
-      "description": "Robotic space explorer with sleek bronze plating",
-      "imageUrl": "https://picsum.photos/seed/bot3/200/200",
-      "imageHint": "space robot"
-    },
-    {
-      "id": "avatar-4",
-      "description": "Star-shining nebula goddess with violet energy hair",
-      "imageUrl": "https://picsum.photos/seed/goddess4/200/200",
-      "imageHint": "nebula goddess"
-    },
-    {
-      "id": "avatar-5",
-      "description": "Sleek chrome helmet reflecting distant star systems",
-      "imageUrl": "https://picsum.photos/seed/helmet5/200/200",
-      "imageHint": "space helmet"
-    },
-    {
-      "id": "avatar-6",
-      "description": "Abstract cosmic entity composed of pure dark energy",
-      "imageUrl": "https://picsum.photos/seed/entity6/200/200",
-      "imageHint": "cosmic entity"
+      "id": "planet-5",
+      "description": "Golden celestial energy ring with star-matter shell",
+      "imageUrl": "https://picsum.photos/seed/golden-ring/200/200",
+      "imageHint": "golden star"
     }
   ]
 }

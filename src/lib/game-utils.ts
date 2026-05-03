@@ -1,4 +1,5 @@
-export type EntityType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+export type EntityType = 0 | 1 | 2 | 3 | 4;
 export type SpecialType = 'nova-h' | 'black-hole' | 'bomb' | 'comet' | null;
 
 export interface CelestialEntity {
@@ -12,8 +13,8 @@ export interface CelestialEntity {
 }
 
 /**
- * Recalibrated for High-Density 9x7 Sector Grid
- * HEX_WIDTH reduced to 70px to accommodate 63 tiles within the mission frame.
+ * High-Density 9x7 Sector Grid
+ * HEX_WIDTH set to 70px to balance visibility and density on all screens.
  */
 export const GRID_COLS = 9;
 export const GRID_ROWS = 7;
@@ -26,7 +27,7 @@ function generateStableId() {
   return `shard-${Math.random().toString(36).substring(2, 11)}-${Date.now()}`;
 }
 
-export function generateRandomEntity(q: number, r: number, variety: number = 6): CelestialEntity {
+export function generateRandomEntity(q: number, r: number, variety: number = 5): CelestialEntity {
   return {
     id: generateStableId(),
     type: Math.floor(Math.random() * variety) as EntityType,
@@ -65,7 +66,7 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
   const horizontalGroups: Set<string>[] = [];
   const verticalGroups: Set<string>[] = [];
 
-  // Horizontal matches (Across Columns)
+  // Horizontal matches
   for (let r = 0; r < GRID_ROWS; r++) {
     let count = 1;
     for (let q = 1; q < GRID_COLS; q++) {
@@ -87,7 +88,7 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
     }
   }
 
-  // Vertical matches (Across Rows)
+  // Vertical matches
   for (let q = 0; q < GRID_COLS; q++) {
     let count = 1;
     for (let r = 1; r < GRID_ROWS; r++) {
@@ -118,12 +119,8 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
     if (moved) {
       const hGroup = horizontalGroups.find(g => g.has(lastMoveId));
       const vGroup = verticalGroups.find(g => g.has(lastMoveId));
-      if (hGroup && vGroup) {
+      if ((hGroup && hGroup.size >= 4) || (vGroup && vGroup.size >= 4)) {
         specialToSpawn = { id: generateStableId(), type: 'bomb', entityType: moved.type, q: moved.q, r: moved.r };
-      } else if ((hGroup && hGroup.size >= 5) || (vGroup && vGroup.size >= 5)) {
-        specialToSpawn = { id: generateStableId(), type: 'black-hole', entityType: moved.type, q: moved.q, r: moved.r };
-      } else if ((hGroup && hGroup.size === 4) || (vGroup && vGroup.size === 4)) {
-        specialToSpawn = { id: generateStableId(), type: 'nova-h', entityType: moved.type, q: moved.q, r: moved.r };
       }
     }
   }
