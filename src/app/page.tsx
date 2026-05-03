@@ -30,7 +30,7 @@ import { playUIClickSound } from '@/lib/audio-system';
 
 function MissionContent() {
   const { 
-    profile, showProfile, setShowProfile, setAvatar, setName, getRank, updateStats, spendCoins
+    profile, showProfile, setShowProfile, setAvatar, setName, getRank, updateStats, spendCoins, resetProfile
   } = usePlayerProfile();
   
   const { 
@@ -59,7 +59,7 @@ function MissionContent() {
   useEffect(() => {
     if (isWin && level > lastProcessedLevel) {
       const coinsWon = Math.floor(100 + (timeLeft * 5));
-      updateStats(score, 0, true, coinsWon);
+      updateStats(score, 0, true, coinsWon, level + 1);
       setLastProcessedLevel(level);
       setShowCoins(true);
       
@@ -235,6 +235,7 @@ function MissionContent() {
             onSetGameMode={setGameMode}
             onShowFame={() => setShowFame(true)}
             onAbort={handleAbort}
+            onResetProgress={resetProfile}
             gameStarted={gameStarted}
             labels={labels}
           />
@@ -254,7 +255,7 @@ function MissionContent() {
                 Start Mission
              </button>
              <p className="mt-10 text-sm text-primary font-black uppercase tracking-[0.6em] animate-pulse">
-               Initialize Neural Link
+               Initialize Neural Link (Sector {profile.currentLevel})
              </p>
           </div>
         ) : (
@@ -352,7 +353,7 @@ function MissionContent() {
         powerUps={powerUps}
         onBuy={handleBuyPowerUp}
         isOpen={showShop}
-        onClose={() => { setShowShop(false); if (!gameStarted) startGame(); }}
+        onClose={() => { setShowShop(false); if (!gameStarted) startGame(profile.currentLevel); }}
         labels={labels}
       />
 

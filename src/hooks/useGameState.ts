@@ -391,14 +391,13 @@ export function useGameState() {
     }, 500);
   }, [entities, handleMatch, isProcessing, powerUps.colorNuke, isReviving]);
 
-  const startGame = useCallback(() => {
+  const startGame = useCallback((initialLevel: number = 1) => {
     playUIClickSound();
     setGameStarted(true);
     setSessionStartTime(Date.now());
-    setLevel(1);
+    setLevel(initialLevel);
     setScore(0);
     setReviveCost(200);
-    // Clearing entities triggers the refill effect which calls initBoard
     setEntities([]);
   }, []);
 

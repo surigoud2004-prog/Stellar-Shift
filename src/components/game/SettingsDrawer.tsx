@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Settings, Volume2, VolumeX, Languages, Zap, Trophy, BatteryLow, BatteryFull, Power } from 'lucide-react';
+import { Settings, Volume2, VolumeX, Languages, Zap, Trophy, BatteryLow, BatteryFull, Power, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { playUIClickSound } from '@/lib/audio-system';
 import { Language } from '@/lib/localization';
@@ -21,6 +21,7 @@ interface SettingsDrawerProps {
   onSetGameMode: (mode: GameMode) => void;
   onShowFame: () => void;
   onAbort: () => void;
+  onResetProgress: () => void;
   gameStarted: boolean;
   labels: Record<string, string>;
   anchor?: 'top' | 'bottom';
@@ -40,6 +41,7 @@ export function SettingsDrawer({
   onSetGameMode,
   onShowFame,
   onAbort,
+  onResetProgress,
   gameStarted,
   labels,
   anchor = 'bottom'
@@ -92,6 +94,13 @@ export function SettingsDrawer({
       onClick: onCycleLanguage,
       active: true
     },
+    {
+      icon: Trash2,
+      label: labels.resetProgress,
+      onClick: onResetProgress,
+      active: true,
+      color: 'text-red-400'
+    }
   ];
 
   return (

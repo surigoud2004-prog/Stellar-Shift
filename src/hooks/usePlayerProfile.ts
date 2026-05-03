@@ -13,6 +13,7 @@ export interface PlayerProfile {
   starsCollected: number;
   allTimeHigh: number;
   coins: number;
+  currentLevel: number;
 }
 
 const DEFAULT_PROFILE: PlayerProfile = {
@@ -24,6 +25,7 @@ const DEFAULT_PROFILE: PlayerProfile = {
   starsCollected: 0,
   allTimeHigh: 0,
   coins: 0,
+  currentLevel: 1,
 };
 
 export function usePlayerProfile() {
@@ -48,7 +50,7 @@ export function usePlayerProfile() {
     } catch (e) {}
   }, []);
 
-  const updateStats = useCallback((score: number, matches: number, isWin: boolean = false, coinsWon: number = 0) => {
+  const updateStats = useCallback((score: number, matches: number, isWin: boolean = false, coinsWon: number = 0, newLevel?: number) => {
     setProfile(prev => {
       const newXP = prev.xp + Math.floor(score / 10);
       const oldRank = Math.floor(prev.xp / 1000);
@@ -66,6 +68,7 @@ export function usePlayerProfile() {
         starsCollected: prev.starsCollected + Math.floor(score / 50),
         allTimeHigh: Math.max(prev.allTimeHigh, score),
         coins: (prev.coins || 0) + coinsWon,
+        currentLevel: newLevel !== undefined ? newLevel : prev.currentLevel,
       };
       
       try {
@@ -100,6 +103,11 @@ export function usePlayerProfile() {
     return 'legend';
   };
 
+  const resetProfile = () => {
+    saveProfile(DEFAULT_PROFILE);
+    window.location.reload(); // Hard reset to ensure all states clear
+  };
+
   return {
     profile,
     showProfile,
@@ -108,6 +116,7 @@ export function usePlayerProfile() {
     spendCoins,
     setAvatar,
     setName,
-    getRank
+    getRank,
+    resetProfile
   };
 }

@@ -48,7 +48,8 @@ export const LOCALIZATION = {
     batterySaver: 'BATTERY SAVER',
     on: 'ON',
     off: 'OFF',
-    coins: 'COINS'
+    coins: 'COINS',
+    resetProgress: 'RESET PROGRESS'
   },
   es: {
     start: 'INICIAR',
@@ -96,7 +97,8 @@ export const LOCALIZATION = {
     batterySaver: 'AHORRO BATERÍA',
     on: 'SÍ',
     off: 'NO',
-    coins: 'MONEDAS'
+    coins: 'MONEDAS',
+    resetProgress: 'REINICIAR PROGRESO'
   },
   fr: {
     start: 'COMMENCER',
@@ -144,6 +146,7 @@ export const LOCALIZATION = {
     batterySaver: 'ÉCONOMIE BATT.',
     on: 'OUI',
     off: 'NON',
-    coins: 'PIÈCES'
+    coins: 'PIÈCES',
+    resetProgress: 'RÉINITIALISER PROGRÈS'
   }
 };
