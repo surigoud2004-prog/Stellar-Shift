@@ -96,32 +96,32 @@ export function SettingsDrawer({
         onClick={toggleSettings}
         disabled={disabled}
         className={cn(
-          "settings-gear-btn group",
+          "w-12 h-12 rounded-full glass-panel flex items-center justify-center border-primary/30 hover:border-primary transition-all shadow-lg group active:scale-90",
           isOpen && "rotate-90",
           disabled && "opacity-50 grayscale"
         )}
       >
-        <Settings className="w-6 h-6 text-slate-900" />
+        <Settings className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
       </button>
 
       <div className={cn(
-        "absolute right-0 flex flex-col gap-2 p-3 glass-morphism rounded-3xl transition-all duration-500 ease-out z-[65] shadow-2xl",
-        anchor === 'bottom' ? "bottom-full mb-4" : "top-full mt-4",
-        isOpen ? "translate-y-0 opacity-100" : (anchor === 'bottom' ? "translate-y-8" : "-translate-y-8") + " opacity-0 pointer-events-none"
+        "absolute right-0 flex flex-col gap-3 p-4 glass-morphism rounded-[2rem] transition-all duration-500 ease-out z-[65] shadow-2xl border-white/5",
+        anchor === 'bottom' ? "top-full mt-4" : "bottom-full mb-4",
+        isOpen ? "translate-y-0 opacity-100" : (anchor === 'bottom' ? "-translate-y-8" : "translate-y-8") + " opacity-0 pointer-events-none"
       )}>
         {buttons.map((btn, idx) => (
           <button
             key={idx}
             onClick={() => { playUIClickSound(); btn.onClick(); }}
             className={cn(
-              "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
-              btn.active === false ? "bg-black/20 text-muted-foreground" : "bg-white/5 text-white",
+              "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",
+              btn.active === false ? "bg-black/40 text-muted-foreground" : "bg-white/5 text-white",
               btn.color,
-              "hover:bg-white/10 active:scale-95"
+              "hover:bg-white/10 active:scale-90 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]"
             )}
             title={btn.label}
           >
-            <btn.icon className="w-5 h-5" />
+            <btn.icon className="w-6 h-6" />
           </button>
         ))}
       </div>
