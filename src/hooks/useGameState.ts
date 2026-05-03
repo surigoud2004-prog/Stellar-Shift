@@ -136,18 +136,25 @@ export function useGameState() {
 
   useEffect(() => {
     if (isWin) {
-      setIsWarping(true);
-      setEntities([]);
-      playWarpSound(); // Play the tech warp whoosh!
-      const timeout = setTimeout(() => {
-        setLevel(prev => prev + 1);
-        setScore(0);
-        setIsWin(false);
-        setIsWarping(false);
-        setPowerUps(prev => ({ ...prev, timeDilator: false, novaBlast: false }));
-        setReviveCost(200);
-      }, 2500); 
-      return () => clearTimeout(timeout);
+      // Wait 1 second before starting the warp so players see the win message
+      const warpStartTimeout = setTimeout(() => {
+        setIsWarping(true);
+        setEntities([]);
+        playWarpSound();
+        
+        const nextLevelTimeout = setTimeout(() => {
+          setLevel(prev => prev + 1);
+          setScore(0);
+          setIsWin(false);
+          setIsWarping(false);
+          setPowerUps(prev => ({ ...prev, timeDilator: false, novaBlast: false }));
+          setReviveCost(200);
+        }, 2500);
+        
+        return () => clearTimeout(nextLevelTimeout);
+      }, 1000);
+      
+      return () => clearTimeout(warpStartTimeout);
     }
   }, [isWin]);
 

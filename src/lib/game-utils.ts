@@ -165,7 +165,7 @@ export function findMatches(entities: CelestialEntity[], lastMoveId?: string): M
     const moved = entities.find(e => e.id === lastMoveId);
 
     if (moved) {
-      if (hGroup && hGroup.length >= 5 || vGroup && vGroup.length >= 5) {
+      if ((hGroup && hGroup.length >= 5) || (vGroup && vGroup.length >= 5)) {
         // 5-match linear -> Rainbow Core
         specialToSpawn = { id: generateStableId(), type: 'rainbow-core', entityType: moved.type, q: moved.q, r: moved.r };
       } else if (hGroup && vGroup) {
