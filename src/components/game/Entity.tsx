@@ -1,8 +1,10 @@
+
 "use client";
 
-import React, { memo, useState, useEffect } from 'react';
-import { CelestialEntity, HEX_WIDTH } from '@/lib/game-utils';
+import React, { memo, useState, useEffect, useMemo } from 'react';
+import { CelestialEntity, HEX_WIDTH, getSectorInfo } from '@/lib/game-utils';
 import { cn } from '@/lib/utils';
+import { useGameState } from '@/context/GameStateContext';
 
 interface EntityProps {
   entity: CelestialEntity;
@@ -20,13 +22,31 @@ const BLOOM_MAP = [
   "bloom-red"    
 ];
 
-const CORE_CLASS_MAP = [
+const NEON_CORE_MAP = [
   "neon-core-cyan",
   "neon-core-pink",
   "neon-core-green",
   "neon-core-amber",
   "neon-core-violet",
   "neon-core-red"
+];
+
+const GILDED_CORE_MAP = [
+  "gilded-core-gold",
+  "gilded-core-ruby",
+  "gilded-core-sapphire",
+  "gilded-core-emerald",
+  "gilded-core-gold",
+  "gilded-core-ruby"
+];
+
+const VOID_OUTLINE_MAP = [
+  "void-outline-cyan",
+  "void-outline-pink",
+  "void-outline-green",
+  "void-outline-amber",
+  "void-outline-cyan",
+  "void-outline-pink"
 ];
 
 const SPARKLE_COLOR_MAP = [
@@ -39,13 +59,15 @@ const SPARKLE_COLOR_MAP = [
 ];
 
 export const Entity = memo(function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) {
+  const { level } = useGameState();
   const [sparkleKey, setSparkleKey] = useState(0);
+  
+  const sector = useMemo(() => getSectorInfo(level), [level]);
   
   const x = entity.q * HEX_WIDTH;
   const y = entity.r * HEX_WIDTH;
   
   const bloomClass = BLOOM_MAP[entity.type % BLOOM_MAP.length];
-  const coreClass = CORE_CLASS_MAP[entity.type % CORE_CLASS_MAP.length];
   const sparkleColor = SPARKLE_COLOR_MAP[entity.type % SPARKLE_COLOR_MAP.length];
 
   // Trigger sparkle burst when matched or selected
@@ -102,7 +124,7 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
           </div>
         ) : entity.special === 'nova-h' ? (
           <div className="w-full h-full relative flex items-center justify-center overflow-hidden rounded-full border border-white/40">
-             <div className={cn("absolute inset-0", coreClass)} />
+             <div className={cn("absolute inset-0", NEON_CORE_MAP[entity.type % NEON_CORE_MAP.length])} />
              <div className="absolute inset-x-0 h-2 bg-white blur-sm animate-pulse" />
              <div className="absolute inset-x-0 h-0.5 bg-white z-10" />
              <div className="rim-light" />
@@ -110,11 +132,26 @@ export const Entity = memo(function Entity({ entity, isSelected, onSelect, disab
           </div>
         ) : (
           <div className="relative w-full h-full rounded-full overflow-hidden border border-white/10 group">
-            {/* The Solid Neon Core with Inner Singularity Bloom */}
-            <div className={cn("absolute inset-0", coreClass)} />
             
-            {/* Pulsing Inner Singularity Glow */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,white_0%,transparent_40%)] opacity-70 animate-pulse" />
+            {sector.id === 'neon' && (
+              <div className={cn("absolute inset-0", NEON_CORE_MAP[entity.type % NEON_CORE_MAP.length])} />
+            )}
+
+            {sector.id === 'gilded' && (
+              <>
+                <div className={cn("absolute inset-0", GILDED_CORE_MAP[entity.type % GILDED_CORE_MAP.length])} />
+                <div className="glitter-overlay" />
+              </>
+            )}
+
+            {sector.id === 'void' && (
+              <div className={cn("absolute inset-0 void-core", VOID_OUTLINE_MAP[entity.type % VOID_OUTLINE_MAP.length])} />
+            )}
+            
+            {/* Pulsing Inner Singularity Glow (for Neon/Gilded) */}
+            {sector.id !== 'void' && (
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,white_0%,transparent_40%)] opacity-70 animate-pulse" />
+            )}
             
             {/* 3D Glass Marble Elements */}
             <div className="absolute inset-0 specular-highlight pointer-events-none" />

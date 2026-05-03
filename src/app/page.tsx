@@ -9,9 +9,10 @@ import { ParallaxBackground } from '@/components/game/ParallaxBackground';
 import { HallOfFame } from '@/components/game/HallOfFame';
 import { MissionLogs } from '@/components/game/MissionLogs';
 import { GameStateProvider, useGameState } from '@/context/GameStateContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
-import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff, Radio } from 'lucide-react';
+import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff, Radio, Orbit } from 'lucide-react';
+import { getSectorInfo } from '@/lib/game-utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +44,7 @@ function MissionContent() {
   const [uiVisible, setUiVisible] = useState(true);
 
   const labels = LOCALIZATION[language];
+  const sector = useMemo(() => getSectorInfo(level), [level]);
 
   // Update profile stats when a win occurs
   useEffect(() => {
@@ -61,7 +63,7 @@ function MissionContent() {
     <main className="min-h-screen w-full flex flex-col items-center justify-center relative bg-black overflow-hidden">
       
       {/* LAYER 1: COSMIC BACKGROUND */}
-      <ParallaxBackground disabled={isBatterySaver} isWarping={isWarping} />
+      <ParallaxBackground disabled={isBatterySaver} isWarping={isWarping} level={level} />
       
       {/* LAYER 2: GLOBAL HUD (TOP LAYER - Z:9999) */}
       <div id="Global_HUD" className="fixed inset-0 pointer-events-none z-[9999]">
@@ -100,9 +102,17 @@ function MissionContent() {
                <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-sm md:text-lg bg-black/40 px-6 py-2 rounded-xl border border-primary/20 backdrop-blur-md min-w-[200px]">
                 {labels.score}: {score.toLocaleString()} / {targetScore.toLocaleString()}
               </div>
-              <div className="bg-primary/20 border border-primary/40 rounded-xl px-4 py-2 flex items-center gap-2 backdrop-blur-md">
-                <Radio className={cn("w-4 h-4 text-primary", isWarping ? "animate-ping" : "animate-pulse")} />
-                <span className="text-white font-black uppercase text-xs tracking-widest">LVL {level}</span>
+              <div className="flex flex-col gap-1">
+                <div className="bg-primary/20 border border-primary/40 rounded-xl px-4 py-1.5 flex items-center gap-2 backdrop-blur-md">
+                  <Radio className={cn("w-3.5 h-3.5 text-primary", isWarping ? "animate-ping" : "animate-pulse")} />
+                  <span className="text-white font-black uppercase text-xs tracking-widest">LVL {level}</span>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-lg px-2 py-0.5 flex items-center justify-center gap-1.5 backdrop-blur-md">
+                   <Orbit className="w-2.5 h-2.5 text-secondary" />
+                   <span className="text-[8px] text-white font-bold uppercase tracking-widest whitespace-nowrap">
+                     {sector.name}
+                   </span>
+                </div>
               </div>
             </div>
             

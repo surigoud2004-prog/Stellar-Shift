@@ -3,6 +3,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { getSectorInfo } from '@/lib/game-utils';
 
 interface Star {
   width: string;
@@ -21,10 +22,12 @@ interface DustParticle {
   delay: string;
 }
 
-export function ParallaxBackground({ disabled, isWarping }: { disabled?: boolean, isWarping?: boolean }) {
+export function ParallaxBackground({ disabled, isWarping, level = 1 }: { disabled?: boolean, isWarping?: boolean, level?: number }) {
   const [stars, setStars] = useState<Star[]>([]);
   const [dust, setDust] = useState<DustParticle[]>([]);
   const [hasMounted, setHasMounted] = useState(false);
+
+  const sector = useMemo(() => getSectorInfo(level), [level]);
 
   useEffect(() => {
     const generateStars = (count: number) => 
@@ -66,8 +69,8 @@ export function ParallaxBackground({ disabled, isWarping }: { disabled?: boolean
         )}
         style={{ 
           background: `
-            radial-gradient(circle at 30% 40%, #4c1d95 0%, transparent 60%),
-            radial-gradient(circle at 70% 60%, #1e3a8a 0%, transparent 60%)
+            radial-gradient(circle at 30% 40%, ${sector.nebulaColors[0]} 0%, transparent 60%),
+            radial-gradient(circle at 70% 60%, ${sector.nebulaColors[1]} 0%, transparent 60%)
           `
         }}
       />
@@ -117,7 +120,7 @@ export function ParallaxBackground({ disabled, isWarping }: { disabled?: boolean
       {/* WARP TUNNEL EFFECT */}
       {isWarping && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-full h-1 bg-white/20 blur-xl animate-pulse" />
+          <div className="w-full h-1 bg-white/40 blur-xl animate-pulse" />
           <div className="absolute inset-0 bg-[radial-gradient(circle,transparent_0%,black_80%)]" />
         </div>
       )}

@@ -1,3 +1,4 @@
+
 export type EntityType = 0 | 1 | 2 | 3 | 4 | 5;
 export type SpecialType = 'nova-h' | 'bomb' | null;
 
@@ -9,6 +10,12 @@ export interface CelestialEntity {
   special: SpecialType;
   isMatched?: boolean;
   isExploding?: boolean;
+}
+
+export interface SectorInfo {
+  name: string;
+  id: 'neon' | 'gilded' | 'void';
+  nebulaColors: string[];
 }
 
 /**
@@ -43,6 +50,28 @@ export function areAdjacent(a: CelestialEntity, b: CelestialEntity): boolean {
   const dq = Math.abs(a.q - b.q);
   const dr = Math.abs(a.r - b.r);
   return (dq === 1 && dr === 0) || (dq === 0 && dr === 1);
+}
+
+export function getSectorInfo(level: number): SectorInfo {
+  if (level <= 5) {
+    return { 
+      name: 'Neon Sector', 
+      id: 'neon', 
+      nebulaColors: ['#4c1d95', '#1e3a8a'] 
+    };
+  }
+  if (level <= 10) {
+    return { 
+      name: 'Gilded Sector', 
+      id: 'gilded', 
+      nebulaColors: ['#065f46', '#92400e'] 
+    };
+  }
+  return { 
+    name: 'Void Sector', 
+    id: 'void', 
+    nebulaColors: ['#7f1d1d', '#000000'] 
+  };
 }
 
 export interface MatchResult {
