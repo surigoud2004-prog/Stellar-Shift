@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Board } from '@/components/game/Board';
@@ -9,9 +8,9 @@ import { ParallaxBackground } from '@/components/game/ParallaxBackground';
 import { HallOfFame } from '@/components/game/HallOfFame';
 import { MissionLogs } from '@/components/game/MissionLogs';
 import { GameStateProvider, useGameState } from '@/context/GameStateContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
-import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff } from 'lucide-react';
+import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff, Radio } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,11 +25,11 @@ import { cn } from '@/lib/utils';
 
 function MissionContent() {
   const { 
-    profile, showProfile, setShowProfile, setAvatar, setName, getRank 
+    profile, showProfile, setShowProfile, setAvatar, setName, getRank, updateStats
   } = usePlayerProfile();
   
   const { 
-    gameMode, setGameMode, gameStarted, quitGame, score, targetScore, timeLeft, startGame
+    gameMode, setGameMode, gameStarted, quitGame, score, targetScore, timeLeft, startGame, level, isWin
   } = useGameState();
 
   const [language, setLanguage] = useState<'en' | 'es' | 'fr'>('en');
@@ -43,6 +42,13 @@ function MissionContent() {
   const [uiVisible, setUiVisible] = useState(true);
 
   const labels = LOCALIZATION[language];
+
+  // Update profile stats when a win occurs
+  useEffect(() => {
+    if (isWin) {
+      updateStats(score, 0, true);
+    }
+  }, [isWin, score, updateStats]);
 
   const handleAbort = () => {
     quitGame();
@@ -88,9 +94,16 @@ function MissionContent() {
           </h1>
           
           <div className="mt-4 flex flex-col items-center gap-2">
-            <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-sm md:text-lg bg-black/40 px-6 py-2 rounded-xl border border-primary/20 backdrop-blur-md">
-              {labels.score}: {score.toLocaleString()} / {targetScore.toLocaleString()}
+            <div className="flex items-center gap-3">
+               <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-sm md:text-lg bg-black/40 px-6 py-2 rounded-xl border border-primary/20 backdrop-blur-md">
+                {labels.score}: {score.toLocaleString()} / {targetScore.toLocaleString()}
+              </div>
+              <div className="bg-primary/20 border border-primary/40 rounded-xl px-4 py-2 flex items-center gap-2 backdrop-blur-md">
+                <Radio className="w-4 h-4 text-primary animate-pulse" />
+                <span className="text-white font-black uppercase text-xs tracking-widest">LVL {level}</span>
+              </div>
             </div>
+            
             <div className={cn(
               "text-white/80 font-mono text-xs uppercase tracking-widest bg-black/40 px-4 py-1 rounded-full border border-white/5 backdrop-blur-md",
               timeLeft < 10 && "text-red-400 animate-pulse border-red-500/50"

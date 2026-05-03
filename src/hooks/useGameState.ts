@@ -36,7 +36,7 @@ export function useGameState() {
   const [sessionStartTime, setSessionStartTime] = useState<number>(0);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const targetScore = 1000 * level;
+  const targetScore = 1000 + ((level - 1) * 500); // Level 1: 1000, Level 2: 1500, Level 3: 2000
 
   // Early Game Ease: 4 colors for first 2 mins, then 6.
   const getVariety = useCallback(() => {
@@ -83,11 +83,25 @@ export function useGameState() {
     setSelectedId(null);
     setIsGameOver(false);
     setIsWin(false);
-    setScore(0);
+    // Score is reset manually during level transitions to keep it 0 for the new level
     setTimeLeft(60);
     setIsProcessing(false);
     setIsFlashing(false);
   }, [getVariety]);
+
+  // Level Progression Logic
+  useEffect(() => {
+    if (isWin) {
+      const timeout = setTimeout(() => {
+        setLevel(prev => prev + 1);
+        setScore(0);
+        setIsWin(false);
+        initBoard();
+        archiveLore("Sector Advancement", `Neural link calibrated for Level ${level + 1}.`);
+      }, 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [isWin, initBoard, archiveLore, level]);
 
   useEffect(() => {
     if (!gameStarted || isGameOver || isWin || entities.length === 0) {
@@ -195,7 +209,7 @@ export function useGameState() {
       setIsProcessing(false);
       if (score >= targetScore) {
         setIsWin(true);
-        archiveLore("Mission Victory", `Link stabilized at score ${score}`);
+        archiveLore("Mission Milestone Achieved", `Target reached: ${score}/${targetScore}`);
       }
     }
   }, [score, targetScore, archiveLore, getVariety]);
@@ -241,18 +255,15 @@ export function useGameState() {
     }
     
     // Trigger special if it was moved even without match
-    if (matches.length === 0 && isSpecialMoved) {
-      // If we move a special and there's no match, we still process it
-      await handleMatch(newEntities, id1, 1);
-    } else {
-      await handleMatch(newEntities, id1, 1);
-    }
+    await handleMatch(newEntities, id1, 1);
   }, [entities, handleMatch, isProcessing]);
 
   const startGame = useCallback(() => {
     playUIClickSound();
     setGameStarted(true);
     setSessionStartTime(Date.now());
+    setLevel(1);
+    setScore(0);
     initBoard();
     archiveLore("Mission Started", "Neural link established.");
   }, [initBoard, archiveLore]);
@@ -262,6 +273,7 @@ export function useGameState() {
     setGameStarted(false);
     setEntities([]);
     setScore(0);
+    setLevel(1);
     setTimeLeft(60);
     setSessionStartTime(0);
   }, []);
