@@ -23,11 +23,19 @@ interface DustMote {
   delay: string;
 }
 
+interface Ember {
+  left: string;
+  size: string;
+  duration: string;
+  delay: string;
+}
+
 export function ParallaxBackground({ disabled }: ParallaxBackgroundProps) {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [stars, setStars] = useState<Star[]>([]);
   const [heroStars, setHeroStars] = useState<Star[]>([]);
   const [dustMotes, setDustMotes] = useState<DustMote[]>([]);
+  const [embers, setEmbers] = useState<Ember[]>([]);
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
@@ -61,6 +69,14 @@ export function ParallaxBackground({ disabled }: ParallaxBackgroundProps) {
     }));
     setDustMotes(generatedDust);
 
+    const generatedEmbers = [...Array(15)].map(() => ({
+      left: Math.random() * 100 + '%',
+      size: Math.random() * 3 + 1 + 'px',
+      duration: Math.random() * 4 + 3 + 's',
+      delay: Math.random() * -10 + 's',
+    }));
+    setEmbers(generatedEmbers);
+
     setHasMounted(true);
 
     if (disabled) return;
@@ -74,10 +90,8 @@ export function ParallaxBackground({ disabled }: ParallaxBackgroundProps) {
 
     const handleOrientation = (e: DeviceOrientationEvent) => {
       if (e.beta !== null && e.gamma !== null) {
-        // beta: -180 to 180 (tilt front-back)
-        // gamma: -90 to 90 (tilt left-right)
         const x = e.gamma / 3;
-        const y = (e.beta - 45) / 3; // Offset by typical holding angle
+        const y = (e.beta - 45) / 3; 
         setOffset({ x, y });
       }
     };
@@ -95,7 +109,7 @@ export function ParallaxBackground({ disabled }: ParallaxBackgroundProps) {
 
   return (
     <div className="fixed inset-0 z-[-10] pointer-events-none bg-black overflow-hidden select-none">
-      {/* LAYER 1: DEEPEST VOID & GALAXY CLUSTERS (Blurred for Depth) */}
+      {/* LAYER 1: DEEPEST VOID & GALAXY CLUSTERS */}
       <div 
         className="absolute inset-[-200px] transition-transform duration-1000 ease-out bg-[#020108] blur-[4px]"
         style={{
@@ -104,7 +118,7 @@ export function ParallaxBackground({ disabled }: ParallaxBackgroundProps) {
         }}
       />
 
-      {/* LAYER 2: PULSING NEBULA (Blur + Drift + Breath) */}
+      {/* LAYER 2: PULSING NEBULA */}
       <div 
         className="absolute inset-[-250px] opacity-20 mix-blend-screen transition-transform duration-700 ease-out animate-slow-drift-nebula blur-[3px]"
         style={{ 
@@ -119,7 +133,7 @@ export function ParallaxBackground({ disabled }: ParallaxBackgroundProps) {
         <div className="absolute inset-0 bg-primary/5 animate-nebula-breath" />
       </div>
       
-      {/* LAYER 3: STARFIELD (Drift at 0.1 Speed) */}
+      {/* LAYER 3: STARFIELD */}
       <div 
         className="absolute inset-[-100px] transition-transform duration-500 ease-out animate-slow-drift-stars"
         style={{ transform: `translate3d(${offset.x * 1.5}px, ${offset.y * 1.5}px, 0)` }}
@@ -140,7 +154,7 @@ export function ParallaxBackground({ disabled }: ParallaxBackgroundProps) {
         ))}
       </div>
 
-      {/* LAYER 4: HERO STARS & DUST (Focus Layer) */}
+      {/* LAYER 4: HERO STARS, DUST & EMBERS */}
       <div 
         className="absolute inset-[-150px] transition-transform duration-300 ease-out"
         style={{ transform: `translate3d(${offset.x * 2.5}px, ${offset.y * 2.5}px, 0)` }}
@@ -174,6 +188,22 @@ export function ParallaxBackground({ disabled }: ParallaxBackgroundProps) {
               opacity: star.opacity,
               animation: `animate-pulse ${star.delay} infinite alternate`
             }}
+          />
+        ))}
+
+        {/* Upward Drifting Embers */}
+        {embers.map((ember, i) => (
+          <div 
+            key={`ember-${i}`}
+            className="absolute bg-primary/40 rounded-full blur-[2px] animate-ember-rise"
+            style={{
+              left: ember.left,
+              bottom: '10%',
+              width: ember.size,
+              height: ember.size,
+              '--ember-duration': ember.duration,
+              animationDelay: ember.delay
+            } as any}
           />
         ))}
       </div>

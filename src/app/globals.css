@@ -99,6 +99,13 @@
   100% { filter: drop-shadow(0 0 0px transparent); }
 }
 
+@keyframes emberRise {
+  0% { transform: translate(0, 0); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translate(40px, -250px); opacity: 0; }
+}
+
 .animate-core-breath {
   animation: coreBreath 3s infinite ease-in-out;
 }
@@ -133,6 +140,10 @@
 
 .animate-implode {
   animation: implodeToStar 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-ember-rise {
+  animation: emberRise var(--ember-duration) infinite linear;
 }
 
 .sparkle-effect {
