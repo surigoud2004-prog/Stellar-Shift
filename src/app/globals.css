@@ -99,6 +99,44 @@
   100% { border-color: rgba(168, 85, 247, 0.4); box-shadow: 0 0 30px rgba(168, 85, 247, 0.3); }
 }
 
+/* Supernova Core Visuals */
+.supernova-core {
+  @apply relative w-full h-full flex items-center justify-center;
+}
+
+.plasma-sphere {
+  @apply absolute w-1/2 h-1/2 rounded-full z-10;
+  background: radial-gradient(circle, #fff 0%, #fbbf24 40%, #d97706 100%);
+  box-shadow: 0 0 20px #fbbf24, 0 0 40px #d97706, 0 0 60px rgba(255, 255, 255, 0.4);
+  animation: supernova-pulse 1.2s ease-in-out infinite;
+}
+
+.obsidian-cage {
+  @apply absolute inset-2 border-[4px] border-slate-950 rounded-2xl rotate-45 z-20;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.9), 0 0 10px rgba(168, 85, 247, 0.4);
+  animation: cage-rotate 6s linear infinite;
+}
+
+.obsidian-cage-inner {
+  @apply absolute inset-4 border-[2px] border-slate-900 rounded-xl -rotate-45 z-20;
+  animation: cage-rotate-reverse 4s linear infinite;
+}
+
+@keyframes supernova-pulse {
+  0%, 100% { transform: scale(0.85); opacity: 0.8; filter: brightness(1); }
+  50% { transform: scale(1.15); opacity: 1; filter: brightness(1.8); }
+}
+
+@keyframes cage-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes cage-rotate-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
 /* 3D Floating Shards */
 .floating-shard {
   @apply absolute w-5 h-5 bg-white/10 backdrop-blur-md border border-white/20 rotate-45;

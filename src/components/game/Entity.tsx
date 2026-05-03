@@ -1,11 +1,10 @@
-
 "use client";
 
 import Image from 'next/image';
 import { CelestialEntity, HEX_WIDTH } from '@/lib/game-utils';
 import { PLANET_IMAGES } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
-import { Zap, Target, Sun, Sparkles } from 'lucide-react';
+import { Zap, Target, Sparkles } from 'lucide-react';
 
 interface EntityProps {
   entity: CelestialEntity;
@@ -18,7 +17,7 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
   const x = entity.q * HEX_WIDTH;
   const y = entity.r * HEX_WIDTH;
   
-  // Ensure we pick from the planet-specific image set
+  // Ensure we pick from the planet-specific image set for tactical shards
   const placeholder = (entity.type >= 0 && entity.type < PLANET_IMAGES.length) 
     ? PLANET_IMAGES[entity.type] 
     : PLANET_IMAGES[0];
@@ -55,27 +54,40 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
           {/* Gravitational Distortion Effect on Hover */}
           <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors pointer-events-none" />
 
+          {/* Standard Planet Visuals */}
           {placeholder?.imageUrl && (
             <Image
               src={placeholder.imageUrl}
-              alt={placeholder.description || "Space Shard"}
+              alt={placeholder.description || "Celestial Shard"}
               width={64}
               height={64}
               data-ai-hint={placeholder.imageHint}
               className={cn(
                 "object-cover w-full h-full opacity-80 group-hover:opacity-100 transition-all duration-500",
-                entity.special && "brightness-125 scale-110 saturate-150"
+                entity.special && "brightness-75 saturate-50 blur-[1px]"
               )}
             />
           )}
 
-          {/* Special Icon Overlays */}
+          {/* Special Icon Overlays & Advanced Visuals */}
           {entity.special && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20 text-white animate-in fade-in zoom-in duration-500">
-              {entity.special === 'nova-h' && <Zap className="w-10 h-10 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" />}
-              {entity.special === 'black-hole' && <Target className="w-10 h-10 animate-spin-slow drop-shadow-[0_0_10px_rgba(0,0,0,1)]" />}
-              {entity.special === 'bomb' && <Sun className="w-10 h-10 animate-pulse drop-shadow-[0_0_10px_rgba(255,100,0,0.8)]" />}
-              {entity.special === 'comet' && <Sparkles className="w-10 h-10 text-yellow-400 animate-pulse drop-shadow-[0_0_10px_rgba(255,255,0,0.8)]" />}
+            <div className="absolute inset-0 flex items-center justify-center z-20">
+              {entity.special === 'nova-h' && (
+                <Zap className="w-10 h-10 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] animate-pulse" />
+              )}
+              {entity.special === 'black-hole' && (
+                <Target className="w-10 h-10 text-primary animate-spin-slow drop-shadow-[0_0_10px_rgba(0,0,0,1)]" />
+              )}
+              {entity.special === 'bomb' && (
+                <div className="supernova-core">
+                  <div className="plasma-sphere" />
+                  <div className="obsidian-cage" />
+                  <div className="obsidian-cage-inner" />
+                </div>
+              )}
+              {entity.special === 'comet' && (
+                <Sparkles className="w-10 h-10 text-yellow-400 animate-pulse drop-shadow-[0_0_10px_rgba(255,255,0,0.8)]" />
+              )}
             </div>
           )}
 
