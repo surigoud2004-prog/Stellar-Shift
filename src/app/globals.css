@@ -54,17 +54,21 @@
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
 }
 
-.battery-saver .nebula-scroll {
-  display: none;
+/* Battery Saver: Performance Toggles */
+.battery-saver .nebula-scroll,
+.battery-saver .parallax-layer,
+.battery-saver .animate-cosmic-shockwave {
+  display: none !important;
 }
 
 .battery-saver .breathing-glow {
-  animation: none;
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+  animation: none !important;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.1) !important;
 }
 
 .battery-saver * {
-  animation-duration: 2s !important;
+  animation-duration: 0s !important;
+  transition-duration: 100ms !important; /* Fast, low-CPU transitions */
 }
 
 .nebula-scroll {
@@ -74,6 +78,7 @@
     radial-gradient(circle at 80% 70%, #a855f7, transparent 40%),
     radial-gradient(circle at 50% 50%, #ec4899, transparent 50%);
   animation: nebulaDrift 30s linear infinite;
+  will-change: transform;
 }
 
 @keyframes nebulaDrift {
@@ -214,4 +219,11 @@
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   @apply bg-primary/20 rounded-full;
+}
+
+/* Optimization Layer */
+.gpu-accelerated {
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
 }

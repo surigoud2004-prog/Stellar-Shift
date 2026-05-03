@@ -1,5 +1,6 @@
 "use client";
 
+import React, { memo } from 'react';
 import Image from 'next/image';
 import { CelestialEntity, HEX_WIDTH } from '@/lib/game-utils';
 import { PLANET_IMAGES } from '@/lib/placeholder-images';
@@ -13,11 +14,14 @@ interface EntityProps {
   disabled?: boolean;
 }
 
-export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) {
+/**
+ * Entity component uses React.memo for simulated Object Pooling performance.
+ * This prevents unnecessary re-renders during cascades and movement.
+ */
+export const Entity = memo(function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) {
   const x = entity.q * HEX_WIDTH;
   const y = entity.r * HEX_WIDTH;
   
-  // Ensure we pick from the planet-specific image set for tactical shards
   const placeholder = (entity.type >= 0 && entity.type < PLANET_IMAGES.length) 
     ? PLANET_IMAGES[entity.type] 
     : PLANET_IMAGES[0];
@@ -26,7 +30,7 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
     <div
       onClick={() => !disabled && onSelect(entity.id)}
       className={cn(
-        "absolute cursor-pointer transition-all duration-300",
+        "absolute cursor-pointer transition-all duration-300 gpu-accelerated",
         isSelected && "z-30 scale-punch brightness-150 drop-shadow-[0_0_20px_rgba(187,112,255,0.8)]",
         disabled && "cursor-not-allowed",
         entity.isMatched && "ember-dissolve",
@@ -62,6 +66,7 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
               alt={placeholder.description || "Celestial Shard"}
               width={64}
               height={64}
+              priority={entity.r < 3}
               data-ai-hint={placeholder.imageHint}
               className={cn(
                 "object-cover w-full h-full opacity-80 group-hover:opacity-100 transition-all duration-500",
@@ -100,4 +105,17 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
       </div>
     </div>
   );
-}
+}, (prev, next) => {
+  // Hardened prop comparison for peak re-render optimization
+  return (
+    prev.entity.id === next.entity.id &&
+    prev.entity.q === next.entity.q &&
+    prev.entity.r === next.entity.r &&
+    prev.entity.type === next.entity.type &&
+    prev.entity.special === next.entity.special &&
+    prev.entity.isMatched === next.entity.isMatched &&
+    prev.entity.isExploding === next.entity.isExploding &&
+    prev.isSelected === next.isSelected &&
+    prev.disabled === next.disabled
+  );
+});

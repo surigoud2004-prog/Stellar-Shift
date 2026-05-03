@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -55,7 +54,7 @@ export function useGameState() {
   const [isBatterySaver, setIsBatterySaver] = useState(false);
   const [language, setLanguage] = useState<Language>('en');
   
-  const lastMatchTime = useRef(Date.now());
+  const lastMatchTime = useRef(performance.now());
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const profile = usePlayerProfile();
@@ -108,7 +107,7 @@ export function useGameState() {
     } catch (e) {
       console.warn("Sync failed", e);
     }
-  }, [score, level, bestScore, profile.profile.name, isWin]);
+  }, [score, level, bestScore, profile.profile.name, isWin, profile]);
 
   useEffect(() => {
     try {
@@ -193,7 +192,7 @@ export function useGameState() {
     setIsPaused(false);
     setIsSettingsOpen(false);
     setScore(0);
-    lastMatchTime.current = Date.now();
+    lastMatchTime.current = performance.now();
     setIsLocked(false);
     setIsProcessing(false);
     setTimeLeft(gameMode === 'easy' ? 180 : gameMode === 'hard' ? 90 : 45);
@@ -231,7 +230,7 @@ export function useGameState() {
     if (matches.length > 0) {
       setIsProcessing(true);
       try {
-        lastMatchTime.current = Date.now();
+        lastMatchTime.current = performance.now();
         
         const bombMatches = currentEntities.filter(e => matches.includes(e.id) && e.special === 'bomb');
         let finalMatchedIds = new Set(matches);
@@ -243,7 +242,7 @@ export function useGameState() {
             return isCore ? { ...e, isExploding: true } : e;
           }));
           playCosmicBombSound();
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, isBatterySaver ? 50 : 100));
 
           const newExplosions: {q: number, r: number, id: string}[] = [];
           bombMatches.forEach(bomb => {
@@ -261,7 +260,7 @@ export function useGameState() {
           setActiveExplosions(newExplosions);
           addLoreLog("SUPERNOVA EVENT");
           
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await new Promise(resolve => setTimeout(resolve, isBatterySaver ? 100 : 200));
           setActiveExplosions([]);
         } else {
           if (comboLevel === 0) playMatchSound();
@@ -269,7 +268,7 @@ export function useGameState() {
         }
 
         setEntities(prev => prev.map(e => finalMatchedIds.has(e.id) ? { ...e, isMatched: true } : e));
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, isBatterySaver ? 100 : 200));
 
         let updated = currentEntities.filter(e => !finalMatchedIds.has(e.id));
 
@@ -309,7 +308,7 @@ export function useGameState() {
         }
 
         setEntities(newGrid);
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, isBatterySaver ? 100 : 200));
         await handleMatch(newGrid, undefined, comboLevel + 1);
       } finally {
         setIsProcessing(false);
@@ -317,7 +316,7 @@ export function useGameState() {
     } else {
       setIsProcessing(false);
     }
-  }, [level, addLoreLog, profile]);
+  }, [level, addLoreLog, profile, isBatterySaver]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
     if (isInputFrozen) return;
@@ -337,7 +336,7 @@ export function useGameState() {
       newEntities[idx2] = { ...newEntities[idx2], q: q1, r: r1 };
       setEntities(newEntities);
 
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, isBatterySaver ? 150 : 300));
 
       const { matches } = findMatches(newEntities);
       if (matches.length === 0) {
@@ -346,7 +345,7 @@ export function useGameState() {
         reverted[idx1] = { ...reverted[idx1], q: q1, r: r1 };
         reverted[idx2] = { ...reverted[idx2], q: newEntities[idx1].q, r: newEntities[idx1].r };
         setEntities(reverted);
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolve => setTimeout(resolve, isBatterySaver ? 150 : 300));
         return;
       }
       
@@ -354,7 +353,7 @@ export function useGameState() {
     } finally {
       setIsProcessing(false);
     }
-  }, [entities, handleMatch, isInputFrozen]);
+  }, [entities, handleMatch, isInputFrozen, isBatterySaver]);
 
   const startGame = () => {
     try {
