@@ -129,8 +129,8 @@ function MissionContent() {
       
       <ParallaxBackground disabled={isBatterySaver} isWarping={isWarping} level={level} />
       
-      {/* GLOBAL HUD - PERSISTENT & ANCHORED AT TOP LAYER */}
-      <div id="Global_HUD" className="fixed inset-x-0 top-0 pointer-events-none z-[9999] h-32">
+      {/* GLOBAL HUD - PERSISTENT & ANCHORED AT TOP LAYER Z-10010 */}
+      <div id="Global_HUD" className="fixed inset-x-0 top-0 pointer-events-none z-[10010] h-32">
         
         {/* TOP-LEFT: UTILITY CLUSTER */}
         <div className="absolute top-[30px] left-[30px] flex items-center gap-3 pointer-events-auto">
@@ -255,7 +255,7 @@ function MissionContent() {
                 Start Mission
              </button>
              <p className="mt-10 text-sm text-primary font-black uppercase tracking-[0.6em] animate-pulse">
-               Initialize Neural Link (Sector {profile.currentLevel})
+               Initialize Neural Link (Sector {profile.currentLevel || 1})
              </p>
           </div>
         ) : (
@@ -353,7 +353,7 @@ function MissionContent() {
         powerUps={powerUps}
         onBuy={handleBuyPowerUp}
         isOpen={showShop}
-        onClose={() => { setShowShop(false); if (!gameStarted) startGame(profile.currentLevel); }}
+        onClose={() => { setShowShop(false); if (!gameStarted) startGame(profile.currentLevel || 1); }}
         labels={labels}
       />
 

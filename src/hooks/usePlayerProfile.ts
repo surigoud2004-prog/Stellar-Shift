@@ -34,7 +34,20 @@ const DEFAULT_PROFILE: PlayerProfile = {
 export function usePlayerProfile() {
   const auth = useAuth();
   const db = useFirestore();
-  const [profile, setProfile] = useState<PlayerProfile>(DEFAULT_PROFILE);
+  
+  // Initialize from localStorage for instant loading on start
+  const [profile, setProfile] = useState<PlayerProfile>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('stellar_player_profile');
+        if (saved) return JSON.parse(saved);
+      } catch (e) {
+        return DEFAULT_PROFILE;
+      }
+    }
+    return DEFAULT_PROFILE;
+  });
+  
   const [showProfile, setShowProfile] = useState(false);
 
   // Sync with Firestore when auth state changes
@@ -43,22 +56,27 @@ export function usePlayerProfile() {
 
     const userRef = doc(db, 'users', auth.currentUser.uid);
     
-    // Initial fetch
+    // Initial fetch from cloud
     getDoc(userRef).then((snap) => {
       if (snap.exists()) {
-        setProfile(snap.data() as PlayerProfile);
+        const cloudData = snap.data() as PlayerProfile;
+        setProfile(cloudData);
+        localStorage.setItem('stellar_player_profile', JSON.stringify(cloudData));
       } else {
-        // Create initial profile if not exists
+        // Create initial cloud profile if not exists
         const initialProfile = { ...DEFAULT_PROFILE, uid: auth.currentUser!.uid };
         setDoc(userRef, initialProfile);
         setProfile(initialProfile);
+        localStorage.setItem('stellar_player_profile', JSON.stringify(initialProfile));
       }
     });
 
-    // Subscribe to changes
+    // Subscribe to cloud changes
     const unsubscribe = onSnapshot(userRef, (snap) => {
       if (snap.exists()) {
-        setProfile(snap.data() as PlayerProfile);
+        const updated = snap.data() as PlayerProfile;
+        setProfile(updated);
+        localStorage.setItem('stellar_player_profile', JSON.stringify(updated));
       }
     });
 
@@ -79,8 +97,8 @@ export function usePlayerProfile() {
 
   const updateStats = useCallback((score: number, matches: number, isWin: boolean = false, coinsWon: number = 0, newLevel?: number) => {
     setProfile(prev => {
-      const newXP = prev.xp + Math.floor(score / 10);
-      const oldRank = Math.floor(prev.xp / 1000);
+      const newXP = (prev.xp || 0) + Math.floor(score / 10);
+      const oldRank = Math.floor((prev.xp || 0) / 1000);
       const newRank = Math.floor(newXP / 1000);
 
       if (newRank > oldRank) {
@@ -95,13 +113,16 @@ export function usePlayerProfile() {
         starsCollected: (prev.starsCollected || 0) + Math.floor(score / 50),
         allTimeHigh: Math.max(prev.allTimeHigh || 0, score),
         coins: (prev.coins || 0) + coinsWon,
-        currentLevel: newLevel !== undefined ? newLevel : prev.currentLevel,
+        currentLevel: newLevel !== undefined ? newLevel : (prev.currentLevel || 1),
       };
       
       if (auth.currentUser && db) {
         const userRef = doc(db, 'users', auth.currentUser.uid);
         setDoc(userRef, next, { merge: true });
       }
+      try {
+        localStorage.setItem('stellar_player_profile', JSON.stringify(next));
+      } catch (e) {}
       return next;
     });
   }, [auth.currentUser, db]);
@@ -123,7 +144,7 @@ export function usePlayerProfile() {
   };
 
   const getRank = (xp: number) => {
-    const level = Math.floor(xp / 1000);
+    const level = Math.floor((xp || 0) / 1000);
     if (level < 1) return 'cadet';
     if (level < 3) return 'pilot';
     if (level < 10) return 'commander';
@@ -132,7 +153,11 @@ export function usePlayerProfile() {
   };
 
   const resetProfile = () => {
-    saveProfile(DEFAULT_PROFILE);
+    localStorage.removeItem('stellar_player_profile');
+    if (auth.currentUser && db) {
+      const userRef = doc(db, 'users', auth.currentUser.uid);
+      setDoc(userRef, { ...DEFAULT_PROFILE, uid: auth.currentUser.uid });
+    }
     window.location.reload();
   };
 
