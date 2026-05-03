@@ -12,12 +12,12 @@ export interface CelestialEntity {
 }
 
 /**
- * Recalibrated for Immersive 7x5 Sector Grid
- * HEX_WIDTH increased to 90px to fill the container and improve mobile ergonomics.
+ * Recalibrated for High-Density 9x7 Sector Grid
+ * HEX_WIDTH reduced to 70px to accommodate 63 tiles within the mission frame.
  */
-export const GRID_COLS = 7;
-export const GRID_ROWS = 5;
-export const HEX_WIDTH = 90;
+export const GRID_COLS = 9;
+export const GRID_ROWS = 7;
+export const HEX_WIDTH = 70;
 
 function generateStableId() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
