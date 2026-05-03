@@ -9,10 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { 
   X, User, Trophy, Star, Target, Zap, 
-  ChevronLeft, ChevronRight, Edit3, Check, LogOut
+  Edit3, Check, LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { AVATAR_IMAGES } from '@/lib/placeholder-images';
 import { PlayerProfile } from '@/hooks/usePlayerProfile';
 
 interface ProfileDashboardProps {
@@ -37,8 +37,7 @@ export function ProfileDashboard({
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(profile.name);
   
-  const avatars = PlaceHolderImages.filter(img => img.id.startsWith('avatar-'));
-  const currentAvatar = avatars.find(a => a.id === profile.avatarId) || avatars[0];
+  const currentAvatar = AVATAR_IMAGES.find(a => a.id === profile.avatarId) || AVATAR_IMAGES[0];
   
   const rankLevel = Math.floor(profile.xp / 1000) + 1;
   const xpInLevel = profile.xp % 1000;
@@ -117,7 +116,7 @@ export function ProfileDashboard({
             <div className="mt-8 w-full">
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-4 font-black">{labels.changeAvatar}</p>
               <div className="grid grid-cols-3 gap-3">
-                {avatars.map((av) => (
+                {AVATAR_IMAGES.map((av) => (
                   <button
                     key={av.id}
                     onClick={() => onUpdateAvatar(av.id)}

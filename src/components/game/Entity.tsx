@@ -1,8 +1,9 @@
+
 "use client";
 
 import Image from 'next/image';
 import { CelestialEntity, HEX_WIDTH } from '@/lib/game-utils';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { PLANET_IMAGES } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
 import { Zap, Target, Sun, Sparkles } from 'lucide-react';
 
@@ -17,18 +18,19 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
   const x = entity.q * HEX_WIDTH;
   const y = entity.r * HEX_WIDTH;
   
-  const placeholder = (entity.type >= 0 && entity.type < PlaceHolderImages.length) 
-    ? PlaceHolderImages[entity.type] 
-    : PlaceHolderImages[0];
+  // Ensure we pick from the planet-specific image set
+  const placeholder = (entity.type >= 0 && entity.type < PLANET_IMAGES.length) 
+    ? PLANET_IMAGES[entity.type] 
+    : PLANET_IMAGES[0];
 
   return (
     <div
       onClick={() => !disabled && onSelect(entity.id)}
       className={cn(
-        "absolute cursor-pointer transition-all gravity-distort",
+        "absolute cursor-pointer transition-all duration-300",
         isSelected && "z-30 scale-punch brightness-150 drop-shadow-[0_0_20px_rgba(187,112,255,0.8)]",
         disabled && "cursor-not-allowed",
-        entity.isMatched && "white-hole-spark",
+        entity.isMatched && "opacity-0 scale-0",
         "group"
       )}
       style={{
@@ -81,9 +83,6 @@ export function Entity({ entity, isSelected, onSelect, disabled }: EntityProps) 
           <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-black/60 pointer-events-none" />
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/20" />
           <div className="absolute top-0 bottom-0 left-0 w-[1px] bg-white/20" />
-          
-          {/* Interaction Shine */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full duration-1000 ease-in-out pointer-events-none" />
         </div>
       </div>
     </div>

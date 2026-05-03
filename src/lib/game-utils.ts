@@ -1,13 +1,14 @@
+
 export type EntityType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 export type SpecialType = 'nova-h' | 'black-hole' | 'bomb' | 'comet' | null;
 
 export interface CelestialEntity {
   id: string;
   type: EntityType;
-  q: number; // column (offset col)
-  r: number; // row (offset row)
+  q: number; // column
+  r: number; // row
   special: SpecialType;
-  isMatched?: boolean; // For visual collapse effects
+  isMatched?: boolean;
 }
 
 export const GRID_SIZE = 8;
@@ -18,13 +19,11 @@ export function calculateDifficulty(level: number): number {
 }
 
 export function getColorVariety(level: number): number {
-  return Math.min(8, 4 + Math.floor(level / 10));
+  return Math.min(6, 4 + Math.floor(level / 10)); // Capped at 6 for stable image mapping
 }
 
-let idCounter = 0;
 function generateStableId() {
-  idCounter++;
-  return `shard-${Date.now()}-${idCounter}-${Math.random().toString(36).substring(2, 7)}`;
+  return `shard-${crypto.randomUUID()}`;
 }
 
 export function generateRandomEntity(q: number, r: number, variety: number = 6): CelestialEntity {
