@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useCallback } from 'react';
@@ -5,16 +6,17 @@ import { useGameState } from '@/context/GameStateContext';
 import { Entity } from './Entity';
 import { areAdjacent, HEX_WIDTH, GRID_COLS, GRID_ROWS } from '@/lib/game-utils';
 import { Button } from '@/components/ui/button';
-import { Trophy, RotateCcw } from 'lucide-react';
+import { Trophy, RotateCcw, FastForward } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export function Board() {
   const { 
-    entities, isGameOver, isWin, selectedId, setSelectedId, 
-    swapEntities, isProcessing, initBoard, isFlashing
+    entities, isGameOver, isWin, isWarping, selectedId, setSelectedId, 
+    swapEntities, isProcessing, initBoard, isFlashing, level, targetScore
   } = useGameState();
 
   const handleSelect = useCallback((id: string) => {
-    if (isProcessing || isGameOver || isWin) return;
+    if (isProcessing || isGameOver || isWin || isWarping) return;
     if (selectedId === null) {
       setSelectedId(id);
     } else {
@@ -31,7 +33,7 @@ export function Board() {
         setSelectedId(id);
       }
     }
-  }, [selectedId, entities, isProcessing, isGameOver, isWin, setSelectedId, swapEntities]);
+  }, [selectedId, entities, isProcessing, isGameOver, isWin, isWarping, setSelectedId, swapEntities]);
 
   return (
     <div className="relative flex flex-col items-center justify-center p-2 w-full h-full max-w-[95vw]">
@@ -41,7 +43,10 @@ export function Board() {
       )}
 
       {/* 9x7 High-Density Sector Grid Centered */}
-      <div className="stellar-grid-frame p-4 flex items-center justify-center relative shadow-[0_0_100px_rgba(0,0,0,0.8)] border-primary/10 overflow-visible">
+      <div className={cn(
+        "stellar-grid-frame p-4 flex items-center justify-center relative shadow-[0_0_100px_rgba(0,0,0,0.8)] border-primary/10 overflow-visible transition-all duration-1000",
+        isWarping && "scale-90 opacity-40 blur-[10px]"
+      )}>
         <div 
           className="relative transition-all duration-500" 
           style={{ 
@@ -57,16 +62,29 @@ export function Board() {
               entity={entity} 
               isSelected={selectedId === entity.id} 
               onSelect={handleSelect} 
-              disabled={isProcessing || isGameOver || isWin} 
+              disabled={isProcessing || isGameOver || isWin || isWarping} 
             />
           ))}
 
-          {(isGameOver || isWin) && (
+          {isWarping && (
+            <div className="absolute inset-0 z-50 flex flex-col items-center justify-center animate-in zoom-in duration-500">
+               <FastForward className="w-16 h-16 text-primary animate-pulse mb-4" />
+               <h3 className="text-2xl font-black text-white uppercase italic tracking-widest text-center">
+                 Warping to Sector {level + 1}
+               </h3>
+               <p className="text-[10px] text-primary/60 font-bold uppercase tracking-[0.5em] mt-2">
+                 CALIBRATING NEURAL LINK...
+               </p>
+            </div>
+          )}
+
+          {(isGameOver || isWin) && !isWarping && (
             <div className="absolute inset-[-20px] md:inset-[-40px] z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-2xl rounded-[3rem] animate-in zoom-in duration-300 border border-white/10 shadow-[0_0_100px_rgba(168,85,247,0.3)]">
               {isWin ? (
                 <>
                   <Trophy className="w-20 h-20 text-yellow-400 mb-6 drop-shadow-[0_0_30px_rgba(250,204,21,0.6)]" />
                   <h2 className="text-3xl md:text-5xl font-black text-white mb-8 uppercase italic tracking-tighter">Mission Victory</h2>
+                  <p className="text-primary font-bold uppercase tracking-widest mb-4">Level {level} Secured</p>
                 </>
               ) : (
                 <>

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { 
   CelestialEntity, 
   generateRandomEntity, 
@@ -29,6 +29,7 @@ export function useGameState() {
   const [timeLeft, setTimeLeft] = useState(60);
   const [isGameOver, setIsGameOver] = useState(false);
   const [isWin, setIsWin] = useState(false);
+  const [isWarping, setIsWarping] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
@@ -37,13 +38,18 @@ export function useGameState() {
   const [sessionStartTime, setSessionStartTime] = useState<number>(0);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const targetScore = level * 1000; // Level 1: 1000, Level 2: 2000, Level 3: 3000
 
-  // Early Game Ease: 4 colors for first 2 mins, then 6.
+  // INFINITE LEVELING MATH
+  const targetScore = useMemo(() => level * 1500, [level]);
+  const levelTimeLimit = useMemo(() => Math.max(30, 60 - (level - 1) * 2), [level]);
+  
+  // SPEED FORMULA: 5% faster per level (base 0.3s)
+  const animationDuration = useMemo(() => 0.3 * Math.pow(0.95, level - 1), [level]);
+
   const getVariety = useCallback(() => {
     if (!sessionStartTime) return 6;
     const elapsed = (Date.now() - sessionStartTime) / 1000;
-    return elapsed < 120 ? 4 : 6;
+    return elapsed < 60 ? 4 : 6; // Early game ease for first minute
   }, [sessionStartTime]);
 
   const archiveLore = useCallback(async (event: string, context?: string) => {
@@ -84,35 +90,35 @@ export function useGameState() {
     setSelectedId(null);
     setIsGameOver(false);
     setIsWin(false);
-    setTimeLeft(level > 1 ? 55 : 60);
+    setIsWarping(false);
+    setTimeLeft(levelTimeLimit);
     setIsProcessing(false);
     setIsFlashing(false);
-  }, [getVariety, level]);
+  }, [getVariety, levelTimeLimit]);
 
-  // Level Progression Logic: Fixed stuck state
+  // Level Progression Logic
   useEffect(() => {
     if (isWin) {
+      setIsWarping(true);
       const timeout = setTimeout(() => {
         setLevel(prev => prev + 1);
         setScore(0);
         setIsWin(false);
-        // Note: initBoard is called via setLevel changing the dependencies if needed, 
-        // but we explicitly call it here to ensure clean reset.
-      }, 2000); // 2 second delay for MISSION ACCOMPLISHED message
+        // initBoard will be called by the effect below watching level
+      }, 2000); 
       return () => clearTimeout(timeout);
     }
   }, [isWin]);
 
-  // Handle re-init when level changes
   useEffect(() => {
     if (gameStarted && !isWin && score === 0 && level > 1) {
       initBoard();
-      archiveLore("Sector Advancement", `Neural link calibrated for Level ${level}.`);
+      archiveLore("Sector Warp Complete", `Entered Sector LVL ${level}.`);
     }
-  }, [level, gameStarted, initBoard, archiveLore]);
+  }, [level, gameStarted, initBoard, archiveLore, isWin, score]);
 
   useEffect(() => {
-    if (!gameStarted || isGameOver || isWin || entities.length === 0) {
+    if (!gameStarted || isGameOver || isWin || isWarping || entities.length === 0) {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
@@ -127,7 +133,7 @@ export function useGameState() {
       });
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [gameStarted, isGameOver, isWin, entities.length]);
+  }, [gameStarted, isGameOver, isWin, isWarping, entities.length]);
 
   const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMovedId?: string, comboFactor: number = 1) => {
     const { matches, specialToSpawn } = findMatches(currentEntities, lastMovedId);
@@ -168,16 +174,10 @@ export function useGameState() {
         playBombSound();
         setTimeout(() => setIsFlashing(false), 400);
       }
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await new Promise(resolve => setTimeout(resolve, animationDuration * 1000 * 1.3));
 
       const points = allToDestroy.size * 10 * comboFactor;
-      
-      // Calculate new score immediately for win check
-      let currentNewScore = 0;
-      setScore(s => {
-        currentNewScore = s + points;
-        return currentNewScore;
-      });
+      setScore(s => s + points);
 
       const updated = currentEntities.filter(e => !allToDestroy.has(e.id));
       const newGrid: CelestialEntity[] = [];
@@ -207,27 +207,22 @@ export function useGameState() {
       }
 
       setEntities(newGrid);
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, animationDuration * 1000));
       
       await handleMatch(newGrid, undefined, comboFactor * 2);
     } else {
       setIsProcessing(false);
-      // Event-based check: Score is updated asynchronously so we check state here
-      // However, if we are in the 'else' block, it means matches are done.
-      // We use the functional update result indirectly or just check the score state
-      // which will be updated by the time we reach this point in the async flow.
       setScore(current => {
         if (current >= targetScore && !isWin && gameStarted) {
           setIsWin(true);
-          archiveLore("Mission Milestone Achieved", `Target reached: ${current}/${targetScore}`);
         }
         return current;
       });
     }
-  }, [targetScore, archiveLore, getVariety, isWin, gameStarted]);
+  }, [targetScore, getVariety, isWin, gameStarted, animationDuration]);
 
   const swapEntities = useCallback(async (id1: string, id2: string) => {
-    if (isProcessing || isWin || isGameOver) return;
+    if (isProcessing || isWin || isGameOver || isWarping) return;
     setIsProcessing(true);
     
     const newEntities = [...entities];
@@ -247,7 +242,7 @@ export function useGameState() {
     
     setEntities(newEntities);
     playSwapSound();
-    await new Promise(resolve => setTimeout(resolve, 300)); 
+    await new Promise(resolve => setTimeout(resolve, animationDuration * 1000)); 
 
     const { matches } = findMatches(newEntities);
     const isSpecialMoved = e1.special || e2.special;
@@ -258,13 +253,13 @@ export function useGameState() {
       reverted[idx1] = { ...newEntities[idx1], q: e1.q, r: e1.r };
       reverted[idx2] = { ...newEntities[idx2], q: e2.q, r: e2.r };
       setEntities(reverted);
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, animationDuration * 1000));
       setIsProcessing(false);
       return;
     }
     
     await handleMatch(newEntities, id1, 1);
-  }, [entities, handleMatch, isProcessing, isWin, isGameOver]);
+  }, [entities, handleMatch, isProcessing, isWin, isGameOver, isWarping, animationDuration]);
 
   const startGame = useCallback(() => {
     playUIClickSound();
@@ -288,9 +283,9 @@ export function useGameState() {
 
   return {
     entities, score, targetScore, timeLeft, level,
-    isGameOver, isWin, selectedId, setSelectedId,
+    isGameOver, isWin, isWarping, selectedId, setSelectedId,
     swapEntities, isProcessing, initBoard,
     gameStarted, startGame, quitGame, gameMode, setGameMode,
-    isFlashing
+    isFlashing, animationDuration
   };
 }

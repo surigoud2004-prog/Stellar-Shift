@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -76,6 +77,11 @@
   to { transform: translateX(-50%); }
 }
 
+@keyframes driftWarp {
+  from { transform: translateX(0) scale(1.5); }
+  to { transform: translateX(-50%) scale(1.5); }
+}
+
 @keyframes nebulaBreath {
   0%, 100% { opacity: 0.15; transform: scale(1) translate(0, 0); filter: blur(80px) brightness(1); }
   50% { opacity: 0.35; transform: scale(1.1) translate(-20px, 10px); filter: blur(100px) brightness(1.4); }
@@ -122,6 +128,7 @@
 }
 
 .animate-drift-left { animation: driftLeft 60s infinite linear; }
+.animate-drift-warp { animation: driftWarp 0.5s infinite linear; }
 .animate-nebula-breath { animation: nebulaBreath 12s infinite ease-in-out; }
 .animate-core-breath { animation: coreBreath 4s infinite ease-in-out; }
 .animate-event-horizon { animation: eventHorizonRotate 4s infinite linear; }

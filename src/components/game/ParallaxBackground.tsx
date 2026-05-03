@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
 interface Star {
@@ -20,7 +21,7 @@ interface DustParticle {
   delay: string;
 }
 
-export function ParallaxBackground({ disabled }: { disabled?: boolean }) {
+export function ParallaxBackground({ disabled, isWarping }: { disabled?: boolean, isWarping?: boolean }) {
   const [stars, setStars] = useState<Star[]>([]);
   const [dust, setDust] = useState<DustParticle[]>([]);
   const [hasMounted, setHasMounted] = useState(false);
@@ -30,7 +31,7 @@ export function ParallaxBackground({ disabled }: { disabled?: boolean }) {
       [...Array(count)].map(() => ({
         width: (Math.random() * 1.5 + 0.5) + 'px',
         height: (Math.random() * 1.5 + 0.5) + 'px',
-        left: Math.random() * 200 + '%', // Spanned for horizontal drift
+        left: Math.random() * 200 + '%', 
         top: Math.random() * 100 + '%',
         opacity: Math.random() * 0.6 + 0.2,
         twinkleDuration: (Math.random() * 3 + 2) + 's',
@@ -52,11 +53,17 @@ export function ParallaxBackground({ disabled }: { disabled?: boolean }) {
   if (!hasMounted) return <div className="fixed inset-0 bg-black z-[-10]" />;
 
   return (
-    <div className="fixed inset-0 z-[-10] pointer-events-none bg-[#020108] overflow-hidden select-none">
+    <div className={cn(
+      "fixed inset-0 z-[-10] pointer-events-none bg-[#020108] overflow-hidden select-none transition-all duration-1000",
+      isWarping && "brightness-150 contrast-125 scale-110"
+    )}>
       
-      {/* LAYER 1: NEBULA RESPIRATION (DEEP SPACE CLOUDS) */}
+      {/* LAYER 1: NEBULA RESPIRATION */}
       <div 
-        className="absolute inset-[-100px] opacity-20 mix-blend-screen animate-nebula-breath blur-[80px]"
+        className={cn(
+          "absolute inset-[-100px] opacity-20 mix-blend-screen animate-nebula-breath blur-[80px] transition-all duration-1000",
+          isWarping && "opacity-40 blur-[40px] scale-125"
+        )}
         style={{ 
           background: `
             radial-gradient(circle at 30% 40%, #4c1d95 0%, transparent 60%),
@@ -65,8 +72,11 @@ export function ParallaxBackground({ disabled }: { disabled?: boolean }) {
         }}
       />
       
-      {/* LAYER 2: DRIFTING STARFIELD (PARALLAX DEPTH) */}
-      <div className="absolute inset-0 w-[200%] animate-drift-left">
+      {/* LAYER 2: DRIFTING STARFIELD */}
+      <div className={cn(
+        "absolute inset-0 w-[200%] animate-drift-left",
+        isWarping && "animate-drift-warp blur-[1px]"
+      )}>
         {stars.map((star, i) => (
           <div 
             key={`star-${i}`}
@@ -84,9 +94,9 @@ export function ParallaxBackground({ disabled }: { disabled?: boolean }) {
         ))}
       </div>
 
-      {/* LAYER 3: STELLAR EMBERS (UPWARD DRIFT) */}
+      {/* LAYER 3: STELLAR EMBERS */}
       {!disabled && (
-        <div className="absolute inset-0">
+        <div className={cn("absolute inset-0 transition-opacity duration-500", isWarping && "opacity-0")}>
           {dust.map((particle, i) => (
             <div 
               key={`ember-${i}`}
@@ -101,6 +111,14 @@ export function ParallaxBackground({ disabled }: { disabled?: boolean }) {
               } as any}
             />
           ))}
+        </div>
+      )}
+
+      {/* WARP TUNNEL EFFECT */}
+      {isWarping && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-full h-1 bg-white/20 blur-xl animate-pulse" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle,transparent_0%,black_80%)]" />
         </div>
       )}
     </div>
