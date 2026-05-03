@@ -22,7 +22,7 @@ import {
   playWarpSound
 } from '@/lib/audio-system';
 import { collection, doc, setDoc } from 'firebase/firestore';
-import { useAuth, useFirestore } from '@/firebase';
+import { useAuth, useFirestore, logAnalyticsEvent } from '@/firebase';
 import { generateDynamicLore } from '@/ai/flows/dynamic-lore-generation';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
@@ -109,6 +109,7 @@ export function useGameState() {
         level: finalLevel,
         timestamp: Date.now()
       });
+      logAnalyticsEvent('high_score_submitted', { score: finalScore, level: finalLevel });
     } catch (e) {}
   }, [db, auth]);
 
@@ -129,7 +130,6 @@ export function useGameState() {
     let triggeredShake = false;
     let chainMultiplier = 1;
 
-    // Process explosions and special chain reactions recursively
     const queue = Array.from(idsToProcess);
     while (queue.length > 0) {
       const id = queue.shift()!;
@@ -209,6 +209,7 @@ export function useGameState() {
             playVictoryFanfare(level);
             archiveLore("Sector Secured", `Level ${level} targets reached.`);
             submitHighScore(newScore, level);
+            logAnalyticsEvent('level_up', { level: level + 1 });
           }
           return newScore;
         });
@@ -354,7 +355,6 @@ export function useGameState() {
 
     const { matches } = findMatches(newEntities, id1);
     
-    // Check if we swapped two specials
     if (e1.special && e2.special) {
       await handleMatch(newEntities, id1, 1, new Set([id1, id2]));
       return;
@@ -403,6 +403,7 @@ export function useGameState() {
     setReviveCost(200);
     setFirstMatchMade(false);
     setEntities([]); 
+    logAnalyticsEvent('mission_start', { level: initialLevel });
   }, []);
 
   const quitGame = useCallback(() => {
@@ -419,6 +420,7 @@ export function useGameState() {
     setReviveCost(200);
     setFirstMatchMade(false);
     setPowerUps({ timeDilator: false, novaBlast: false, colorNuke: 0 });
+    logAnalyticsEvent('mission_quit');
   }, []);
 
   const revive = useCallback((extraTime: number) => {
@@ -427,7 +429,8 @@ export function useGameState() {
     setIsGameOver(false);
     setReviveCost(prev => prev * 2); 
     playUIClickSound();
-  }, []);
+    logAnalyticsEvent('mission_revive', { cost: reviveCost });
+  }, [reviveCost]);
 
   return {
     entities, score, targetScore, timeLeft, level,

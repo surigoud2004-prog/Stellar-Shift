@@ -4,6 +4,7 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
 import { firebaseConfig } from './config';
 import { useRef } from 'react';
 
@@ -14,8 +15,15 @@ export function initializeFirebase() {
   const firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   const firestore = getFirestore(firebaseApp);
   const auth = getAuth(firebaseApp);
+  
+  let analytics: Analytics | undefined;
+  if (typeof window !== 'undefined') {
+    isSupported().then(yes => {
+      if (yes) analytics = getAnalytics(firebaseApp);
+    });
+  }
 
-  return { firebaseApp, firestore, auth, db: firestore };
+  return { firebaseApp, firestore, auth, analytics, db: firestore };
 }
 
 /**

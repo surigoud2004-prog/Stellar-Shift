@@ -27,10 +27,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
 import { playUIClickSound } from '@/lib/audio-system';
+import { logAnalyticsEvent } from '@/firebase';
 
 function MissionContent() {
   const { 
-    profile, showProfile, setShowProfile, setAvatar, setName, getRank, updateStats, spendCoins, resetProfile
+    profile, showProfile, setShowProfile, setAvatar, setName, getRank, updateStats, addCoins, spendCoins, resetProfile
   } = usePlayerProfile();
   
   const { 
@@ -109,6 +110,7 @@ function MissionContent() {
 
   const handleStartMission = () => {
     setShowShop(true);
+    logAnalyticsEvent('open_shop');
   };
 
   const handleRecoverLink = () => {
@@ -138,6 +140,7 @@ function MissionContent() {
     updateStats(0, 0, false, 50);
     setShowCoins(true);
     setTimeout(() => setShowCoins(false), 2000);
+    logAnalyticsEvent('score_shared');
   };
 
   return (
@@ -250,7 +253,10 @@ function MissionContent() {
             }}
             gameMode={gameMode}
             onSetGameMode={setGameMode}
-            onShowFame={() => setShowFame(true)}
+            onShowFame={() => {
+              setShowFame(true);
+              logAnalyticsEvent('view_leaderboard');
+            }}
             onAbort={handleAbort}
             onResetProgress={resetProfile}
             gameStarted={gameStarted}
@@ -365,6 +371,7 @@ function MissionContent() {
         coins={profile.coins || 0}
         powerUps={powerUps}
         onBuy={handleBuyPowerUp}
+        onAddCoins={addCoins}
         isOpen={showShop}
         onClose={onConfirmLoadout}
         labels={labels}

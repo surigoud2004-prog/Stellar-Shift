@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { playLevelUpSound, playUIClickSound } from '@/lib/audio-system';
-import { useAuth, useFirestore } from '@/firebase';
+import { useAuth, useFirestore, logAnalyticsEvent } from '@/firebase';
 import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 
 export interface PlayerProfile {
@@ -38,7 +38,6 @@ export function usePlayerProfile() {
   const [profile, setProfile] = useState<PlayerProfile>(DEFAULT_PROFILE);
   const [showProfile, setShowProfile] = useState(false);
 
-  // Handle Hydration: Load local data only after component mounts on client
   useEffect(() => {
     try {
       const saved = localStorage.getItem('stellar_player_profile');
@@ -122,10 +121,17 @@ export function usePlayerProfile() {
     });
   }, [auth.currentUser, db]);
 
+  const addCoins = useCallback((amount: number) => {
+    const next = { ...profile, coins: (profile.coins || 0) + amount };
+    saveProfile(next);
+    logAnalyticsEvent('coins_added', { amount, source: 'ad_simulation' });
+  }, [profile, saveProfile]);
+
   const spendCoins = useCallback((amount: number): boolean => {
     if ((profile.coins || 0) < amount) return false;
     const next = { ...profile, coins: profile.coins - amount };
     saveProfile(next);
+    logAnalyticsEvent('coins_spent', { amount });
     return true;
   }, [profile, saveProfile]);
 
@@ -153,6 +159,7 @@ export function usePlayerProfile() {
       const userRef = doc(db, 'users', auth.currentUser.uid);
       setDoc(userRef, { ...DEFAULT_PROFILE, uid: auth.currentUser.uid });
     }
+    logAnalyticsEvent('profile_reset');
     window.location.reload();
   };
 
@@ -161,6 +168,7 @@ export function usePlayerProfile() {
     showProfile,
     setShowProfile,
     updateStats,
+    addCoins,
     spendCoins,
     setAvatar,
     setName,
