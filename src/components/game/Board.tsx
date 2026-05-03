@@ -9,7 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Trophy, RotateCcw, FastForward, Zap, Power } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function Board() {
+interface BoardProps {
+  onShowShop?: () => void;
+}
+
+export function Board({ onShowShop }: BoardProps) {
   const { 
     entities, isGameOver, isWin, isWarping, selectedId, setSelectedId, 
     swapEntities, isProcessing, initBoard, isFlashing, isShaking, level, 
@@ -148,7 +152,10 @@ export function Board() {
               
               <div className="flex flex-col gap-4 w-full max-w-xs">
                 <Button 
-                  onClick={initBoard} 
+                  onClick={() => {
+                    if (onShowShop) onShowShop();
+                    else initBoard();
+                  }} 
                   size="lg" 
                   className="bg-primary hover:bg-primary/80 active:scale-95 transition-all font-black uppercase tracking-widest h-16 rounded-2xl text-lg shadow-2xl w-full"
                 >

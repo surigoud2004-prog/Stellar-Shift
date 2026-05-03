@@ -11,7 +11,7 @@ import { MissionLogs } from '@/components/game/MissionLogs';
 import { PowerUpShop } from '@/components/game/PowerUpShop';
 import { CoinFountain } from '@/components/game/CoinFountain';
 import { GameStateProvider, useGameState } from '@/context/GameStateContext';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
 import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff, Radio, Orbit, Coins, ShieldAlert } from 'lucide-react';
 import { getSectorInfo } from '@/lib/game-utils';
@@ -35,7 +35,7 @@ function MissionContent() {
   
   const { 
     gameMode, setGameMode, gameStarted, quitGame, score, targetScore, timeLeft, startGame, level, isWin, isWarping,
-    powerUps, setPowerUps, isGameOver, setIsGameOver, isReviving, setIsReviving, revive, reviveCost
+    powerUps, setPowerUps, isGameOver, setIsGameOver, isReviving, setIsReviving, revive, reviveCost, initBoard
   } = useGameState();
 
   const [language, setLanguage] = useState<'en' | 'es' | 'fr'>('en');
@@ -69,6 +69,13 @@ function MissionContent() {
       }, 2500);
     }
   }, [isWin, score, updateStats, level, lastProcessedLevel, timeLeft]);
+
+  // If game is over, we also want to route through the shop for retry
+  useEffect(() => {
+    if (isGameOver) {
+      // We don't auto-show shop on game over, let the user click retry in Board overlay
+    }
+  }, [isGameOver]);
 
   // Handle Revive Countdown
   useEffect(() => {
@@ -123,6 +130,16 @@ function MissionContent() {
     setIsGameOver(true);
     playUIClickSound();
   };
+
+  const onConfirmLoadout = useCallback(() => {
+    setShowShop(false);
+    if (!gameStarted) {
+      startGame(profile.currentLevel || 1);
+    } else {
+      // If the game is already started, init board handles resetting score and board
+      initBoard();
+    }
+  }, [gameStarted, startGame, initBoard, profile.currentLevel]);
 
   return (
     <main className="min-h-screen w-full flex flex-col items-center justify-center relative bg-black overflow-hidden">
@@ -259,7 +276,7 @@ function MissionContent() {
              </p>
           </div>
         ) : (
-          <Board />
+          <Board onShowShop={() => setShowShop(true)} />
         )}
       </div>
 
@@ -353,7 +370,7 @@ function MissionContent() {
         powerUps={powerUps}
         onBuy={handleBuyPowerUp}
         isOpen={showShop}
-        onClose={() => { setShowShop(false); if (!gameStarted) startGame(profile.currentLevel || 1); }}
+        onClose={onConfirmLoadout}
         labels={labels}
       />
 
