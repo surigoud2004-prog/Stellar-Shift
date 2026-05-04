@@ -1,28 +1,29 @@
-
 # Launch Sequence - Stellar Shift (Spark Plan / Static)
 
-Since you are using the **Spark (Free) Plan**, we have configured the app for **Static Export**.
+To stay on the **Free (Spark) Plan**, we use a manual static deployment process. This bypasses the need for paid Cloud Build APIs.
 
 ## 1. Clean and Build
-Run these commands to ensure a fresh, static build of the project:
+This command generates the `out` folder containing your entire game logic.
 ```bash
-# Delete old build folders if they exist (Windows)
-rmdir /s /q out .next
-
-# Install and build
-npm install
+# Windows (PowerShell or CMD)
 npm run build
 ```
 
-## 2. Deploy to Hosting
-Since the app is now static, we only need to upload the `out` folder:
+## 2. Disable Automatic Framework Detection
+If you previously enabled `webframeworks`, turn it off to prevent the CLI from trying to use paid features:
+```bash
+firebase experiments:disable webframeworks
+```
+
+## 3. Deploy to Hosting
+Upload the static `out` folder directly:
 ```bash
 firebase deploy --only hosting
 ```
 
 ### Why this works:
-- **No Cloud Functions**: We removed the "Server Actions" and AI flows that required a paid plan.
-- **Static Export**: The `out` folder contains the entire game logic, which runs 100% in the player's browser.
-- **Mock Lore**: Lore snippets are now pulled from a curated local library instead of a live AI server.
+- **No Cloud Functions**: We avoid triggering the Blaze plan requirement by not using SSR.
+- **Static Export**: The `out` folder contains the compiled HTML/JS/CSS, which is free to host.
+- **Mock Lore**: AI features are handled by our local immersive lore library.
 
 *Authorization Confirmed. Deploy when ready.*
