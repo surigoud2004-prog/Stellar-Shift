@@ -1,7 +1,7 @@
 {
-  "name": "Stellar Shift - Cosmic Match 3",
+  "name": "Stellar Shift",
   "short_name": "StellarShift",
-  "description": "A high-performance celestial match-3 puzzle adventure.",
+  "description": "A high-performance cosmic match-3 puzzle adventure.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#020108",
@@ -10,14 +10,12 @@
     {
       "src": "https://picsum.photos/seed/stellar-icon/192/192",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "https://picsum.photos/seed/stellar-icon/512/512",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }

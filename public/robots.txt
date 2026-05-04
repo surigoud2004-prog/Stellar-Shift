@@ -1,5 +1,3 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
-
 Sitemap: https://studio-547476889-b1c50.web.app/sitemap.xml

@@ -18,18 +18,25 @@ firebase login
 ```
 
 ## 3. Initialize Firebase
-If you haven't initialized Firebase in this project directory yet, run:
+Run the following command in your project root:
 ```bash
 firebase init hosting
 ```
-- **Project Selection**: Choose `Use an existing project` and select `studio-547476889-b1c50`.
-- **Framework Detection**: The CLI should detect Next.js. Accept the default settings.
-- **GitHub Actions**: Choose `No` unless you want to set up CI/CD.
+
+### Prompt Answers:
+- **Are you ready to proceed?** `Yes`
+- **Which Firebase features do you want to set up?** `Hosting: Configure files for Firebase Hosting...`
+- **Project Selection**: `Use an existing project` -> Select `studio-547476889-b1c50`.
+- **What do you want to use as your public directory?** Input `out` (This is for static exports).
+- **Configure as a single-page app?** `Yes`
+- **Set up automatic builds and deploys with GitHub?** `No`
+- **File out/index.html already exists. Overwrite?** `No`
 
 ## 4. Build and Deploy
 Execute the build process and deploy to the cloud:
 ```bash
-# Build the production application
+# Update next.config.ts to include: output: 'export' if you want static hosting.
+# Then run:
 npm run build
 
 # Deploy to Firebase Hosting
