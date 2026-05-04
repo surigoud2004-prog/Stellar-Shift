@@ -1,12 +1,14 @@
+
 "use client";
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useGameState } from '@/context/GameStateContext';
 import { Entity } from './Entity';
 import { areAdjacent, HEX_WIDTH, GRID_COLS, GRID_ROWS } from '@/lib/game-utils';
 import { Button } from '@/components/ui/button';
-import { Trophy, RotateCcw, FastForward, Zap, Power } from 'lucide-react';
+import { Trophy, RotateCcw, FastForward, Zap, Power, Play, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { logAnalyticsEvent } from '@/firebase';
 
 interface BoardProps {
   onShowShop?: () => void;
@@ -16,8 +18,10 @@ export function Board({ onShowShop }: BoardProps) {
   const { 
     entities, isGameOver, isWin, isWarping, selectedId, setSelectedId, 
     swapEntities, isProcessing, initBoard, isFlashing, isShaking, level, 
-    powerUps, triggerColorNuke, quitGame, lasers
+    powerUps, triggerColorNuke, quitGame, lasers, revive
   } = useGameState();
+
+  const [isAdReviving, setIsAdReviving] = useState(false);
 
   const handleSelect = useCallback((id: string) => {
     if (isProcessing || isGameOver || isWin || isWarping) return;
@@ -38,6 +42,16 @@ export function Board({ onShowShop }: BoardProps) {
       }
     }
   }, [selectedId, entities, isProcessing, isGameOver, isWin, isWarping, setSelectedId, swapEntities]);
+
+  const handleReviveWithAd = () => {
+    setIsAdReviving(true);
+    logAnalyticsEvent('game_over_revive_ad_started');
+    setTimeout(() => {
+      revive(20);
+      setIsAdReviving(false);
+      logAnalyticsEvent('game_over_revive_ad_completed');
+    }, 5000);
+  };
 
   // Electrical Arc Visuals for specials
   const electricalArc = useMemo(() => {
@@ -161,29 +175,60 @@ export function Board({ onShowShop }: BoardProps) {
               ) : (
                 <>
                   <div className="text-7xl mb-6 grayscale opacity-50 drop-shadow-[0_0_30px_rgba(255,0,0,0.5)]">🌑</div>
-                  <h2 className="text-3xl md:text-5xl font-black text-red-500 mb-8 uppercase italic tracking-tighter">Mission Failed</h2>
-                  <p className="text-white/40 font-bold uppercase tracking-widest mb-12">Neural Link Severed</p>
+                  <h2 className="text-3xl md:text-5xl font-black text-red-500 mb-4 uppercase italic tracking-tighter">Mission Failed</h2>
+                  <p className="text-white/40 font-bold uppercase tracking-widest mb-8">Neural Link Severed</p>
                 </>
               )}
               
               <div className="flex flex-col gap-4 w-full max-w-xs">
-                <Button 
-                  onClick={() => {
-                    if (onShowShop) onShowShop();
-                    else initBoard();
-                  }} 
-                  size="lg" 
-                  className="bg-primary hover:bg-primary/80 active:scale-95 transition-all font-black uppercase tracking-widest h-16 rounded-2xl text-lg shadow-2xl w-full"
-                >
-                  <RotateCcw className="w-5 h-5 mr-3" /> {isWin ? 'Next Sector' : 'Retry Mission'}
-                </Button>
+                {isWin ? (
+                  <Button 
+                    onClick={() => {
+                      if (onShowShop) onShowShop();
+                      else initBoard();
+                    }} 
+                    size="lg" 
+                    className="bg-primary hover:bg-primary/80 active:scale-95 transition-all font-black uppercase tracking-widest h-16 rounded-2xl text-lg shadow-2xl w-full"
+                  >
+                    <RotateCcw className="w-5 h-5 mr-3" /> Next Sector
+                  </Button>
+                ) : (
+                  <>
+                    <Button 
+                      onClick={handleReviveWithAd} 
+                      disabled={isAdReviving}
+                      size="lg" 
+                      className={cn(
+                        "bg-secondary hover:bg-secondary/80 active:scale-95 transition-all font-black uppercase tracking-widest h-16 rounded-2xl text-lg shadow-2xl w-full flex items-center justify-center gap-3",
+                        isAdReviving && "opacity-50 grayscale"
+                      )}
+                    >
+                      {isAdReviving ? <Loader2 className="w-6 h-6 animate-spin" /> : <Play className="w-6 h-6 fill-white" />}
+                      {isAdReviving ? "Syncing..." : "Watch Ad to Revive"}
+                    </Button>
+
+                    <Button 
+                      onClick={() => {
+                        if (onShowShop) onShowShop();
+                        else initBoard();
+                      }} 
+                      variant="outline"
+                      size="lg" 
+                      disabled={isAdReviving}
+                      className="border-white/10 hover:bg-white/5 text-white/80 active:scale-95 transition-all font-black uppercase tracking-widest h-14 rounded-2xl text-sm w-full"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-3" /> Retry Mission
+                    </Button>
+                  </>
+                )}
                 
                 {!isWin && (
                   <Button 
                     onClick={quitGame} 
                     variant="outline"
                     size="lg" 
-                    className="border-white/10 hover:bg-white/5 text-white/60 active:scale-95 transition-all font-black uppercase tracking-widest h-16 rounded-2xl text-sm w-full"
+                    disabled={isAdReviving}
+                    className="border-white/10 hover:bg-white/5 text-white/60 active:scale-95 transition-all font-black uppercase tracking-widest h-14 rounded-2xl text-xs w-full"
                   >
                     <Power className="w-4 h-4 mr-3" /> Abort to Menu
                   </Button>

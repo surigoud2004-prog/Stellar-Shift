@@ -13,7 +13,7 @@ import { CoinFountain } from '@/components/game/CoinFountain';
 import { GameStateProvider, useGameState } from '@/context/GameStateContext';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
-import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff, Radio, Orbit, Coins, ShieldAlert } from 'lucide-react';
+import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff, Radio, Orbit, Coins, ShieldAlert, Play, Loader2 } from 'lucide-react';
 import { getSectorInfo } from '@/lib/game-utils';
 import Link from 'next/link';
 import {
@@ -51,6 +51,7 @@ function MissionContent() {
   const [uiVisible, setUiVisible] = useState(true);
   const [showCoins, setShowCoins] = useState(false);
   const [reviveCountdown, setReviveCountdown] = useState(5);
+  const [isAdReviving, setIsAdReviving] = useState(false);
   
   const [lastProcessedLevel, setLastProcessedLevel] = useState(0);
 
@@ -76,7 +77,7 @@ function MissionContent() {
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (isReviving) {
+    if (isReviving && !isAdReviving) {
       setReviveCountdown(5);
       timer = setInterval(() => {
         setReviveCountdown(prev => {
@@ -91,7 +92,7 @@ function MissionContent() {
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [isReviving, setIsReviving, setIsGameOver]);
+  }, [isReviving, isAdReviving, setIsReviving, setIsGameOver]);
 
   const handleAbort = () => {
     quitGame();
@@ -120,6 +121,16 @@ function MissionContent() {
         revive(20);
       }
     }
+  };
+
+  const handleReviveWithAd = () => {
+    setIsAdReviving(true);
+    logAnalyticsEvent('revive_ad_started');
+    setTimeout(() => {
+      revive(20);
+      setIsAdReviving(false);
+      logAnalyticsEvent('revive_ad_completed');
+    }, 5000);
   };
 
   const handleFailAbort = () => {
@@ -295,15 +306,17 @@ function MissionContent() {
           <div className="w-full max-w-md bg-black/80 border-2 border-primary/50 rounded-[3rem] p-10 backdrop-blur-xl shadow-[0_0_100px_rgba(168,85,247,0.4)] flex flex-col items-center text-center">
             <ShieldAlert className="w-20 h-20 text-primary mb-6 animate-pulse" />
             <h2 className="text-4xl font-headline font-black text-white uppercase italic tracking-tighter mb-2">Mission Critical</h2>
-            <p className="text-muted-foreground uppercase text-xs tracking-widest font-black mb-8">Neural Link Severing in {reviveCountdown}s</p>
+            <p className="text-muted-foreground uppercase text-xs tracking-widest font-black mb-8">
+              {isAdReviving ? "Syncing Neural Stream..." : `Neural Link Severing in ${reviveCountdown}s`}
+            </p>
             
             <div className="w-full flex flex-col gap-4">
                <button 
                  onClick={handleRecoverLink}
-                 disabled={profile.coins < reviveCost}
+                 disabled={profile.coins < reviveCost || isAdReviving}
                  className={cn(
                    "w-full h-16 rounded-2xl flex items-center justify-between px-8 font-black uppercase tracking-widest transition-all",
-                   profile.coins >= reviveCost 
+                   (profile.coins >= reviveCost && !isAdReviving)
                     ? "bg-primary text-white hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(168,85,247,0.5)]" 
                     : "bg-white/5 text-white/20 cursor-not-allowed grayscale"
                  )}
@@ -318,7 +331,20 @@ function MissionContent() {
                </button>
 
                <button 
+                 onClick={handleReviveWithAd}
+                 disabled={isAdReviving}
+                 className={cn(
+                   "w-full h-16 rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest transition-all bg-secondary text-white hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(30,58,138,0.5)]",
+                   isAdReviving && "opacity-50 grayscale"
+                 )}
+               >
+                 {isAdReviving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5 fill-white" />}
+                 Watch Ad to Revive
+               </button>
+
+               <button 
                  onClick={handleFailAbort}
+                 disabled={isAdReviving}
                  className="w-full h-16 rounded-2xl bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 font-black uppercase tracking-widest transition-all"
                >
                  Abort Mission
