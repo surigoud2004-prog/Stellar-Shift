@@ -24,7 +24,8 @@ interface MissionLogsProps {
 }
 
 export function MissionLogs({ isOpen, onClose, labels }: MissionLogsProps) {
-  const { auth, firestore } = useFirestore() ? { auth: useAuth(), firestore: useFirestore() } : { auth: null, firestore: null };
+  const firestore = useFirestore();
+  const auth = useAuth();
   const [logs, setLogs] = useState<LoreLog[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,7 +39,10 @@ export function MissionLogs({ isOpen, onClose, labels }: MissionLogsProps) {
   }, [firestore, auth?.currentUser?.uid]);
 
   useEffect(() => {
-    if (!logsQuery) return;
+    if (!logsQuery) {
+      if (!auth?.currentUser) setLoading(false);
+      return;
+    }
 
     const unsubscribe = onSnapshot(logsQuery, (snapshot) => {
       const results = snapshot.docs.map(doc => ({
@@ -47,10 +51,13 @@ export function MissionLogs({ isOpen, onClose, labels }: MissionLogsProps) {
       })) as LoreLog[];
       setLogs(results);
       setLoading(false);
+    }, (error) => {
+      console.error("Log retrieval failed:", error);
+      setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [logsQuery]);
+  }, [logsQuery, auth?.currentUser]);
 
   if (!isOpen) return null;
 
