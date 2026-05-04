@@ -49,15 +49,15 @@
   },
   "firestore": {
     "/leaderboard/{scoreId}": {
-      "schema": "#/entities/HighScore",
-      "description": "Collection of global high scores. Rules: Allow read/list to all authenticated pilots."
+      "schema": { "$ref": "#/entities/HighScore" },
+      "description": "Collection of global high scores. Requires a composite index on score (desc)."
     },
     "/users/{userId}": {
-      "schema": "#/entities/UserProfile",
+      "schema": { "$ref": "#/entities/UserProfile" },
       "description": "Private user profile data. Rules: Owner-only access."
     },
     "/users/{userId}/logs/{logId}": {
-      "schema": "#/entities/LoreLog",
+      "schema": { "$ref": "#/entities/LoreLog" },
       "description": "Personal mission lore archive. Rules: Owner-only access."
     }
   }
