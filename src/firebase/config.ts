@@ -1,6 +1,5 @@
-
 export const firebaseConfig = {
-  apiKey: "AIzaSyB-fake-key",
+  apiKey: "AIzaSyAykJ2K3WLRMGp8Lxd02JqEgTZFpxV-O3A",
   authDomain: "stellar-shift.firebaseapp.com",
   projectId: "stellar-shift",
   storageBucket: "stellar-shift.appspot.com",
