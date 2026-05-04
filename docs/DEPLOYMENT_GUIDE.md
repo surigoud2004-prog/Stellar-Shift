@@ -13,9 +13,10 @@ Ensure you have the following installed on your machine:
   ```
 
 ## 2. Navigate to Project Root
-**CRITICAL:** Your terminal must be in the folder containing `package.json`.
+**CRITICAL:** Your terminal must be in the folder containing `package.json`. 
 If you see an "ENOENT" error, you are in the wrong directory. Use the `cd` command to enter your project folder:
 ```bash
+# Example: if you downloaded it to Downloads
 cd C:\Users\Admin\Downloads\project
 ```
 
@@ -25,7 +26,7 @@ Log in to your Firebase account:
 firebase login
 ```
 
-## 4. Initialize Firebase
+## 4. Initialize Firebase (One-time setup)
 Run the following command in your project root:
 ```bash
 firebase init hosting
@@ -41,12 +42,12 @@ firebase init hosting
 - **File out/index.html already exists. Overwrite?** `No`
 
 ## 5. Build and Deploy
-Execute the build process and deploy to the cloud. **Do not add extra flags like --no-turbo.**
+Execute the build process and deploy to the cloud.
 ```bash
-# Generate the 'out' directory
+# 1. Generate the 'out' directory
 npm run build
 
-# Deploy to Firebase Hosting
+# 2. Deploy to Firebase Hosting
 firebase deploy
 ```
 
@@ -54,8 +55,8 @@ firebase deploy
 Once the deployment is complete, the CLI will provide a **Hosting URL**.
 Example: `https://studio-547476889-b1c50.web.app`
 
-### Troubleshooting
-- **Error: unknown option**: Just run `npm run build`. Do not add manual flags to the command.
-- **NODE_ENV error**: This has been fixed in the updated `package.json`.
-- **ENOENT Error**: You are running commands in the wrong folder. Make sure you see `package.json` when you type `dir`.
-- **Images Not Loading**: Next.js 15 static export requires `images: { unoptimized: true }` in `next.config.ts` (already configured).
+### Troubleshooting Windows Errors
+- **NODE_ENV error**: I have fixed this in your `package.json`. Just run `npm run build`.
+- **Command not found**: Ensure you have installed the Firebase CLI globally (`npm install -g firebase-tools`).
+- **Permission errors**: Try running your terminal as an **Administrator**.
+- **Images Not Loading**: Next.js 15 static export requires `images: { unoptimized: true }` which is already set in your `next.config.ts`.
