@@ -1,5 +1,5 @@
 
-# Terminal Deployment Guide
+# Terminal Deployment Guide (Windows Optimized)
 
 Follow these steps to deploy **Stellar Shift** to Firebase Hosting from your local terminal.
 
@@ -56,5 +56,6 @@ Example: `https://studio-547476889-b1c50.web.app`
 
 ### Troubleshooting
 - **Error: unknown option**: Just run `npm run build`. Do not add manual flags to the command.
+- **NODE_ENV error**: This has been fixed in the updated `package.json`.
 - **ENOENT Error**: You are running commands in the wrong folder. Make sure you see `package.json` when you type `dir`.
 - **Images Not Loading**: Next.js 15 static export requires `images: { unoptimized: true }` in `next.config.ts` (already configured).
