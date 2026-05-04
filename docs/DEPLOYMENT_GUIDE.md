@@ -8,22 +8,34 @@ Run this command in your terminal. This tells Firebase to look for your Next.js 
 firebase experiments:enable webframeworks
 ```
 
-## 2. Update your CLI
-Ensure you have the latest version of the tools:
-```bash
-npm install -g firebase-tools@latest
+## 2. Verify your Configuration
+Ensure your `firebase.json` looks exactly like this. Do NOT run `firebase init` again, as it might overwrite this:
+```json
+{
+  "hosting": {
+    "source": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "frameworksBackend": {
+      "region": "us-central1"
+    }
+  }
+}
 ```
 
 ## 3. The Final Launch
-Once the experiment is enabled, run the deploy command again:
+Run the deploy command again:
 ```bash
 firebase deploy
 ```
 
 ### What a successful launch looks like:
 - You should see: **"Detected Next.js framework"**.
-- It will automatically create a "Firebase App Hosting" backend or a "Cloud Function" for your AI Lore (Server Actions).
-- It will take longer than 5 seconds because it's building the AI logic in the cloud.
+- It will automatically create a Cloud Function to handle your AI Lore (Server Actions).
+- The deployment will take 2-4 minutes because it is building your application in the cloud.
 
 ### Post-Launch Checklist:
 1. **Firestore**: Enable in Firebase Console > Build > Firestore.
