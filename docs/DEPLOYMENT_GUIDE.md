@@ -1,44 +1,25 @@
 
-# Terminal Deployment Guide (Windows Optimized)
+# Windows Deployment Guide - Stellar Shift
 
-Follow these steps to deploy **Stellar Shift** to Firebase. Because this app uses Genkit AI, it requires a server-side environment (Firebase App Hosting or Web Frameworks).
+Your build is successful! To fix the "1 file found" issue and enable AI features, follow these final steps:
 
-## 1. Prerequisites
-Ensure you have the following installed:
-- **Node.js** (v18+)
-- **NPM** (comes with Node.js)
-- **Firebase CLI**: `npm install -g firebase-tools`
+## 1. Reset Configuration
+Ensure your `firebase.json` matches the new version I just provided. It should use `"source": "."` instead of `"public": "out"`.
 
-## 2. Local Setup (Windows Commands)
-Open your terminal in your project directory and run:
-
+## 2. Final Launch Command
+Run this command in your terminal:
 ```bash
-# 1. Install all mission engines (Required first time)
-npm install
-
-# 2. Build the production application (SUCCESS CONFIRMED)
-npm run build
-```
-
-## 3. Final Deployment
-Push your project to the live servers.
-
-### Option A: Firebase CLI (Direct Launch)
-Run these commands in order:
-```bash
-# 1. Log in to your Firebase account
-firebase login
-
-# 2. Launch the mission!
 firebase deploy
 ```
+*Note: If prompted to "initialize a new codebase", say **Yes**. If asked for a "public directory", just press **Enter** (it will be ignored in favor of the Next.js detection).*
 
-### Option B: Firebase App Hosting (Auto-Deploy)
-This is the most modern way to host Next.js apps.
-1. Go to the [Firebase Console](https://console.firebase.google.com/project/studio-547476889-b1c50/apphosting).
-2. Click **Get Started**.
-3. Connect your GitHub repository and it will deploy automatically whenever you push code.
+## 3. Verify Live Status
+Once complete, visit your mission terminal:
+**URL**: [https://studio-547476889-b1c50.web.app](https://studio-547476889-b1c50.web.app)
 
-## Troubleshooting
-- **'firebase' is not recognized**: Run `npm install -g firebase-tools` then restart your terminal.
-- **Permission errors**: Run your terminal as an **Administrator**.
+## 4. Required Cloud Activation
+If the app loads but scores don't save or AI lore doesn't appear, ensure you have:
+1. **Firestore Enabled**: In Firebase Console > Build > Firestore Database.
+2. **Anonymous Auth Enabled**: In Firebase Console > Build > Authentication > Sign-in method.
+
+*Mission complete. The stars are yours.*
