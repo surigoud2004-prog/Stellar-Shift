@@ -10,42 +10,35 @@ Ensure you have the following installed:
 - **Firebase CLI**: `npm install -g firebase-tools`
 
 ## 2. Local Setup (Windows Commands)
-Open your terminal in `C:\Users\Admin\Downloads\project (1)` and run:
+Open your terminal in your project directory and run:
 
 ```bash
 # 1. Install all mission engines (Required first time)
 npm install
 
-# 2. Build the production application
+# 2. Build the production application (SUCCESS CONFIRMED)
 npm run build
 ```
 
-## 3. Deployment
-Deploy to the cloud.
+## 3. Final Deployment
+Push your project to the live servers.
 
-### Option A: Firebase App Hosting (Recommended for Next.js + AI)
-This is the most modern way to host Next.js apps with Server Actions.
-1. Go to the [Firebase Console](https://console.firebase.google.com/).
-2. Navigate to **App Hosting** and click **Get Started**.
-3. Connect your GitHub repository.
-
-### Option B: Firebase CLI (Legacy Hosting)
-If you prefer the terminal:
+### Option A: Firebase CLI (Direct Launch)
+Run these commands in order:
 ```bash
-# 1. Log in
+# 1. Log in to your Firebase account
 firebase login
 
-# 2. Initialize (Only if first time)
-# Select 'Hosting: Configure files for Firebase Hosting and (optionally) set up GitHub Action deploys'
-# When asked for public directory, use '.next' or let it auto-detect Next.js.
-firebase init hosting
-
-# 3. Deploy
+# 2. Launch the mission!
 firebase deploy
 ```
 
+### Option B: Firebase App Hosting (Auto-Deploy)
+This is the most modern way to host Next.js apps.
+1. Go to the [Firebase Console](https://console.firebase.google.com/project/studio-547476889-b1c50/apphosting).
+2. Click **Get Started**.
+3. Connect your GitHub repository and it will deploy automatically whenever you push code.
+
 ## Troubleshooting
-- **Server Actions Error**: This is now resolved by removing `output: 'export'`.
-- **'next' is not recognized**: You must run `npm install` before building.
+- **'firebase' is not recognized**: Run `npm install -g firebase-tools` then restart your terminal.
 - **Permission errors**: Run your terminal as an **Administrator**.
-```
