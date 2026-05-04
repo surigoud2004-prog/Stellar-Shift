@@ -16,7 +16,7 @@ Ensure you have the following installed on your machine:
 **CRITICAL:** Your terminal must be in the folder containing `package.json`.
 If you see an "ENOENT" error, you are in the wrong directory. Use the `cd` command to enter your project folder:
 ```bash
-cd path/to/stellar-shift
+cd C:\Users\Admin\Downloads\project
 ```
 
 ## 3. Authentication
@@ -41,7 +41,7 @@ firebase init hosting
 - **File out/index.html already exists. Overwrite?** `No`
 
 ## 5. Build and Deploy
-Execute the build process and deploy to the cloud:
+Execute the build process and deploy to the cloud. **Do not add extra flags like --no-turbo.**
 ```bash
 # Generate the 'out' directory
 npm run build
@@ -55,6 +55,6 @@ Once the deployment is complete, the CLI will provide a **Hosting URL**.
 Example: `https://studio-547476889-b1c50.web.app`
 
 ### Troubleshooting
-- **ENOENT Error**: You are running commands in the wrong folder. Make sure you see `package.json` when you type `dir` (Windows) or `ls` (Mac/Linux).
-- **Images Not Loading**: Ensure `next.config.ts` has `images: { unoptimized: true }` for static exports.
-- **403 Errors**: Ensure you have enabled **Firestore** and **Anonymous Auth** in the [Firebase Console](https://console.firebase.google.com/).
+- **Error: unknown option**: Just run `npm run build`. Do not add manual flags to the command.
+- **ENOENT Error**: You are running commands in the wrong folder. Make sure you see `package.json` when you type `dir`.
+- **Images Not Loading**: Next.js 15 static export requires `images: { unoptimized: true }` in `next.config.ts` (already configured).
