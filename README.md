@@ -5,10 +5,15 @@ This is a high-performance, Next.js 15 match-3 puzzle adventure built with ShadC
 ## Deployment Status
 The application is fully configured for production. 
 
-### Final Steps to Go Live:
-1. **Enable Services**: Ensure **Firestore** and **Anonymous Authentication** are enabled in your [Firebase Console](https://console.firebase.google.com/project/studio-547476889-b1c50/overview).
-2. **Publish**: Click the **Publish** button in the Firebase Studio UI to deploy the app to Firebase App Hosting.
-3. **Live Link**: Once published, your app will be live at: `https://studio-547476889-b1c50.web.app` (or your assigned App Hosting domain).
+### Deployment Options:
+1. **Studio Publish**: Click the **Publish** button in the Firebase Studio UI for an automated deployment.
+2. **Terminal Deployment**: For advanced users, follow the [Terminal Deployment Guide](./docs/DEPLOYMENT_GUIDE.md).
+
+### Required Cloud Activation:
+Before the app becomes fully functional, you must:
+1. **Enable Firestore**: Build > Firestore Database.
+2. **Enable Auth**: Build > Authentication > Sign-in method > Enable **Anonymous**.
+3. **Set Up Indexes**: Create a composite index for the `leaderboard` collection (Field: `score`, Order: `Descending`).
 
 ## Features
 - **Neural Link Gameplay**: Hexagonal match-3 logic with special celestial entities.
