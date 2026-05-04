@@ -1,33 +1,32 @@
-# Windows Deployment Guide - Stellar Shift
+# Final Launch Sequence - Stellar Shift (Windows)
 
-Your build is successful! To fix the issue where only "3 files" are found and enable AI features, follow these final steps:
+If you see a message saying **"found 3 files in public"**, your terminal is ignoring the Next.js engine. Follow these exact steps to fix it:
 
-## 1. Update your CLI (Critical)
-The Next.js 15 integration requires the latest version of the Firebase tools. Run this command first:
-```bash
-npm install -g firebase-tools@latest
-```
-
-## 2. Enable Experimental Frameworks
-If the CLI still doesn't detect Next.js, run this command to turn on the modern deployment engine:
+## 1. Enable the Modern Deployment Engine (Critical)
+Run this command in your terminal. This tells Firebase to look for your Next.js project instead of just a folder:
 ```bash
 firebase experiments:enable webframeworks
 ```
 
-## 3. Final Launch Command
-Run this command in your terminal:
+## 2. Update your CLI
+Ensure you have the latest version of the tools:
+```bash
+npm install -g firebase-tools@latest
+```
+
+## 3. The Final Launch
+Once the experiment is enabled, run the deploy command again:
 ```bash
 firebase deploy
 ```
 
-### What to expect:
-- You should see a message saying **"Detected Next.js framework"**.
-- It will automatically run the build and create a Cloud Function for your AI Lore (Server Actions).
-- If prompted to "initialize a new codebase", say **Yes**.
+### What a successful launch looks like:
+- You should see: **"Detected Next.js framework"**.
+- It will automatically create a "Firebase App Hosting" backend or a "Cloud Function" for your AI Lore (Server Actions).
+- It will take longer than 5 seconds because it's building the AI logic in the cloud.
 
-## 4. Required Cloud Activation
-Once live, ensure you have:
-1. **Firestore Enabled**: In Firebase Console > Build > Firestore Database.
-2. **Anonymous Auth Enabled**: In Firebase Console > Build > Authentication > Sign-in method.
+### Post-Launch Checklist:
+1. **Firestore**: Enable in Firebase Console > Build > Firestore.
+2. **Auth**: Enable **Anonymous** in Firebase Console > Build > Authentication.
 
-*Mission complete. The stars are yours.*
+*Mission control is standing by. The stars are waiting.*
