@@ -13,7 +13,7 @@ let auth: Auth;
 let analyticsInstance: Analytics | undefined;
 
 /**
- * Idempotently initializes Firebase services.
+ * Idempotently initializes Firebase services for production use.
  */
 export function initializeFirebase() {
   if (!firebaseApp) {
@@ -21,28 +21,14 @@ export function initializeFirebase() {
     firestore = getFirestore(firebaseApp);
     auth = getAuth(firebaseApp);
 
-    // Helper to detect if a value is a placeholder from the generator or studio
-    const isPlaceholder = (val?: string) => 
-      !val || 
-      val.includes('fake-key') || 
-      val.includes('abcdef123456') || 
-      val.includes('123456789') ||
-      val === 'YOUR_API_KEY';
-
-    // Initialize Analytics only in the browser and if the config looks valid/non-placeholder
-    if (
-      typeof window !== 'undefined' && 
-      !isPlaceholder(firebaseConfig.apiKey) && 
-      !isPlaceholder(firebaseConfig.appId)
-    ) {
+    // Initialize Analytics only in the browser and if the config is valid
+    if (typeof window !== 'undefined' && firebaseConfig.appId !== "1:943623815632:web:d85d7811adac7e629a79d5-placeholder") {
       isSupported().then(yes => {
         if (yes) {
           try {
-            // Analytics initialization can still fail if the Installations API is disabled 
-            // or if the config is partially correct but mismatched.
             analyticsInstance = getAnalytics(firebaseApp);
           } catch (e) {
-            console.warn('Firebase Analytics failed to initialize (check if Google Analytics is enabled in Firebase Console):', e);
+            console.warn('Firebase Analytics failed to initialize:', e);
           }
         }
       }).catch(err => {

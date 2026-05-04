@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -9,6 +8,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { BookOpen, Calendar, Zap, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 interface LoreLog {
   id: string;
@@ -51,8 +52,13 @@ export function MissionLogs({ isOpen, onClose, labels }: MissionLogsProps) {
       })) as LoreLog[];
       setLogs(results);
       setLoading(false);
-    }, (error) => {
-      console.error("Log retrieval failed:", error);
+    }, async (error) => {
+      const permissionError = new FirestorePermissionError({
+        path: `users/${auth.currentUser?.uid}/logs`,
+        operation: 'list',
+      } satisfies SecurityRuleContext);
+      
+      errorEmitter.emit('permission-error', permissionError);
       setLoading(false);
     });
 

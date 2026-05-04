@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "HighScore": {
@@ -27,7 +26,8 @@
         "gamesWon": { "type": "number" },
         "starsCollected": { "type": "number" },
         "allTimeHigh": { "type": "number" },
-        "coins": { "type": "number" }
+        "coins": { "type": "number" },
+        "currentLevel": { "type": "number" }
       },
       "required": ["uid", "name", "avatarId", "xp"]
     },
