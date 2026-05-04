@@ -1,70 +1,37 @@
-'use server';
+
 /**
- * @fileOverview A Genkit flow for generating dynamic lore snippets in the Stellar Shift game.
- *
- * - generateDynamicLore - A function that handles the dynamic lore generation process.
- * - DynamicLoreGenerationInput - The input type for the generateDynamicLore function.
- * - DynamicLoreGenerationOutput - The return type for the generateDynamicLore function.
+ * @fileOverview A mock lore generator for static deployments.
+ * Replaces live Genkit flows to stay within the Firebase Spark (Free) Plan.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+const LORE_LIBRARY = [
+  "The stars are not just light; they are memories of a civilization that mastered the warp before time began.",
+  "Neural link stability detected at 98%. The whispers of the void are becoming clearer.",
+  "Ancient logs suggest this sector was once the cradle of the first Supernova.",
+  "A fragment of cosmic history: the Stellar Shards were forged in the heart of a dying giant.",
+  "Observation: The nebulae in this sector appear to be breathing in sync with the player's link.",
+  "Status Report: Energy levels are fluctuating. The cosmic alignment is nearly complete.",
+  "Legend says those who match the Rainbow Core gain sight beyond the event horizon.",
+  "The Black Hole effect is not a vacuum, but a gateway to a parallel sector.",
+  "Tactical Note: Celestial entities respond to the rhythm of the match-3 sequence.",
+  "The archive records a moment of perfect symmetry that occurred ten thousand years ago."
+];
 
-const DynamicLoreGenerationInputSchema = z.object({
-  gameEventDescription: z
-    .string()
-    .describe(
-      'A descriptive string of the game event or milestone that triggered the lore generation (e.g., "Achieved first Supernova", "Completed Level 5", "Triggered a Black Hole effect").'
-    ),
-  gameContext: z
-    .string()
-    .optional()
-    .describe(
-      'Optional additional context about the game state or elements involved in the event (e.g., "Matched with Stellar Shards and Nebulae", "Spaceship energy at 80%").'
-    ),
-});
-export type DynamicLoreGenerationInput = z.infer<
-  typeof DynamicLoreGenerationInputSchema
->;
+export type DynamicLoreGenerationInput = {
+  gameEventDescription: string;
+  gameContext?: string;
+};
 
-const DynamicLoreGenerationOutputSchema = z.object({
-  loreSnippet: z
-    .string()
-    .describe('A short, thematic lore snippet (1-3 sentences) related to the game event.'),
-});
-export type DynamicLoreGenerationOutput = z.infer<
-  typeof DynamicLoreGenerationOutputSchema
->;
+export type DynamicLoreGenerationOutput = {
+  loreSnippet: string;
+};
 
 export async function generateDynamicLore(
   input: DynamicLoreGenerationInput
 ): Promise<DynamicLoreGenerationOutput> {
-  return dynamicLoreGenerationFlow(input);
+  // Select a random lore snippet from the library
+  const randomIndex = Math.floor(Math.random() * LORE_LIBRARY.length);
+  return {
+    loreSnippet: LORE_LIBRARY[randomIndex],
+  };
 }
-
-const dynamicLorePrompt = ai.definePrompt({
-  name: 'dynamicLorePrompt',
-  input: {schema: DynamicLoreGenerationInputSchema},
-  output: {schema: DynamicLoreGenerationOutputSchema},
-  prompt: `You are a cosmic storyteller for the game Stellar Shift. Your task is to generate a short, immersive lore snippet (like an ancient rune description, a spaceship status report, a fragment of cosmic history, or a mysterious observation) based on a significant game event. The lore should enhance the player's immersion and feel thematic to space, stars, and celestial bodies, aligning with the game's aesthetic.
-
-Game Event: {{{gameEventDescription}}}
-{{#if gameContext}}
-Additional Context: {{{gameContext}}}
-{{/if}}
-
-Generate a concise and evocative lore snippet (1-3 sentences):
-`,
-});
-
-const dynamicLoreGenerationFlow = ai.defineFlow(
-  {
-    name: 'dynamicLoreGenerationFlow',
-    inputSchema: DynamicLoreGenerationInputSchema,
-    outputSchema: DynamicLoreGenerationOutputSchema,
-  },
-  async input => {
-    const {output} = await dynamicLorePrompt(input);
-    return output!;
-  }
-);

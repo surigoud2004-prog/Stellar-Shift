@@ -1,44 +1,28 @@
-# Final Launch Sequence - Stellar Shift (Windows)
 
-If you see a message saying **"found 3 files in public"**, your terminal is ignoring the Next.js engine. Follow these exact steps to fix it:
+# Launch Sequence - Stellar Shift (Spark Plan / Static)
 
-## 1. Enable the Modern Deployment Engine (Critical)
-Run this command in your terminal. This tells Firebase to look for your Next.js project instead of just a folder:
+Since you are using the **Spark (Free) Plan**, we have configured the app for **Static Export**.
+
+## 1. Clean and Build
+Run these commands to ensure a fresh, static build of the project:
 ```bash
-firebase experiments:enable webframeworks
+# Delete old build folders if they exist (Windows)
+rmdir /s /q out .next
+
+# Install and build
+npm install
+npm run build
 ```
 
-## 2. Verify your Configuration
-Ensure your `firebase.json` looks exactly like this. Do NOT run `firebase init` again, as it might overwrite this:
-```json
-{
-  "hosting": {
-    "source": ".",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "frameworksBackend": {
-      "region": "us-central1"
-    }
-  }
-}
-```
-
-## 3. The Final Launch
-Run the deploy command again:
+## 2. Deploy to Hosting
+Since the app is now static, we only need to upload the `out` folder:
 ```bash
-firebase deploy
+firebase deploy --only hosting
 ```
 
-### What a successful launch looks like:
-- You should see: **"Detected Next.js framework"**.
-- It will automatically create a Cloud Function to handle your AI Lore (Server Actions).
-- The deployment will take 2-4 minutes because it is building your application in the cloud.
+### Why this works:
+- **No Cloud Functions**: We removed the "Server Actions" and AI flows that required a paid plan.
+- **Static Export**: The `out` folder contains the entire game logic, which runs 100% in the player's browser.
+- **Mock Lore**: Lore snippets are now pulled from a curated local library instead of a live AI server.
 
-### Post-Launch Checklist:
-1. **Firestore**: Enable in Firebase Console > Build > Firestore.
-2. **Auth**: Enable **Anonymous** in Firebase Console > Build > Authentication.
-
-*Mission control is standing by. The stars are waiting.*
+*Authorization Confirmed. Deploy when ready.*
