@@ -1,4 +1,3 @@
-
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
@@ -22,16 +21,32 @@ export function initializeFirebase() {
     firestore = getFirestore(firebaseApp);
     auth = getAuth(firebaseApp);
 
-    // Initialize Analytics only in the browser and if the API key is valid
-    if (typeof window !== 'undefined' && firebaseConfig.apiKey && !firebaseConfig.apiKey.includes('fake-key')) {
+    // Helper to detect if a value is a placeholder from the generator or studio
+    const isPlaceholder = (val?: string) => 
+      !val || 
+      val.includes('fake-key') || 
+      val.includes('abcdef123456') || 
+      val.includes('123456789') ||
+      val === 'YOUR_API_KEY';
+
+    // Initialize Analytics only in the browser and if the config looks valid/non-placeholder
+    if (
+      typeof window !== 'undefined' && 
+      !isPlaceholder(firebaseConfig.apiKey) && 
+      !isPlaceholder(firebaseConfig.appId)
+    ) {
       isSupported().then(yes => {
         if (yes) {
           try {
+            // Analytics initialization can still fail if the Installations API is disabled 
+            // or if the config is partially correct but mismatched.
             analyticsInstance = getAnalytics(firebaseApp);
           } catch (e) {
-            console.warn('Firebase Analytics failed to initialize:', e);
+            console.warn('Firebase Analytics failed to initialize (check if Google Analytics is enabled in Firebase Console):', e);
           }
         }
+      }).catch(err => {
+        console.warn('Firebase Analytics isSupported check failed:', err);
       });
     }
   }
