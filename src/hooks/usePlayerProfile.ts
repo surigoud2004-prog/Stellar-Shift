@@ -1,10 +1,11 @@
-
-"use client";
+'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { playLevelUpSound, playUIClickSound } from '@/lib/audio-system';
 import { useAuth, useFirestore, logAnalyticsEvent } from '@/firebase';
 import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export interface PlayerProfile {
   uid?: string;
@@ -61,7 +62,14 @@ export function usePlayerProfile() {
         localStorage.setItem('stellar_player_profile', JSON.stringify(cloudData));
       } else {
         const initialProfile = { ...DEFAULT_PROFILE, uid: auth.currentUser!.uid };
-        setDoc(userRef, initialProfile);
+        setDoc(userRef, initialProfile).catch(async () => {
+           const permissionError = new FirestorePermissionError({
+            path: userRef.path,
+            operation: 'create',
+            requestResourceData: initialProfile,
+          } satisfies SecurityRuleContext);
+          errorEmitter.emit('permission-error', permissionError);
+        });
         setProfile(initialProfile);
         localStorage.setItem('stellar_player_profile', JSON.stringify(initialProfile));
       }
@@ -73,6 +81,12 @@ export function usePlayerProfile() {
         setProfile(updated);
         localStorage.setItem('stellar_player_profile', JSON.stringify(updated));
       }
+    }, async () => {
+       const permissionError = new FirestorePermissionError({
+        path: userRef.path,
+        operation: 'get',
+      } satisfies SecurityRuleContext);
+      errorEmitter.emit('permission-error', permissionError);
     });
 
     return () => unsubscribe();
@@ -82,7 +96,14 @@ export function usePlayerProfile() {
     setProfile(newProfile);
     if (auth.currentUser && db) {
       const userRef = doc(db, 'users', auth.currentUser.uid);
-      setDoc(userRef, newProfile, { merge: true });
+      setDoc(userRef, newProfile, { merge: true }).catch(async () => {
+         const permissionError = new FirestorePermissionError({
+          path: userRef.path,
+          operation: 'update',
+          requestResourceData: newProfile,
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
     }
     try {
       localStorage.setItem('stellar_player_profile', JSON.stringify(newProfile));
@@ -112,7 +133,14 @@ export function usePlayerProfile() {
       
       if (auth.currentUser && db) {
         const userRef = doc(db, 'users', auth.currentUser.uid);
-        setDoc(userRef, next, { merge: true });
+        setDoc(userRef, next, { merge: true }).catch(async () => {
+           const permissionError = new FirestorePermissionError({
+            path: userRef.path,
+            operation: 'update',
+            requestResourceData: next,
+          } satisfies SecurityRuleContext);
+          errorEmitter.emit('permission-error', permissionError);
+        });
       }
       try {
         localStorage.setItem('stellar_player_profile', JSON.stringify(next));
@@ -157,7 +185,13 @@ export function usePlayerProfile() {
     localStorage.removeItem('stellar_player_profile');
     if (auth.currentUser && db) {
       const userRef = doc(db, 'users', auth.currentUser.uid);
-      setDoc(userRef, { ...DEFAULT_PROFILE, uid: auth.currentUser.uid });
+      setDoc(userRef, { ...DEFAULT_PROFILE, uid: auth.currentUser.uid }).catch(async () => {
+         const permissionError = new FirestorePermissionError({
+          path: userRef.path,
+          operation: 'write',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
     }
     logAnalyticsEvent('profile_reset');
     window.location.reload();

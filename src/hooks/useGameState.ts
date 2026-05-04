@@ -1,5 +1,4 @@
-
-"use client";
+'use client';
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { 
@@ -24,6 +23,8 @@ import {
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { useAuth, useFirestore, logAnalyticsEvent } from '@/firebase';
 import { generateDynamicLore } from '@/ai/flows/dynamic-lore-generation';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export type GameMode = 'easy' | 'hard' | 'hell';
 
@@ -88,29 +89,46 @@ export function useGameState() {
     try {
       const lore = await generateDynamicLore({ gameEventDescription: event, gameContext: context });
       const logRef = doc(collection(db, 'users', auth.currentUser.uid, 'logs'));
-      setDoc(logRef, {
+      const data = {
         id: logRef.id,
         event,
         snippet: lore.loreSnippet,
         timestamp: Date.now()
+      };
+      
+      setDoc(logRef, data).catch(async () => {
+        const permissionError = new FirestorePermissionError({
+          path: logRef.path,
+          operation: 'write',
+          requestResourceData: data,
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
       });
     } catch (e) {}
   }, [db, auth]);
 
   const submitHighScore = useCallback(async (finalScore: number, finalLevel: number) => {
     if (!db || !auth?.currentUser) return;
-    try {
-      const scoreId = `${auth.currentUser.uid}_${Date.now()}`;
-      const scoreRef = doc(db, 'leaderboard', scoreId);
-      setDoc(scoreRef, {
-        uid: auth.currentUser.uid,
-        displayName: auth.currentUser.displayName || 'Pilot',
-        score: Math.floor(finalScore),
-        level: finalLevel,
-        timestamp: Date.now()
-      });
-      logAnalyticsEvent('high_score_submitted', { score: finalScore, level: finalLevel });
-    } catch (e) {}
+    const scoreId = `${auth.currentUser.uid}_${Date.now()}`;
+    const scoreRef = doc(db, 'leaderboard', scoreId);
+    const data = {
+      uid: auth.currentUser.uid,
+      displayName: auth.currentUser.displayName || 'Pilot',
+      score: Math.floor(finalScore),
+      level: finalLevel,
+      timestamp: Date.now()
+    };
+    
+    setDoc(scoreRef, data).catch(async () => {
+      const permissionError = new FirestorePermissionError({
+        path: scoreRef.path,
+        operation: 'write',
+        requestResourceData: data,
+      } satisfies SecurityRuleContext);
+      errorEmitter.emit('permission-error', permissionError);
+    });
+    
+    logAnalyticsEvent('high_score_submitted', { score: finalScore, level: finalLevel });
   }, [db, auth]);
 
   const handleMatch = useCallback(async (currentEntities: CelestialEntity[], lastMovedId?: string, comboFactor: number = 1, forceExplosionIds?: Set<string>, silent: boolean = false) => {
