@@ -1,7 +1,8 @@
-
 /**
  * @fileOverview A mock lore generator for static deployments.
  * Replaces live Genkit flows to stay within the Firebase Spark (Free) Plan.
+ * 
+ * IMPORTANT: This file must NOT contain 'use server' to remain compatible with static export.
  */
 
 const LORE_LIBRARY = [

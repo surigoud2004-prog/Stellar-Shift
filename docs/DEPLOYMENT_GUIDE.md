@@ -1,28 +1,28 @@
-# Launch Sequence - Stellar Shift (Spark Plan / Static)
+# Windows Launch Sequence - Stellar Shift (Spark/Free Plan)
 
-To stay on the **Free (Spark) Plan**, we use a manual static deployment process. This bypasses the need for paid Cloud Build APIs.
+To deploy on the Free Plan, we bypass the "Web Frameworks" feature and deploy the static build directly.
 
-## 1. Disable Framework Detection
-Ensure your terminal isn't trying to use the paid "Web Frameworks" feature:
+## 1. Preparation
+Ensure the "Web Frameworks" experiment is disabled to prevent Blaze plan errors:
 ```bash
 firebase experiments:disable webframeworks
 ```
 
-## 2. Generate Static Mission Engine
-This command creates the `out` folder containing your entire game logic.
+## 2. Build the Mission Engine
+Generate the static production files (this creates the `out` folder):
 ```bash
 npm run build
 ```
 
 ## 3. Deploy to Hosting
-Upload the static `out` folder directly:
+Upload the static `out` folder directly to Firebase:
 ```bash
 firebase deploy --only hosting
 ```
 
-### Why this works:
-- **No Cloud Functions**: We avoid triggering the Blaze plan requirement by not using server-side rendering.
-- **Static Export**: The `out` folder contains the compiled HTML/JS/CSS, which is free to host.
-- **Mock Lore**: AI features are handled by our local immersive lore library.
+### Troubleshooting Windows Errors:
+- **'next' is not recognized**: Run `npm install` first.
+- **Blaze plan required**: Ensure `firebase.json` has `"public": "out"` and you disabled the experiment in step 1.
+- **Found 3 files in public**: Ensure you ran `npm run build` and your `firebase.json` points to `out`.
 
-*Authorization Confirmed. Deploy when ready.*
+*Mission Readiness: Confirmed.*
