@@ -299,28 +299,20 @@ export function useGameState() {
     setIsProcessing(false);
   }, [getVariety, levelTimeLimit, powerUps.novaBlast, handleMatch]);
 
-  useEffect(() => {
-    if (isWin) {
-      const warpStartTimeout = setTimeout(() => {
-        setIsWarping(true);
-        setEntities([]);
-        setScore(0); 
-        playWarpSound();
-        
-        const nextLevelTimeout = setTimeout(() => {
-          setLevel(prev => prev + 1);
-          setIsWin(false);
-          setIsWarping(false);
-          setPowerUps(prev => ({ ...prev, timeDilator: false, novaBlast: false }));
-          setReviveCost(200);
-        }, 2500);
-        
-        return () => clearTimeout(nextLevelTimeout);
-      }, 1000);
-      
-      return () => clearTimeout(warpStartTimeout);
-    }
-  }, [isWin]);
+  const advanceToNextLevel = useCallback(() => {
+    setIsWarping(true);
+    playWarpSound();
+    
+    setTimeout(() => {
+      setLevel(prev => prev + 1);
+      setIsWin(false);
+      setIsWarping(false);
+      setEntities([]);
+      setScore(0);
+      setPowerUps(prev => ({ ...prev, timeDilator: false, novaBlast: false }));
+      setReviveCost(200);
+    }, 2500);
+  }, []);
 
   useEffect(() => {
     if (gameStarted && !isWin && !isGameOver && !isWarping && !isReviving) {
@@ -457,6 +449,6 @@ export function useGameState() {
     gameStarted, startGame, quitGame, gameMode, setGameMode,
     isFlashing, isShaking, animationDuration,
     powerUps, setPowerUps, triggerColorNuke,
-    isReviving, setIsReviving, revive, reviveCost, lasers
+    isReviving, setIsReviving, revive, reviveCost, lasers, advanceToNextLevel
   };
 }

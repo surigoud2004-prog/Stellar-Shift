@@ -17,7 +17,7 @@ export function Board({ onShowShop }: BoardProps) {
   const { 
     entities, isGameOver, isWin, isWarping, selectedId, setSelectedId, 
     swapEntities, isProcessing, initBoard, isFlashing, isShaking, level, 
-    powerUps, triggerColorNuke, quitGame, lasers, revive
+    powerUps, triggerColorNuke, quitGame, lasers, revive, advanceToNextLevel
   } = useGameState();
 
   const [isAdReviving, setIsAdReviving] = useState(false);
@@ -98,7 +98,7 @@ export function Board({ onShowShop }: BoardProps) {
             strokeWidth="4" 
             strokeDasharray="10 5" 
             className="animate-pulse opacity-80"
-            style={{ filter: 'drop-shadow(0 0 10px rgba(168,85,247,0.8))' }}
+            style={{ filter: 'drop-shadow(0 0 10px rgba(168,85,24,0.8))' }}
           />
           <line 
             x1={x1} y1={y1} x2={x2} y2={y2} 
@@ -203,13 +203,12 @@ export function Board({ onShowShop }: BoardProps) {
                   {isWin ? (
                     <Button 
                       onClick={() => {
-                        if (onShowShop) onShowShop();
-                        else initBoard();
+                        advanceToNextLevel();
                       }} 
                       size="lg" 
                       className="bg-primary hover:bg-primary/80 active:scale-95 transition-all font-black uppercase tracking-widest h-14 md:h-16 rounded-2xl text-base md:text-lg shadow-2xl w-full"
                     >
-                      <RotateCcw className="w-5 h-5 mr-3" /> Next Sector
+                      <FastForward className="w-5 h-5 mr-3" /> Proceed to Next Sector
                     </Button>
                   ) : (
                     <>
@@ -228,8 +227,7 @@ export function Board({ onShowShop }: BoardProps) {
 
                       <Button 
                         onClick={() => {
-                          if (onShowShop) onShowShop();
-                          else initBoard();
+                          initBoard();
                         }} 
                         variant="outline"
                         size="lg" 
