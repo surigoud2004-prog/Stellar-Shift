@@ -25,6 +25,12 @@ This will generate an `out` folder containing the static site.
    git push -u origin main
    ```
 
+### 🛠️ Troubleshooting "Rejected" Push
+If you see an error like `[rejected] main -> main (non-fast-forward)`, it means GitHub has files you don't have. To overwrite GitHub with your local code, run:
+```bash
+git push -u origin main --force
+```
+
 ### Subsequent Missions (Update Your Code)
 1. **Stage Changes**: `git add .`
 2. **Log Changes**: `git commit -m "Update mission parameters"`
