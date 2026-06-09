@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { playLevelUpSound, playUIClickSound } from '@/lib/audio-system';
 import { useAuth, useFirestore, logAnalyticsEvent } from '@/firebase';
-import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, getDoc, onSnapshot, terminate, clearPersistence } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
@@ -197,6 +198,22 @@ export function usePlayerProfile() {
     window.location.reload();
   };
 
+  const clearCache = async () => {
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+      if (db) {
+        await terminate(db);
+        await clearPersistence(db);
+      }
+      logAnalyticsEvent('cache_cleared');
+      window.location.reload();
+    } catch (e) {
+      console.error("Cache clear failed", e);
+      window.location.reload();
+    }
+  };
+
   return {
     profile,
     showProfile,
@@ -207,6 +224,7 @@ export function usePlayerProfile() {
     setAvatar,
     setName,
     getRank,
-    resetProfile
+    resetProfile,
+    clearCache
   };
 }

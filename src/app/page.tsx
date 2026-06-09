@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Board } from '@/components/game/Board';
@@ -31,7 +32,7 @@ import { logAnalyticsEvent } from '@/firebase';
 
 function MissionContent() {
   const { 
-    profile, showProfile, setShowProfile, setAvatar, setName, getRank, updateStats, addCoins, spendCoins, resetProfile
+    profile, showProfile, setShowProfile, setAvatar, setName, getRank, updateStats, addCoins, spendCoins, resetProfile, clearCache
   } = usePlayerProfile();
   
   const { 
@@ -260,6 +261,7 @@ function MissionContent() {
               onShowFame={() => setShowFame(true)}
               onAbort={handleAbort}
               onResetProgress={resetProfile}
+              onClearCache={clearCache}
               gameStarted={gameStarted}
               labels={labels}
             />

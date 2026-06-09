@@ -49,7 +49,8 @@ export const LOCALIZATION = {
     on: 'ON',
     off: 'OFF',
     coins: 'COINS',
-    resetProgress: 'RESET PROGRESS'
+    resetProgress: 'RESET PROGRESS',
+    clearCache: 'CLEAR CACHE'
   },
   es: {
     start: 'INICIAR',
@@ -98,7 +99,8 @@ export const LOCALIZATION = {
     on: 'SÍ',
     off: 'NO',
     coins: 'MONEDAS',
-    resetProgress: 'REINICIAR PROGRESO'
+    resetProgress: 'REINICIAR PROGRESO',
+    clearCache: 'LIMPIAR CACHÉ'
   },
   fr: {
     start: 'COMMENCER',
@@ -147,6 +149,7 @@ export const LOCALIZATION = {
     on: 'OUI',
     off: 'NON',
     coins: 'PIÈCES',
-    resetProgress: 'RÉINITIALISER PROGRÈS'
+    resetProgress: 'RÉINITIALISER PROGRÈS',
+    clearCache: 'VIDER LE CACHE'
   }
 };
