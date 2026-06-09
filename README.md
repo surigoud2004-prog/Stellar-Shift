@@ -4,9 +4,9 @@ This is a high-performance, Next.js 15 match-3 puzzle adventure.
 
 ## 🚀 GitHub to Netlify Deployment (Recommended)
 
-Follow these steps to push your code to GitHub and host on Netlify:
+Run these exact commands in your terminal to push your code:
 
-1.  **Initialize Git**: 
+1.  **Initialize & Commit**: 
     ```bash
     git init
     git add .
@@ -22,12 +22,11 @@ Follow these steps to push your code to GitHub and host on Netlify:
     - Log in to [Netlify](https://app.netlify.com/).
     - Click **"Add new site"** -> **"Import an existing project"**.
     - Select **GitHub** and choose the `Stellar-Shift` repository.
-    - Netlify will detect the settings from `netlify.toml` automatically (`npm run build` and `out` folder).
 
 ## 🛡️ Security Protocol (Public Repositories)
 
 - **Firebase API Keys**: These are safe to commit; they identify your project to the client. Security is enforced via **Firestore Security Rules**.
-- **Environment Variables**: The `.gitignore` file prevents your `.env` from being pushed. Always add secrets (like AI keys) directly to the Netlify UI if you upgrade to dynamic features.
+- **Environment Variables**: The `.gitignore` file prevents your `.env` from being pushed.
 - **Static Mode**: This build uses a static lore library to ensure compatibility with free hosting tiers.
 
 ## Features
