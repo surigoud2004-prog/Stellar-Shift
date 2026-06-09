@@ -14,15 +14,15 @@ Generate the static production files (this creates the `out` folder):
 npm run build
 ```
 
-## 3. Deploy to Hosting
-Upload the static `out` folder directly to Firebase:
+## 3. Deploy to Hosting & Indexes
+Upload the static `out` folder and the Firestore indexes:
 ```bash
-firebase deploy --only hosting
+firebase deploy --only hosting,firestore:indexes
 ```
 
 ### Troubleshooting Windows Errors:
 - **'next' is not recognized**: Run `npm install` first.
-- **Blaze plan required**: Ensure `firebase.json` has `"public": "out"` and you disabled the experiment in step 1.
-- **Found 3 files in public**: Ensure you ran `npm run build` and your `firebase.json` points to `out`.
+- **Blaze plan required**: Ensure you disabled the experiment in step 1 and are NOT using "source" in firebase.json.
+- **Index creation failed**: Ensure you have owner permissions on the Firebase project.
 
 *Mission Readiness: Confirmed.*
