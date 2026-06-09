@@ -10,10 +10,11 @@ import { HallOfFame } from '@/components/game/HallOfFame';
 import { MissionLogs } from '@/components/game/MissionLogs';
 import { PowerUpShop } from '@/components/game/PowerUpShop';
 import { CoinFountain } from '@/components/game/CoinFountain';
+import { DevTerminal } from '@/components/game/DevTerminal';
 import { GameStateProvider, useGameState } from '@/context/GameStateContext';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { LOCALIZATION } from '@/lib/localization';
-import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff, Radio, Orbit, Coins, ShieldAlert, Play, Loader2 } from 'lucide-react';
+import { User, Trophy, BookOpen, X as XIcon, Eye, EyeOff, Radio, Orbit, Coins, ShieldAlert, Play, Loader2, Terminal } from 'lucide-react';
 import { getSectorInfo } from '@/lib/game-utils';
 import Link from 'next/link';
 import {
@@ -46,6 +47,7 @@ function MissionContent() {
   const [showFame, setShowFame] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
   const [showShop, setShowShop] = useState(false);
+  const [showTerminal, setShowTerminal] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [abortDialogOpen, setAbortDialogOpen] = useState(false);
   const [uiVisible, setUiVisible] = useState(true);
@@ -59,7 +61,7 @@ function MissionContent() {
   const sector = useMemo(() => getSectorInfo(level), [level]);
 
   // Combined HUD visibility check
-  const isHudHidden = !uiVisible || showShop || showFame || showLogs || showProfile;
+  const isHudHidden = !uiVisible || showShop || showFame || showLogs || showProfile || showTerminal;
 
   useEffect(() => {
     if (isWin && level > lastProcessedLevel) {
@@ -189,7 +191,7 @@ function MissionContent() {
             onClick={() => setUiVisible(!uiVisible)}
             className={cn(
               "w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md",
-              (showShop || showFame || showLogs || showProfile) && "opacity-0 pointer-events-none"
+              (showShop || showFame || showLogs || showProfile || showTerminal) && "opacity-0 pointer-events-none"
             )}
             title="Cloak UI"
           >
@@ -229,6 +231,17 @@ function MissionContent() {
 
         {/* TOP-RIGHT: ARCHIVE & SETTINGS */}
         <div className="absolute top-[20px] right-[30px] flex items-center gap-4 pointer-events-auto">
+          <button 
+            onClick={() => setShowTerminal(true)}
+            className={cn(
+              "w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md",
+              (showShop || showFame) && "opacity-0 pointer-events-none"
+            )}
+            title="Dev Terminal"
+          >
+            <Terminal className="w-5 h-5 text-green-400" />
+          </button>
+
           <button 
             onClick={() => setShowLogs(true)}
             className={cn(
@@ -402,6 +415,12 @@ function MissionContent() {
         isOpen={showShop}
         onClose={onConfirmLoadout}
         labels={labels}
+      />
+
+      <DevTerminal 
+        isOpen={showTerminal}
+        onClose={() => setShowTerminal(false)}
+        repoUrl="https://github.com/surigoud2004-prog/Stellar-Shift.git"
       />
 
       {showFame && (

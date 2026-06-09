@@ -1,13 +1,6 @@
 # Stellar Shift - Cosmic Match 3
 
 This is a high-performance, Next.js 15 match-3 puzzle adventure.
-
-## 💻 How to open Command Prompt
-If you closed your terminal:
-1. Open your project folder (`C:\Users\Admin\Downloads\project`) in Windows File Explorer.
-2. Click the **Address Bar** at the top (where the folder path is).
-3. Type **`cmd`** and press **Enter**.
-
 ## 🚀 GitHub to Netlify Deployment (Recommended)
 
 Run these exact commands in your terminal to push your code:
