@@ -1,9 +1,11 @@
 # Stellar Shift - Cosmic Match 3
 
 This is a high-performance, Next.js 15 match-3 puzzle adventure.
-## 🚀 GitHub to Netlify Deployment (Recommended)
 
-Run these exact commands in your terminal to push your code:
+## 🚀 Deployment Protocol
+
+### First Mission Launch (Initial Push)
+Run these exact commands in your terminal to push your code for the first time:
 
 1.  **Initialize & Commit**: 
     ```bash
@@ -17,10 +19,19 @@ Run these exact commands in your terminal to push your code:
     git branch -M main
     git push -u origin main
     ```
-3.  **Connect to Netlify**:
-    - Log in to [Netlify](https://app.netlify.com/).
-    - Click **"Add new site"** -> **"Import an existing project"**.
-    - Select **GitHub** and choose the `Stellar-Shift` repository.
+
+### Subsequent Missions (Update Your Code)
+Whenever you make changes and want to update GitHub/Netlify, run these 3 commands:
+
+1.  **Stage Changes**: `git add .`
+2.  **Log Changes**: `git commit -m "Updated sector features"` (replace with your own message)
+3.  **Broadcast**: `git push`
+
+## 🌍 Connect to Netlify
+- Log in to [Netlify](https://app.netlify.com/).
+- Click **"Add new site"** -> **"Import an existing project"**.
+- Select **GitHub** and choose the `Stellar-Shift` repository.
+- Netlify will automatically detect your settings and deploy.
 
 ## 🛡️ Security Protocol (Public Repositories)
 
