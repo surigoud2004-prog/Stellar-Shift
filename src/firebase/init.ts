@@ -17,12 +17,17 @@ let analyticsInstance: Analytics | undefined;
  */
 export function initializeFirebase() {
   if (!firebaseApp) {
+    // Ensure we have at least an API Key before initializing
+    if (!firebaseConfig.apiKey) {
+      console.warn('Firebase API Key missing. Check your environment variables.');
+    }
+    
     firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     firestore = getFirestore(firebaseApp);
     auth = getAuth(firebaseApp);
 
-    // Initialize Analytics only in the browser and if the config is valid
-    if (typeof window !== 'undefined' && firebaseConfig.appId !== "1:943623815632:web:d85d7811adac7e629a79d5-placeholder") {
+    // Initialize Analytics only in the browser
+    if (typeof window !== 'undefined' && firebaseConfig.appId) {
       isSupported().then(yes => {
         if (yes) {
           try {
