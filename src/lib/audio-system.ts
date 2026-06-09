@@ -1,4 +1,3 @@
-
 'use client';
 
 let audioCtx: AudioContext | null = null;
@@ -11,6 +10,10 @@ function getAudioContext() {
     if (AudioContextClass) {
       audioCtx = new AudioContextClass();
     }
+  }
+  // Resume context if suspended (browser security)
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
   }
   return audioCtx;
 }
@@ -154,16 +157,12 @@ export function playCoinClinkSound() {
   osc.stop(ctx.currentTime + 0.1);
 }
 
-/**
- * A triumphant celestial fanfare with pitch shifting every 5 levels.
- */
 export function playVictoryFanfare(level: number = 1) {
   const ctx = getAudioContext();
   if (!ctx) return;
 
   const pitchShift = 1 + (Math.floor((level - 1) / 5) * 0.1);
 
-  // 1. Ascending Crystalline Twinkles
   const twinkleFreqs = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98].map(f => f * pitchShift);
   twinkleFreqs.forEach((freq, i) => {
     const osc = ctx.createOscillator();
@@ -179,7 +178,6 @@ export function playVictoryFanfare(level: number = 1) {
     osc.stop(ctx.currentTime + i * 0.05 + 0.2);
   });
 
-  // 2. Warm Resonant Swell
   const swellStart = ctx.currentTime + 0.3;
   [261.63, 329.63, 392.00].forEach((freq, i) => {
     const osc = ctx.createOscillator();
@@ -205,7 +203,6 @@ export function playVictoryFanfare(level: number = 1) {
     osc.stop(swellStart + 2.5);
   });
 
-  // 3. Deep Orchestral Thud (Synced with Swell Peak and Coin Fountain)
   const thudTime = ctx.currentTime + 0.6;
   const thudOsc = ctx.createOscillator();
   const thudGain = ctx.createGain();
@@ -221,16 +218,12 @@ export function playVictoryFanfare(level: number = 1) {
   thudOsc.stop(thudTime + 1.2);
 }
 
-/**
- * A short, high-tech 'vacuum' whoosh sound followed by a soft digital chime for level transitions.
- */
 export function playWarpSound() {
   const ctx = getAudioContext();
   if (!ctx) return;
 
   const startTime = ctx.currentTime;
 
-  // 1. Vacuum Whoosh (Filtered Noise)
   const noiseSource = ctx.createBufferSource();
   noiseSource.buffer = getNoiseBuffer(ctx);
   
@@ -250,7 +243,6 @@ export function playWarpSound() {
   noiseSource.start(startTime);
   noiseSource.stop(startTime + 0.6);
 
-  // 2. Soft Digital Chime
   const chimeTime = startTime + 0.5;
   const chimeOsc = ctx.createOscillator();
   const chimeGain = ctx.createGain();
