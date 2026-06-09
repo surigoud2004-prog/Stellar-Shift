@@ -4,6 +4,13 @@ This is a high-performance, Next.js 15 match-3 puzzle adventure.
 
 ## 🚀 Deployment Protocol
 
+### Build Command
+To prepare the application for production, run:
+```bash
+npm run build
+```
+This will generate an `out` folder containing the static site.
+
 ### First Mission Launch (Initial Push)
 Run these exact commands in your terminal to push your code for the first time:
 
@@ -28,10 +35,13 @@ Whenever you make changes and want to update GitHub/Netlify, run these 3 command
 3.  **Broadcast**: `git push`
 
 ## 🌍 Connect to Netlify
-- Log in to [Netlify](https://app.netlify.com/).
-- Click **"Add new site"** -> **"Import an existing project"**.
-- Select **GitHub** and choose the `Stellar-Shift` repository.
-- Netlify will automatically detect your settings and deploy.
+1. Log in to [Netlify](https://app.netlify.com/).
+2. Click **"Add new site"** -> **"Import an existing project"**.
+3. Select **GitHub** and choose the `Stellar-Shift` repository.
+4. **Site Settings**:
+   - **Build Command**: `npm run build`
+   - **Publish Directory**: `out`
+5. Netlify will automatically detect these settings from your `netlify.toml` and deploy.
 
 ## 🛡️ Security Protocol (Public Repositories)
 
