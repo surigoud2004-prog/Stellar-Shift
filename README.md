@@ -4,16 +4,26 @@ This is a high-performance, Next.js 15 match-3 puzzle adventure.
 
 ## 🚀 GitHub to Netlify Deployment (Recommended)
 
-1.  **Create a GitHub Repo**: Push this project folder to a new repository on GitHub.
-2.  **Connect to Netlify**:
+Follow these steps to push your code to GitHub and host on Netlify:
+
+1.  **Initialize Git**: 
+    ```bash
+    git init
+    git add .
+    git commit -m "Initial mission launch"
+    ```
+2.  **Create a GitHub Repo**: Go to [GitHub](https://github.com/new) and create a new public repository.
+3.  **Link and Push**:
+    ```bash
+    git remote add origin <YOUR_GITHUB_REPO_URL>
+    git branch -M main
+    git push -u origin main
+    ```
+4.  **Connect to Netlify**:
     - Log in to [Netlify](https://app.netlify.com/).
     - Click **"Add new site"** -> **"Import an existing project"**.
     - Select **GitHub** and choose your repository.
-3.  **Configure Build Settings**:
-    - **Build command**: `npm run build`
-    - **Publish directory**: `out`
-4.  **Environment Variables**:
-    - Add any required API keys in the Netlify UI under **Site settings > Environment variables**.
+    - Netlify will detect the settings from `netlify.toml` automatically.
 
 ## 🛡️ Security Protocol (Public Repositories)
 
