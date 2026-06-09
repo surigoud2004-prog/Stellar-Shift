@@ -30,15 +30,21 @@
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
     @apply bg-background text-foreground antialiased overflow-hidden font-body;
+    touch-action: manipulation;
   }
 }
 
 .stellar-grid-frame {
-  @apply relative rounded-[3rem] border-4 border-primary/20 bg-black/60 backdrop-blur-md overflow-hidden shadow-2xl;
+  @apply relative rounded-[2rem] md:rounded-[3rem] border-2 md:border-4 border-primary/20 bg-black/60 backdrop-blur-md overflow-visible shadow-2xl;
   box-shadow: 0 0 100px rgba(0, 0, 0, 0.9), inset 0 0 60px rgba(168, 85, 247, 0.1);
+}
+
+.responsive-board-wrapper {
+  @apply flex items-center justify-center w-full max-w-full overflow-visible transition-transform duration-500 ease-out;
 }
 
 /* NEON CORES */

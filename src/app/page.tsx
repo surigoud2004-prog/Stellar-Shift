@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Board } from '@/components/game/Board';
@@ -160,172 +159,175 @@ function MissionContent() {
       
       <ParallaxBackground disabled={isBatterySaver} isWarping={isWarping} level={level} />
       
-      {/* GLOBAL HUD - PINNED AT TOP-MOST LAYER Z-10010 */}
-      <div id="Global_HUD" className="fixed inset-x-0 top-0 pointer-events-none z-[10010] h-40">
+      {/* GLOBAL HUD - ADAPTIVE FOR ALL DEVICES */}
+      <div id="Global_HUD" className="fixed inset-x-0 top-0 pointer-events-none z-[10010] p-4 md:p-8">
         
-        {/* TOP-LEFT: ABORT MISSION (X) & WALLET */}
-        <div className="absolute top-[20px] left-[30px] flex items-center gap-4 pointer-events-auto">
-          <button 
-            onClick={() => setAbortDialogOpen(true)}
-            className="w-[50px] h-[50px] rounded-full bg-red-600 flex items-center justify-center shadow-[0_0_25px_rgba(220,38,38,0.7)] hover:scale-110 active:scale-90 transition-all border-2 border-white/20"
-            title={labels.abortMission}
-          >
-            <XIcon className="w-7 h-7 text-white stroke-[4px]" />
-          </button>
+        {/* TOP HUD BAR */}
+        <div className="flex items-start justify-between w-full max-w-7xl mx-auto pointer-events-auto">
           
-          <div className={cn(
-            "flex items-center gap-3 bg-black/70 px-5 py-2.5 rounded-2xl border-2 border-yellow-500/40 backdrop-blur-xl shadow-[0_0_25px_rgba(234,179,8,0.2)] transition-all",
-            isHudHidden && "opacity-0"
-          )}>
-            <div className="w-6 h-6 rounded-full bg-yellow-400 flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.6)] border-2 border-yellow-200">
-               <Coins className="w-4 h-4 text-black stroke-[3px]" />
+          {/* TOP-LEFT: ABORT & WALLET */}
+          <div className="flex items-center gap-2 md:gap-4">
+            <button 
+              onClick={() => setAbortDialogOpen(true)}
+              className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-600 flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.5)] hover:scale-110 active:scale-90 transition-all border-2 border-white/20"
+              title={labels.abortMission}
+            >
+              <XIcon className="w-5 h-5 md:w-6 md:h-6 text-white stroke-[4px]" />
+            </button>
+            
+            <div className={cn(
+              "hidden sm:flex items-center gap-3 bg-black/70 px-4 py-2 rounded-2xl border-2 border-yellow-500/40 backdrop-blur-xl transition-all",
+              isHudHidden && "opacity-0"
+            )}>
+              <Coins className="w-4 h-4 text-yellow-400" />
+              <span className="text-white font-black text-sm md:text-base">
+                {Math.floor(profile.coins || 0).toLocaleString()}
+              </span>
             </div>
-            <span className="text-white font-black text-lg tracking-widest">
-              {Math.floor(profile.coins || 0).toLocaleString()}
-            </span>
+
+            <button 
+              onClick={() => setUiVisible(!uiVisible)}
+              className={cn(
+                "w-10 h-10 md:w-12 md:h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60",
+                (showShop || showFame || showLogs || showProfile) && "opacity-0 pointer-events-none"
+              )}
+            >
+              {uiVisible ? <Eye className="w-4 h-4 md:w-5 md:h-5 text-white" /> : <EyeOff className="w-4 h-4 md:w-5 md:h-5 text-white/40" />}
+            </button>
           </div>
 
-          <button 
-            onClick={() => setUiVisible(!uiVisible)}
-            className={cn(
-              "w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md",
-              (showShop || showFame || showLogs || showProfile) && "opacity-0 pointer-events-none"
-            )}
-            title="Cloak UI"
-          >
-            {uiVisible ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-white/40" />}
-          </button>
-        </div>
-
-        {/* TOP-CENTER: MISSION STATUS & TELEMETRY */}
-        <div className={cn(
-          "absolute top-[10px] left-1/2 -translate-x-1/2 flex flex-col items-center text-center pointer-events-auto transition-all duration-500 w-full max-w-md",
-          isHudHidden && "opacity-0 translate-y-[-100px]"
-        )}>
-          <div className="flex items-center gap-3 mb-2">
-             <div className="text-white drop-shadow-[0_0_20px_rgba(168,85,247,0.8)] font-black uppercase tracking-[0.2em] text-xs md:text-lg bg-black/70 px-6 py-2 rounded-2xl border-2 border-primary/40 backdrop-blur-xl min-w-[240px] shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-              {labels.score}: <span className="text-primary">{Math.floor(score).toLocaleString()} / {targetScore.toLocaleString()}</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="bg-primary/30 border border-primary/50 rounded-xl px-3 py-1 flex items-center gap-2 backdrop-blur-md shadow-lg">
-                <Radio className={cn("w-3 h-3 text-primary", (isWarping || gameStarted) ? "animate-pulse" : "")} />
-                <span className="text-white font-black uppercase text-[10px] tracking-widest">LVL {level}</span>
+          {/* TOP-CENTER: STATUS (COMPACT ON MOBILE) */}
+          <div className={cn(
+            "flex flex-col items-center transition-all duration-500",
+            isHudHidden && "opacity-0 -translate-y-full"
+          )}>
+            <div className="bg-black/70 px-4 py-1.5 md:px-6 md:py-2 rounded-xl md:rounded-2xl border border-primary/40 backdrop-blur-xl shadow-xl flex flex-col items-center gap-1">
+              <span className="text-primary font-black text-[10px] md:text-sm uppercase tracking-widest leading-none">
+                {labels.score}: {Math.floor(score).toLocaleString()}
+              </span>
+              <div className="h-0.5 w-full bg-primary/20 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-primary transition-all duration-500" 
+                  style={{ width: `${Math.min(100, (score / targetScore) * 100)}%` }}
+                />
               </div>
             </div>
+            
+            <div className={cn(
+              "mt-2 text-white font-mono text-[9px] md:text-[10px] uppercase tracking-widest bg-black/60 px-3 py-0.5 md:px-4 md:py-1 rounded-full border border-white/10",
+              timeLeft < 10 && "text-red-500 animate-pulse border-red-500"
+            )}>
+              {labels.time}: {timeLeft}s
+            </div>
           </div>
 
-          <h1 className="font-headline text-lg md:text-xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_20px_rgba(168,85,247,0.7)] mb-1 mt-10">
-            Stellar <span className="text-primary">Shift</span>
-          </h1>
-          
-          <div className={cn(
-            "text-white font-mono text-[10px] uppercase tracking-[0.2em] bg-black/60 px-4 py-1 rounded-full border border-white/20 backdrop-blur-md transition-all shadow-xl",
-            timeLeft < 10 && "text-red-500 animate-pulse border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]",
-            (isWarping || showShop || showFame) && "opacity-0 scale-50"
-          )}>
-            {labels.time}: <span className={timeLeft < 10 ? "font-black" : ""}>{timeLeft}s</span>
+          {/* TOP-RIGHT: ACTIONS & SETTINGS */}
+          <div className="flex items-center gap-2 md:gap-4">
+            <button 
+              onClick={() => setShowLogs(true)}
+              className={cn(
+                "hidden md:flex w-12 h-12 rounded-full glass-panel items-center justify-center border-white/20",
+                (showShop || showFame) && "opacity-0 pointer-events-none"
+              )}
+            >
+              <BookOpen className="w-5 h-5 text-secondary" />
+            </button>
+
+            <button 
+              onClick={() => setShowProfile(true)}
+              className={cn(
+                "w-10 h-10 md:w-12 md:h-12 rounded-full glass-panel flex items-center justify-center border-white/20 bg-black/60",
+                (showShop || showFame) && "opacity-0 pointer-events-none"
+              )}
+            >
+              <User className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+            </button>
+
+            <SettingsDrawer 
+              isOpen={settingsOpen}
+              onToggle={setSettingsOpen}
+              soundOn={soundOn}
+              onToggleSound={() => setSoundOn(!soundOn)}
+              isBatterySaver={isBatterySaver}
+              onToggleBattery={() => setIsBatterySaver(!isBatterySaver)}
+              language={language}
+              onCycleLanguage={() => {
+                const langs: ('en' | 'es' | 'fr')[] = ['en', 'es', 'fr'];
+                setLanguage(langs[(langs.indexOf(language) + 1) % langs.length]);
+              }}
+              gameMode={gameMode}
+              onSetGameMode={setGameMode}
+              onShowFame={() => setShowFame(true)}
+              onAbort={handleAbort}
+              onResetProgress={resetProfile}
+              gameStarted={gameStarted}
+              labels={labels}
+            />
           </div>
-        </div>
-
-        {/* TOP-RIGHT: ARCHIVE & SETTINGS */}
-        <div className="absolute top-[20px] right-[30px] flex items-center gap-4 pointer-events-auto">
-          <button 
-            onClick={() => setShowLogs(true)}
-            className={cn(
-              "w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md",
-              (showShop || showFame) && "opacity-0 pointer-events-none"
-            )}
-            title={labels.archive}
-          >
-            <BookOpen className="w-5 h-5 text-secondary" />
-          </button>
-
-          <button 
-            onClick={() => setShowProfile(true)}
-            className={cn(
-              "w-12 h-12 rounded-full glass-panel flex items-center justify-center border-white/20 hover:border-primary transition-all bg-black/60 backdrop-blur-md",
-              (showShop || showFame) && "opacity-0 pointer-events-none"
-            )}
-            title={labels.profile}
-          >
-            <User className="w-5 h-5 text-primary" />
-          </button>
-
-          <SettingsDrawer 
-            isOpen={settingsOpen}
-            onToggle={setSettingsOpen}
-            soundOn={soundOn}
-            onToggleSound={() => setSoundOn(!soundOn)}
-            isBatterySaver={isBatterySaver}
-            onToggleBattery={() => setIsBatterySaver(!isBatterySaver)}
-            language={language}
-            onCycleLanguage={() => {
-              const langs: ('en' | 'es' | 'fr')[] = ['en', 'es', 'fr'];
-              setLanguage(langs[(langs.indexOf(language) + 1) % langs.length]);
-            }}
-            gameMode={gameMode}
-            onSetGameMode={setGameMode}
-            onShowFame={() => {
-              setShowFame(true);
-              logAnalyticsEvent('view_leaderboard');
-            }}
-            onAbort={handleAbort}
-            onResetProgress={resetProfile}
-            gameStarted={gameStarted}
-            labels={labels}
-          />
         </div>
       </div>
 
       <CoinFountain isActive={showCoins} />
 
       <div className={cn(
-        "relative flex-1 w-full flex flex-col items-center justify-center z-10 pt-48 pb-20 transition-all duration-700",
+        "relative flex-1 w-full flex flex-col items-center justify-center z-10 transition-all duration-700 p-4",
         (showShop || showFame) && "blur-xl opacity-20 scale-95"
       )}>
         {!gameStarted ? (
-          <div className="flex flex-col items-center animate-in zoom-in duration-700">
+          <div className="flex flex-col items-center text-center animate-in zoom-in duration-700 px-6">
+             <div className="mb-12">
+               <h1 className="font-headline text-5xl md:text-7xl font-black tracking-tighter text-white uppercase italic drop-shadow-[0_0_40px_rgba(168,85,247,0.8)]">
+                 Stellar <span className="text-primary">Shift</span>
+               </h1>
+               <p className="text-[10px] md:text-xs text-primary/60 font-black uppercase tracking-[0.5em] mt-2">
+                 Neural Link Established • Sector {profile.currentLevel || 1}
+               </p>
+             </div>
+
              <button 
                 onClick={handleStartMission}
-                className="group relative px-20 py-10 bg-primary rounded-[2.5rem] text-3xl font-black uppercase tracking-[0.4em] text-white shadow-[0_0_60px_rgba(168,85,247,0.6)] hover:scale-110 active:scale-95 transition-all border-4 border-white/20"
+                className="group relative px-12 py-6 md:px-20 md:py-10 bg-primary rounded-[2rem] md:rounded-[2.5rem] text-xl md:text-3xl font-black uppercase tracking-[0.3em] text-white shadow-[0_0_60px_rgba(168,85,247,0.6)] hover:scale-110 active:scale-95 transition-all border-4 border-white/20 overflow-hidden"
              >
-                <div className="absolute inset-0 bg-white/20 rounded-[2rem] blur-xl group-hover:blur-2xl transition-all" />
+                <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 Start Mission
              </button>
-             <p className="mt-10 text-sm text-primary font-black uppercase tracking-[0.6em] animate-pulse">
-               Initialize Neural Link (Sector {profile.currentLevel || 1})
-             </p>
           </div>
         ) : (
           <Board onShowShop={() => setShowShop(true)} />
         )}
       </div>
 
+      {/* MOBILE COIN DISPLAY (STICKY BOTTOM) */}
+      {!gameStarted && (
+        <div className="sm:hidden fixed bottom-12 bg-black/70 px-6 py-2 rounded-2xl border border-yellow-500/40 backdrop-blur-xl flex items-center gap-3 z-[100]">
+          <Coins className="w-5 h-5 text-yellow-400" />
+          <span className="text-white font-black">{Math.floor(profile.coins || 0).toLocaleString()}</span>
+        </div>
+      )}
+
       {isReviving && (
-        <div className="fixed inset-0 z-[10005] flex items-center justify-center bg-black/60 backdrop-blur-sm p-6 animate-in fade-in duration-300">
-          <div className="w-full max-w-md bg-black/80 border-2 border-primary/50 rounded-[3rem] p-10 backdrop-blur-xl shadow-[0_0_100px_rgba(168,85,247,0.4)] flex flex-col items-center text-center">
-            <ShieldAlert className="w-20 h-20 text-primary mb-6 animate-pulse" />
-            <h2 className="text-4xl font-headline font-black text-white uppercase italic tracking-tighter mb-2">Mission Critical</h2>
-            <p className="text-muted-foreground uppercase text-xs tracking-widest font-black mb-8">
-              {isAdReviving ? "Syncing Neural Stream..." : `Neural Link Severing in ${reviveCountdown}s`}
+        <div className="fixed inset-0 z-[10005] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-sm md:max-w-md bg-black/90 border-2 border-primary/50 rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 backdrop-blur-xl shadow-2xl flex flex-col items-center text-center">
+            <ShieldAlert className="w-16 h-16 text-primary mb-6 animate-pulse" />
+            <h2 className="text-3xl md:text-4xl font-headline font-black text-white uppercase italic tracking-tighter mb-2">Mission Critical</h2>
+            <p className="text-muted-foreground uppercase text-[10px] tracking-widest font-black mb-8">
+              {isAdReviving ? "Syncing..." : `Link Severing in ${reviveCountdown}s`}
             </p>
             
-            <div className="w-full flex flex-col gap-4">
+            <div className="w-full flex flex-col gap-3">
                <button 
                  onClick={handleRecoverLink}
                  disabled={profile.coins < reviveCost || isAdReviving}
                  className={cn(
-                   "w-full h-16 rounded-2xl flex items-center justify-between px-8 font-black uppercase tracking-widest transition-all",
+                   "w-full h-14 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-between px-6 md:px-8 font-black uppercase tracking-widest transition-all text-xs md:text-sm",
                    (profile.coins >= reviveCost && !isAdReviving)
-                    ? "bg-primary text-white hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(168,85,247,0.5)]" 
-                    : "bg-white/5 text-white/20 cursor-not-allowed grayscale"
+                    ? "bg-primary text-white hover:scale-105 active:scale-95" 
+                    : "bg-white/5 text-white/20 cursor-not-allowed"
                  )}
                >
-                 <span className="flex items-center gap-2">
-                   Recover Link <span className="text-xs opacity-60 text-black font-black bg-white/40 px-2 py-0.5 rounded-md">+20s</span>
-                 </span>
+                 <span>Recover Link</span>
                  <div className="flex items-center gap-2">
-                    <Coins className={cn("w-4 h-4", reviveCost > 200 && "text-red-500 animate-pulse")} />
+                    <Coins className="w-4 h-4" />
                     {reviveCost}
                  </div>
                </button>
@@ -334,8 +336,8 @@ function MissionContent() {
                  onClick={handleReviveWithAd}
                  disabled={isAdReviving}
                  className={cn(
-                   "w-full h-16 rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest transition-all bg-secondary text-white hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(30,58,138,0.5)]",
-                   isAdReviving && "opacity-50 grayscale"
+                   "w-full h-14 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest transition-all bg-secondary text-white text-xs md:text-sm",
+                   isAdReviving && "opacity-50"
                  )}
                >
                  {isAdReviving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5 fill-white" />}
@@ -344,8 +346,7 @@ function MissionContent() {
 
                <button 
                  onClick={handleFailAbort}
-                 disabled={isAdReviving}
-                 className="w-full h-16 rounded-2xl bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 font-black uppercase tracking-widest transition-all"
+                 className="w-full h-12 md:h-14 rounded-xl border border-white/10 text-white/40 font-black uppercase tracking-widest text-[10px]"
                >
                  Abort Mission
                </button>
@@ -354,23 +355,24 @@ function MissionContent() {
         </div>
       )}
 
+      {/* ALERT DIALOG (MOBILE OPTIMIZED) */}
       <AlertDialog open={abortDialogOpen} onOpenChange={setAbortDialogOpen}>
-        <AlertDialogContent className="glass-panel border-red-600/50 bg-black/95 text-white z-[10000] p-10 rounded-[3rem]">
+        <AlertDialogContent className="glass-panel border-red-600/50 bg-black/95 text-white z-[10000] p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] max-w-[90vw] md:max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-headline text-3xl uppercase italic font-black text-red-500 mb-4">
+            <AlertDialogTitle className="font-headline text-2xl md:text-3xl uppercase italic font-black text-red-500 mb-2 md:mb-4">
               {labels.abandonMission}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-muted-foreground uppercase text-xs tracking-[0.2em] font-black leading-relaxed">
+            <AlertDialogDescription className="text-muted-foreground uppercase text-[10px] tracking-widest font-black leading-relaxed">
               {labels.abandonDesc}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="mt-10 gap-4">
-            <AlertDialogCancel className="bg-white/5 border-white/20 text-white hover:bg-white/10 rounded-2xl h-14 uppercase font-black text-xs tracking-widest px-8">
+          <AlertDialogFooter className="mt-6 md:mt-10 gap-3">
+            <AlertDialogCancel className="bg-white/5 border-white/20 text-white rounded-xl h-12 md:h-14 uppercase font-black text-[10px] tracking-widest px-6 md:px-8">
               {labels.no}
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleAbort}
-              className="bg-red-600 hover:bg-red-700 text-white rounded-2xl h-14 uppercase font-black text-xs tracking-widest px-8 shadow-[0_0_30px_rgba(220,38,38,0.5)]"
+              className="bg-red-600 hover:bg-red-700 text-white rounded-xl h-12 md:h-14 uppercase font-black text-[10px] tracking-widest px-6 md:px-8 shadow-lg"
             >
               {labels.yes}
             </AlertDialogAction>
@@ -405,13 +407,13 @@ function MissionContent() {
       />
 
       {showFame && (
-        <div className="fixed inset-0 z-[100020] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[60px] animate-in fade-in zoom-in duration-500">
-          <div className="w-full max-w-2xl h-[85vh] relative">
+        <div className="fixed inset-0 z-[100020] flex items-center justify-center p-4 bg-black/40 backdrop-blur-xl animate-in fade-in zoom-in duration-500">
+          <div className="w-full max-w-2xl h-[90vh] md:h-[85vh] relative">
             <button 
               onClick={() => setShowFame(false)}
-              className="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center z-[100021] border-2 border-white/20 shadow-xl hover:scale-110 active:scale-90 transition-all"
+              className="absolute -top-2 -right-2 md:-top-4 md:-right-4 w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary text-white flex items-center justify-center z-[100021] border-2 border-white/20 shadow-xl"
             >
-              <XIcon className="w-6 h-6" />
+              <XIcon className="w-5 h-5 md:w-6 md:h-6" />
             </button>
             <HallOfFame 
               title={labels.hallOfFame} 
@@ -423,15 +425,15 @@ function MissionContent() {
       )}
 
       <footer className={cn(
-        "fixed bottom-0 w-full p-6 text-center z-10 opacity-20 pointer-events-none transition-opacity",
+        "fixed bottom-0 w-full p-4 md:p-6 text-center z-10 opacity-20 pointer-events-none transition-opacity",
         (showShop || showFame) && "opacity-0"
       )}>
-        <div className="flex flex-col items-center gap-2">
-          <div className="text-[10px] text-white uppercase tracking-[0.5em] font-bold">
-            Neural Link V2.0 • Sector Clearance Confirmed
+        <div className="flex flex-col items-center gap-1 md:gap-2">
+          <div className="text-[8px] md:text-[10px] text-white uppercase tracking-[0.4em] font-bold">
+            Neural Link V2.0 • Command Verified
           </div>
           <div className="pointer-events-auto">
-            <Link href="/privacy" className="text-[8px] text-white/40 hover:text-primary uppercase tracking-widest transition-colors">
+            <Link href="/privacy" className="text-[7px] md:text-[8px] text-white/40 hover:text-primary uppercase tracking-widest transition-colors">
               Privacy Protocol
             </Link>
           </div>

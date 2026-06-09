@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { useGameState } from '@/context/GameStateContext';
 import { Entity } from './Entity';
 import { areAdjacent, HEX_WIDTH, GRID_COLS, GRID_ROWS } from '@/lib/game-utils';
@@ -22,6 +21,30 @@ export function Board({ onShowShop }: BoardProps) {
   } = useGameState();
 
   const [isAdReviving, setIsAdReviving] = useState(false);
+  const [boardScale, setBoardScale] = useState(1);
+  const boardRef = useRef<HTMLDivElement>(null);
+
+  // Responsive Board Scaling Logic
+  useEffect(() => {
+    const handleResize = () => {
+      if (!boardRef.current) return;
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      
+      const boardWidth = GRID_COLS * HEX_WIDTH + 100; // Including padding
+      const boardHeight = GRID_ROWS * HEX_WIDTH + 150; 
+      
+      const horizontalScale = (screenWidth * 0.95) / boardWidth;
+      const verticalScale = (screenHeight * 0.6) / boardHeight;
+      
+      const newScale = Math.min(1, horizontalScale, verticalScale);
+      setBoardScale(newScale);
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleSelect = useCallback((id: string) => {
     if (isProcessing || isGameOver || isWin || isWarping) return;
@@ -53,7 +76,6 @@ export function Board({ onShowShop }: BoardProps) {
     }, 5000);
   };
 
-  // Electrical Arc Visuals for specials
   const electricalArc = useMemo(() => {
     if (!selectedId) return null;
     const sEnt = entities.find(e => e.id === selectedId);
@@ -91,151 +113,149 @@ export function Board({ onShowShop }: BoardProps) {
 
   return (
     <div className={cn(
-      "relative flex flex-col items-center justify-center p-2 w-full h-full max-w-[95vw]",
+      "relative flex flex-col items-center justify-center p-2 w-full h-full",
       isShaking && "animate-shake"
     )}>
       {isFlashing && (
         <div className="fixed inset-0 z-[10000] bg-white mix-blend-difference pointer-events-none animate-negative-flash" />
       )}
 
-      <div className="absolute -left-20 top-1/2 -translate-y-1/2 flex flex-col gap-4">
+      {/* Side Actions (Responsive Positioning) */}
+      <div className="fixed bottom-32 md:bottom-auto md:left-[5%] md:top-1/2 md:-translate-y-1/2 flex flex-row md:flex-col gap-4 z-[1000]">
          {powerUps.colorNuke > 0 && (
            <button 
              onClick={triggerColorNuke}
              disabled={isProcessing || isGameOver || isWin || isWarping}
-             className="w-16 h-16 rounded-2xl bg-primary flex flex-col items-center justify-center border-b-4 border-primary-foreground/30 shadow-[0_0_20px_rgba(168,85,247,0.5)] hover:scale-105 active:scale-90 transition-all group"
+             className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-primary flex flex-col items-center justify-center border-b-4 border-primary-foreground/30 shadow-[0_0_20px_rgba(168,85,247,0.5)] hover:scale-105 active:scale-90 transition-all group"
            >
-              <Zap className="w-8 h-8 text-white group-hover:animate-pulse" />
-              <span className="text-[10px] font-black text-white mt-1">{powerUps.colorNuke}</span>
+              <Zap className="w-6 h-6 md:w-8 md:h-8 text-white group-hover:animate-pulse" />
+              <span className="text-[10px] font-black text-white mt-0.5 md:mt-1">{powerUps.colorNuke}</span>
            </button>
          )}
       </div>
 
-      <div className={cn(
-        "stellar-grid-frame p-4 flex items-center justify-center relative shadow-[0_0_100px_rgba(0,0,0,0.8)] border-primary/10 overflow-visible transition-all duration-1000",
-        isWarping && "scale-90 opacity-40 blur-[10px]"
-      )}>
+      <div className="responsive-board-wrapper" style={{ transform: `scale(${boardScale})` }}>
         <div 
-          className="relative transition-all duration-500" 
-          style={{ 
-            width: `${GRID_COLS * HEX_WIDTH}px`, 
-            height: `${GRID_ROWS * HEX_WIDTH}px`,
-            maxWidth: '100%',
-            maxHeight: '100%'
-          }}
-        >
-          {electricalArc}
-          
-          {/* Stellar Beam Laser Overlays */}
-          {lasers.map((laser) => (
-             <div 
-               key={laser.id}
-               className={cn(
-                 "absolute z-[60] bg-white shadow-[0_0_20px_white,0_0_40px_white] animate-laser",
-                 laser.type === 'h' 
-                   ? "inset-x-[-100px] h-4 top-[var(--laser-pos)]" 
-                   : "inset-y-[-100px] w-4 left-[var(--laser-pos)]"
-               )}
-               style={{ 
-                 ['--laser-pos' as any]: `${laser.pos * HEX_WIDTH + HEX_WIDTH / 2 - 8}px`
-               }}
-             />
-          ))}
-
-          {entities.map((entity) => (
-            <Entity 
-              key={entity.id} 
-              entity={entity} 
-              isSelected={selectedId === entity.id} 
-              onSelect={handleSelect} 
-              disabled={isProcessing || isGameOver || isWin || isWarping} 
-            />
-          ))}
-
-          {isWarping && (
-            <div className="absolute inset-0 z-50 flex flex-col items-center justify-center animate-in zoom-in duration-500">
-               <FastForward className="w-16 h-16 text-primary animate-pulse mb-4" />
-               <h3 className="text-2xl font-black text-white uppercase italic tracking-widest text-center">
-                 Warping to Sector {level + 1}
-               </h3>
-               <p className="text-[10px] text-primary/60 font-bold uppercase tracking-[0.5em] mt-2">
-                 CALIBRATING NEURAL LINK...
-               </p>
-            </div>
+          ref={boardRef}
+          className={cn(
+            "stellar-grid-frame p-4 flex items-center justify-center relative transition-all duration-1000",
+            isWarping && "scale-90 opacity-40 blur-[10px]"
           )}
+        >
+          <div 
+            className="relative transition-all duration-500" 
+            style={{ 
+              width: `${GRID_COLS * HEX_WIDTH}px`, 
+              height: `${GRID_ROWS * HEX_WIDTH}px`,
+            }}
+          >
+            {electricalArc}
+            
+            {lasers.map((laser) => (
+               <div 
+                 key={laser.id}
+                 className={cn(
+                   "absolute z-[60] bg-white shadow-[0_0_20px_white,0_0_40px_white] animate-laser",
+                   laser.type === 'h' 
+                     ? "inset-x-[-100px] h-4 top-[var(--laser-pos)]" 
+                     : "inset-y-[-100px] w-4 left-[var(--laser-pos)]"
+                 )}
+                 style={{ 
+                   ['--laser-pos' as any]: `${laser.pos * HEX_WIDTH + HEX_WIDTH / 2 - 8}px`
+                 }}
+               />
+            ))}
 
-          {(isGameOver || isWin) && !isWarping && (
-            <div className="absolute inset-[-20px] md:inset-[-40px] z-[50] flex flex-col items-center justify-center bg-black/95 backdrop-blur-2xl rounded-[3rem] animate-in zoom-in duration-300 border border-white/10 shadow-[0_0_100px_rgba(168,85,247,0.3)] pointer-events-auto">
-              {isWin ? (
-                <>
-                  <Trophy className="w-20 h-20 text-yellow-400 mb-6 drop-shadow-[0_0_30px_rgba(250,204,21,0.6)]" />
-                  <h2 className="text-3xl md:text-5xl font-black text-white mb-8 uppercase italic tracking-tighter">Mission Accomplished</h2>
-                  <p className="text-primary font-bold uppercase tracking-widest mb-12">Sector {level} Secured</p>
-                </>
-              ) : (
-                <>
-                  <div className="text-7xl mb-6 grayscale opacity-50 drop-shadow-[0_0_30px_rgba(255,0,0,0.5)]">🌑</div>
-                  <h2 className="text-3xl md:text-5xl font-black text-red-500 mb-4 uppercase italic tracking-tighter">Mission Failed</h2>
-                  <p className="text-white/40 font-bold uppercase tracking-widest mb-8">Neural Link Severed</p>
-                </>
-              )}
-              
-              <div className="flex flex-col gap-4 w-full max-w-xs">
+            {entities.map((entity) => (
+              <Entity 
+                key={entity.id} 
+                entity={entity} 
+                isSelected={selectedId === entity.id} 
+                onSelect={handleSelect} 
+                disabled={isProcessing || isGameOver || isWin || isWarping} 
+              />
+            ))}
+
+            {isWarping && (
+              <div className="absolute inset-0 z-50 flex flex-col items-center justify-center animate-in zoom-in duration-500">
+                 <FastForward className="w-12 h-12 md:w-16 md:h-16 text-primary animate-pulse mb-4" />
+                 <h3 className="text-xl md:text-2xl font-black text-white uppercase italic tracking-widest text-center">
+                   Warping to Sector {level + 1}
+                 </h3>
+              </div>
+            )}
+
+            {(isGameOver || isWin) && !isWarping && (
+              <div className="absolute inset-[-10px] md:inset-[-40px] z-[50] flex flex-col items-center justify-center bg-black/95 backdrop-blur-2xl rounded-[2rem] md:rounded-[3rem] animate-in zoom-in duration-300 border border-white/10 shadow-[0_0_100px_rgba(168,85,247,0.3)] pointer-events-auto">
                 {isWin ? (
-                  <Button 
-                    onClick={() => {
-                      if (onShowShop) onShowShop();
-                      else initBoard();
-                    }} 
-                    size="lg" 
-                    className="bg-primary hover:bg-primary/80 active:scale-95 transition-all font-black uppercase tracking-widest h-16 rounded-2xl text-lg shadow-2xl w-full"
-                  >
-                    <RotateCcw className="w-5 h-5 mr-3" /> Next Sector
-                  </Button>
+                  <>
+                    <Trophy className="w-16 h-16 md:w-20 md:h-20 text-yellow-400 mb-6 drop-shadow-[0_0_30px_rgba(250,204,21,0.6)]" />
+                    <h2 className="text-2xl md:text-5xl font-black text-white mb-8 uppercase italic tracking-tighter text-center">Mission Accomplished</h2>
+                  </>
                 ) : (
                   <>
-                    <Button 
-                      onClick={handleReviveWithAd} 
-                      disabled={isAdReviving}
-                      size="lg" 
-                      className={cn(
-                        "bg-secondary hover:bg-secondary/80 active:scale-95 transition-all font-black uppercase tracking-widest h-16 rounded-2xl text-lg shadow-2xl w-full flex items-center justify-center gap-3",
-                        isAdReviving && "opacity-50 grayscale"
-                      )}
-                    >
-                      {isAdReviving ? <Loader2 className="w-6 h-6 animate-spin" /> : <Play className="w-6 h-6 fill-white" />}
-                      {isAdReviving ? "Syncing..." : "Watch Ad to Revive"}
-                    </Button>
-
+                    <div className="text-6xl md:text-7xl mb-6 grayscale opacity-50 drop-shadow-[0_0_30px_rgba(255,0,0,0.5)] text-center">🌑</div>
+                    <h2 className="text-2xl md:text-5xl font-black text-red-500 mb-4 uppercase italic tracking-tighter text-center">Mission Failed</h2>
+                  </>
+                )}
+                
+                <div className="flex flex-col gap-3 w-full max-w-xs px-6">
+                  {isWin ? (
                     <Button 
                       onClick={() => {
                         if (onShowShop) onShowShop();
                         else initBoard();
                       }} 
+                      size="lg" 
+                      className="bg-primary hover:bg-primary/80 active:scale-95 transition-all font-black uppercase tracking-widest h-14 md:h-16 rounded-2xl text-base md:text-lg shadow-2xl w-full"
+                    >
+                      <RotateCcw className="w-5 h-5 mr-3" /> Next Sector
+                    </Button>
+                  ) : (
+                    <>
+                      <Button 
+                        onClick={handleReviveWithAd} 
+                        disabled={isAdReviving}
+                        size="lg" 
+                        className={cn(
+                          "bg-secondary hover:bg-secondary/80 active:scale-95 transition-all font-black uppercase tracking-widest h-14 md:h-16 rounded-2xl text-base md:text-lg shadow-2xl w-full flex items-center justify-center gap-3",
+                          isAdReviving && "opacity-50 grayscale"
+                        )}
+                      >
+                        {isAdReviving ? <Loader2 className="w-6 h-6 animate-spin" /> : <Play className="w-6 h-6 fill-white" />}
+                        {isAdReviving ? "Syncing..." : "Revive Link"}
+                      </Button>
+
+                      <Button 
+                        onClick={() => {
+                          if (onShowShop) onShowShop();
+                          else initBoard();
+                        }} 
+                        variant="outline"
+                        size="lg" 
+                        disabled={isAdReviving}
+                        className="border-white/10 hover:bg-white/5 text-white/80 active:scale-95 transition-all font-black uppercase tracking-widest h-12 md:h-14 rounded-2xl text-sm w-full"
+                      >
+                        <RotateCcw className="w-4 h-4 mr-3" /> Retry Mission
+                      </Button>
+                    </>
+                  )}
+                  
+                  {!isWin && (
+                    <Button 
+                      onClick={quitGame} 
                       variant="outline"
                       size="lg" 
                       disabled={isAdReviving}
-                      className="border-white/10 hover:bg-white/5 text-white/80 active:scale-95 transition-all font-black uppercase tracking-widest h-14 rounded-2xl text-sm w-full"
+                      className="border-white/10 hover:bg-white/5 text-white/60 active:scale-95 transition-all font-black uppercase tracking-widest h-12 md:h-14 rounded-2xl text-xs w-full"
                     >
-                      <RotateCcw className="w-4 h-4 mr-3" /> Retry Mission
+                      <Power className="w-4 h-4 mr-3" /> Abort Mission
                     </Button>
-                  </>
-                )}
-                
-                {!isWin && (
-                  <Button 
-                    onClick={quitGame} 
-                    variant="outline"
-                    size="lg" 
-                    disabled={isAdReviving}
-                    className="border-white/10 hover:bg-white/5 text-white/60 active:scale-95 transition-all font-black uppercase tracking-widest h-14 rounded-2xl text-xs w-full"
-                  >
-                    <Power className="w-4 h-4 mr-3" /> Abort to Menu
-                  </Button>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
