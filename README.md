@@ -13,7 +13,13 @@ This is a high-performance, Next.js 15 match-3 puzzle adventure.
     - **Build command**: `npm run build`
     - **Publish directory**: `out`
 4.  **Environment Variables**:
-    - Add any required Firebase keys in the Netlify UI under **Site settings > Environment variables**.
+    - Add any required API keys in the Netlify UI under **Site settings > Environment variables**.
+
+## 🛡️ Security Protocol (Public Repositories)
+
+- **Firebase API Keys**: These are safe to commit; they identify your project to the client. Security is enforced via **Firestore Security Rules**.
+- **Environment Variables**: The `.gitignore` file prevents your `.env` from being pushed. Always add secrets (like AI keys) directly to the Netlify or Firebase Hosting UI.
+- **Firestore Rules**: Ensure your production rules restrict write access to authenticated owners only.
 
 ## Features
 - **Neural Link Gameplay**: Hexagonal match-3 logic.
