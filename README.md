@@ -1,54 +1,42 @@
 # Stellar Shift - Cosmic Match 3
 
-This is a high-performance, Next.js 15 match-3 puzzle adventure.
+This is a high-performance, Next.js 15 match-3 puzzle adventure optimized for static deployment on Netlify or Firebase Hosting.
 
 ## 🚀 Deployment Protocol
 
-### Build Command
+### 1. Build Command
 To prepare the application for production, run:
 ```bash
 npm run build
 ```
-This will generate an `out` folder containing the static site.
+This generates an `out` folder containing your static mission files.
 
-### First Mission Launch (Push to GitHub)
-1. **Initialize & Commit**: 
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial mission launch"
-   ```
-2. **Link and Push**:
-   ```bash
-   git remote add origin https://github.com/surigoud2004-prog/Stellar-Shift.git
-   git branch -M main
-   git push -u origin main
-   ```
+### 2. Broadcast to GitHub
+If you haven't pushed yet, or have new changes:
+1. **Stage**: `git add .`
+2. **Commit**: `git commit -m "Final mission readiness"`
+3. **Push**: `git push -u origin main`
+   *(If you get a rejection error, use `git push -u origin main --force`)*
 
-### 🛠️ Troubleshooting "Rejected" Push
-If you see an error like `[rejected] main -> main (non-fast-forward)`, it means GitHub has files you don't have. To overwrite GitHub with your local code, run:
-```bash
-git push -u origin main --force
-```
+## 🌍 Connecting to Netlify
 
-### Subsequent Missions (Update Your Code)
-1. **Stage Changes**: `git add .`
-2. **Log Changes**: `git commit -m "Update mission parameters"`
-3. **Broadcast**: `git push`
-
-## 🌍 Connect to Netlify
-1. Log in to [Netlify](https://app.netlify.com/).
-2. Click **"Add new site"** -> **"Import an existing project"**.
-3. Select **GitHub** and choose the `Stellar-Shift` repository.
-4. **Environment Variables**:
-   In Netlify under **Site Settings > Build & deploy > Environment variables**, add all variables found in your local `.env` (e.g., `NEXT_PUBLIC_FIREBASE_API_KEY`).
-5. **Site Settings**:
+1. **New Site**: Log in to [Netlify](https://app.netlify.com/) and click **"Add new site"** -> **"Import an existing project"**.
+2. **Select Repo**: Connect your GitHub and select the `Stellar-Shift` repository.
+3. **Build Settings**:
    - **Build Command**: `npm run build`
    - **Publish Directory**: `out`
+4. **CRITICAL: Environment Variables**:
+   In Netlify under **Site Settings > Build & deploy > Environment variables**, you MUST add the following from your `.env`:
+   - `NEXT_PUBLIC_FIREBASE_API_KEY`
+   - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+   - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+   - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+   - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+   - `NEXT_PUBLIC_FIREBASE_APP_ID`
 
-## 🛡️ Security Protocol
-- **API Keys**: We use `process.env.NEXT_PUBLIC_` variables. You must enter these into the Netlify dashboard for the live site to work.
-- **Gitignore**: The `.gitignore` file is configured to prevent your `.env` file from being pushed to public view.
-- **Firestore Rules**: Your data is secured by Firebase Security Rules on the server side.
+## 🛡️ Security & Performance
+- **Static Export**: The app uses `output: 'export'` for maximum speed and compatibility.
+- **Mock Lore**: AI features are simulated locally to keep the app functional on the Firebase Spark (Free) plan.
+- **CSP**: `netlify.toml` is pre-configured with security headers to protect your neural link.
 
-*Mission Readiness: Confirmed.*
+*Mission Status: Ready for Deployment.*
